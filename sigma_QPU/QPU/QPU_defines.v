@@ -1,7 +1,6 @@
                                                                       
 //=====================================================================
 //
-// Designer   : QI ZHOU test
 // Description:
 //  The files to include all the macro defines
 //
