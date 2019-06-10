@@ -48,7 +48,7 @@ module QPU_exu_decode(
   wire quantum_instr = qpu_instr[0];
   wire classical_instr = ~ qpu_instr[0];
 
-  wire [3:0]  classical_opcode = qpu_instr[4:1];
+  wire [4:0]  classical_opcode = qpu_instr[4:0];
 
   wire opcode_2_0_000  = (classical_opcode[2:0] == 3'b000);
   wire opcode_2_0_010  = (classical_opcode[2:0] == 3'b010);
@@ -66,10 +66,10 @@ module QPU_exu_decode(
   wire [4:0] quantum_rs2 = qpu_instr[28:24];
   wire [2:0] quantum_PI = qpu_instr[31:29];
  
-  wire opcode_4_3_00 = (classical_opcode[4:2] == 2'b00);
-  wire opcode_4_3_01 = (classical_opcode[4:2] == 2'b01);
-  wire opcode_4_3_10 = (classical_opcode[4:2] == 2'b10);
-  wire opcode_4_3_11 = (classical_opcode[4:2] == 2'b11);
+  wire opcode_4_3_00 = (classical_opcode[4:3] == 2'b00);
+  wire opcode_4_3_01 = (classical_opcode[4:3] == 2'b01);
+  wire opcode_4_3_10 = (classical_opcode[4:3] == 2'b10);
+  wire opcode_4_3_11 = (classical_opcode[4:3] == 2'b11);
   
 
 
@@ -86,7 +86,7 @@ module QPU_exu_decode(
 
   wire classical_load   = opcode_4_3_00 & opcode_2_0_000; 
   wire classical_store  = opcode_4_3_01 & opcode_2_0_000; 
-  wire classical_branch = opcode_4_3_10 & opcode_2_0_000; 
+  wire classical_branch = opcode_4_3_11 & opcode_2_0_000; 
 
 
   wire classical_op_imm   = opcode_4_3_00 & opcode_2_0_010; 
