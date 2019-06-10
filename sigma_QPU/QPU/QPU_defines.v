@@ -20,7 +20,7 @@
 `define QPU_RFIDX_WIDTH 5
 `define QPU_RFIDX_REAL_WIDTH 6                       //加flag位后为6
 `define QPU_QUBIT_NUM 6
-
+`define QPU_QUBIT_IDX_WIDTH 4                        //最多支持15 qubit，0000表示无操作
 
 
 `define QPU_OITF_DEPTH  4
@@ -52,7 +52,7 @@
 
 `define QPU_EVENT_PTR_WIDTH 5                     //太小的话，有可能出现，PTR套一圈，导致事件的ptr出错！！！！！！！
 
-`define QPU_RFREG_NUM 64 ///classical and quantum
+`define QPU_RFREG_NUM 32 ///classical and quantum
 `define QPU_CLASSICAL_RFREG_NUM 16
 `define QPU_QUANTUM_RFREG_NUM 16
 `define QPU_QUANTUM_RFREG_REAL_NUM (`QPU_QUANTUM_RFREG_NUM + `QPU_QUBIT_NUM + 1)
