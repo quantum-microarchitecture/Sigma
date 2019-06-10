@@ -16,13 +16,20 @@ module QPU_exu_regfile(
 
   input  [`QPU_RFIDX_REAL_WIDTH-1:0] read_src1_idx,
   input  [`QPU_RFIDX_REAL_WIDTH-1:0] read_src2_idx,
-  output [`QPU_XLEN-1:0] read_src1_data,
+  output [`QPU_XLEN-1:0] read_src1_data,                  //对于两比特GATE，输出的是执行GATE的掩码信息，同单比特门
   output [`QPU_XLEN-1:0] read_src2_data,
+  input dec_tqg,                                         //two-qubit gate
+  output [`QPU_TWO_QUBIT_GATE_LIST_WIDTH - 1 : 0] read_tqgl1_data,
+  output [`QPU_TWO_QUBIT_GATE_LIST_WIDTH - 1 : 0] read_tqgl2_data,
 
   input  cwbck_dest_wen,
   input  [`QPU_RFIDX_REAL_WIDTH-1:0] cwbck_dest_idx,
   input  [`QPU_XLEN-1:0] cwbck_dest_data,
 
+
+  input qcwbck_dest_wen,
+  input  [`QPU_RFIDX_REAL_WIDTH-1:0] qcwbck_dest_idx,
+  input  [`QPU_XLEN-1:0] qcwbck_dest_data,
 
 //time regfile
   input twbck_dest_wen,                      //ntp & event and time queue is not full ,from wbck
@@ -34,9 +41,11 @@ module QPU_exu_regfile(
   input ewbck_dest_wen,                      //QI or QWAIT & ~full, from wbck
   input [(`QPU_EVENT_NUM - 1) : 0] ewbck_dest_oprand,
   input [(`QPU_EVENT_WIRE_WIDTH - 1) : 0] ewbck_dest_data,
+  input [(`QPU_TWO_QUBIT_GATE_LIST_WIDTH - 1) : 0] ewbck_dest_tqgl;
 
   output [(`QPU_EVENT_NUM - 1) : 0] read_event_oprand,      // to queue and alu
   output [(`QPU_EVENT_WIRE_WIDTH - 1) : 0] read_event_data,
+  output [(`QPU_TWO_QUBIT_GATE_LIST_WIDTH - 1) : 0] read_event_tqgl;
 
 
 //measurement result reg
@@ -147,18 +156,25 @@ module QPU_exu_regfile(
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////classical reg
-
-
-
+  wire [`QPU_XLEN-1:0] read_src1_qdata;
+  wire [`QPU_XLEN-1:0] read_src2_qdata;
+  wire [`QPU_XLEN-1:0] read_src1_cqdata;
+  wire [`QPU_XLEN-1:0] read_src2_cqdata;
+  wire [`QPU_XLEN-1:0] read_src1_oqdata;        //one qubit
+  wire [`QPU_XLEN-1:0] read_src2_oqdata;
+  wire [`QPU_XLEN-1:0] read_src1_mqdata;        //mutiple qubits
+  wire [`QPU_XLEN-1:0] read_src2_mqdata;
+  
   wire [`QPU_XLEN-1:0] crf_r [`QPU_RFREG_NUM-1:0];
   wire [`QPU_RFREG_NUM-1:0] crf_wen;
-  
-  
+  wire [`QPU_XLEN-1:0] qcrf_r [`QPU_RFREG_NUM-1:0];
+  wire [`QPU_RFREG_NUM-1:0] qcrf_wen;
+  wire 
 
   genvar m;
   generate //{
   
-      for (m=0; m<`QPU_RFREG_NUM; m=m+1) begin:regfile//{
+      for (m=0; m<`QPU_RFREG_NUM; m=m+1) begin: classical regfile//{
         
 
         if(m==0) begin: rf0
@@ -166,32 +182,49 @@ module QPU_exu_regfile(
             assign crf_wen[m] = 1'b0;
             assign crf_r[m] = `QPU_XLEN'b0;
         end
-        else if(((m>0)&(m<`QPU_CLASSICAL_RFREG_NUM)) | (( m > (31+`QPU_QUBIT_NUM + 1))&(m < (31+`QPU_QUANTUM_RFREG_REAL_NUM + 1)))) begin
-            assign crf_wen[m] = cwbck_dest_wen & (cwbck_dest_idx == m);
-            sirv_gnrl_dffl #(`QPU_XLEN) rf_dffl (crf_wen[m], cwbck_dest_data, crf_r[m], clk);
+        else begin
+            assign crf_wen[m] = cwbck_dest_wen & (cwbck_dest_idx[`QPU_RFIDX_WIDTH-1:0] == m);     //不需要首位标记位
+            sirv_gnrl_dffl #(`QPU_XLEN) crf_dffl (crf_wen[m], cwbck_dest_data, crf_r[m], clk);
         end
 
-        else if(m==32) begin
-            assign crf_wen[m] = 1'b0;
-            assign crf_r[m] = `QPU_XLEN'b0;        
-            
-        end
+      end//}
+  endgenerate//}
 
-        else if((m > 32) & (m < 32 + `QPU_QUBIT_NUM + 1)) begin
-            assign crf_wen[m] = 1'b0;
-            assign crf_r[m] = ((`QPU_XLEN'b1) << (m-32-1));
+  genvar n;
+  generate //{
+  
+      for (n=0; n<`QPU_RFREG_NUM; n=n+1) begin:quantum regfile//{
+
+        if(n < `QPU_QUBIT_NUM) begin
+            assign qcrf_wen[n] = 1'b0;
+            assign qcrf_r[n] = ((`QPU_XLEN'b1) << n);
         end
 
         else begin
-            assign crf_wen[m] = 1'b0;
-            assign crf_r[m] = `QPU_XLEN'b0;    
+            assign qcrf_wen[n] = qcwbck_dest_wen & (qcwbck_dest_idx[`QPU_RFIDX_WIDTH-1:0] == n);       //不需要首位标记位
+            sirv_gnrl_dffl #(`QPU_XLEN) qcrf_dffl (qcrf_wen[n], qcwbck_dest_data, qcrf_r[n], clk);
         end
       end//}
   endgenerate//}
   
-  assign read_src1_data = crf_r[read_src1_idx];
-  assign read_src2_data = crf_r[read_src2_idx];
 
-      
+  ///for two qubit gate rs
+  
+
+
+
+  
+  assign read_src1_cdata = crf_r[read_src1_idx[`QPU_RFIDX_WIDTH-1:0]];
+  assign read_src2_cdata = crf_r[read_src2_idx[`QPU_RFIDX_WIDTH-1:0]];
+  assign read_src1_oqdata = qcrf_r[read_src1_idx[`QPU_RFIDX_WIDTH-1:0]];
+  assign read_src2_oqdata = qcrf_r[read_src2_idx[`QPU_RFIDX_WIDTH-1:0]];
+
+  assign read_src1_data = ({`QPU_XLEN{~read_src1_idx[`QPU_RFIDX_REAL_WIDTH - 1]}} & read_src1_cdata) | ({`QPU_XLEN{read_src1_idx[`QPU_RFIDX_REAL_WIDTH - 1]}} & read_src1_oqdata);
+  assign read_src2_data = ({`QPU_XLEN{~read_src2_idx[`QPU_RFIDX_REAL_WIDTH - 1]}} & read_src2_cdata) | ({`QPU_XLEN{read_src2_idx[`QPU_RFIDX_REAL_WIDTH - 1]}} & read_src2_oqdata);    
+
+  assign read_tqgl1_data = ;
+  assign read_tqgl2_data = ;
+
+
 endmodule
 
