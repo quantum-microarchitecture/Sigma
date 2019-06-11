@@ -91,8 +91,7 @@ module QPU_exu_disp(
 
   output [`QPU_QUBIT_NUM - 1 : 0] disp_oitf_qubitlist,//
   
-  input  clk,
-  input  rst_n
+
   );
 
 
@@ -154,7 +153,10 @@ module QPU_exu_disp(
   
   assign disp_o_alu_qmr  = disp_i_qmr & {`QPU_QUBIT_NUM {disp_i_fmr}};
   assign disp_o_alu_clk  = disp_i_clk & {`QPU_TIME_WIDTH{disp_i_ntp}};
+  assign disp_o_alu_edata = disp_i_edata;
+  assign disp_o_alu_oprand = disp_i_oprand;
   assign disp_o_alu_fmr  = disp_i_fmr;
+  assign disp_o_alu_measure = disp_i_measure;
 endmodule                                      
                                                
                                                
