@@ -354,10 +354,9 @@ module QPU_exu(
     .disp_oitf_rs1idx    (disp_oitf_rs1idx),
     .disp_oitf_rs2idx    (disp_oitf_rs2idx),
     .disp_oitf_rdidx     (disp_oitf_rdidx ),
-    .disp_oitf_qubitlist (disp_oitf_qubitlist),
+    .disp_oitf_qubitlist (disp_oitf_qubitlist)
    
-    .clk                 (clk  ),
-    .rst_n               (rst_n) 
+
   );
 
   //////////////////////////////////////////////////////////////
@@ -495,10 +494,9 @@ module QPU_exu(
 
     .lsu_icb_rsp_valid   (lsu_icb_rsp_valid ),
     .lsu_icb_rsp_ready   (lsu_icb_rsp_ready ),
-    .lsu_icb_rsp_rdata   (lsu_icb_rsp_rdata),
+    .lsu_icb_rsp_rdata   (lsu_icb_rsp_rdata)
 
-    .clk                 (clk          ),
-    .rst_n               (rst_n        ) 
+
   );
 
   //////////////////////////////////////////////////////////////
