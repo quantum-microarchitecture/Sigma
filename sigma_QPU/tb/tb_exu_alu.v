@@ -1,14 +1,14 @@
 
-
 `include "../QPU/QPU_defines.v"
 `include "tb_define.v"
 
 `timescale 10ns/10ps
 
-module tb_exu_disp();
+module tb_exu_alu();
 
-      //////////////////////////////////////////////////////////////
-      ////////////////decode///////////////////
+////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+////////////////decode///////////////////
   // The IR stage to Decoder
   reg  [`QPU_INSTR_SIZE-1:0] i_instr;
   reg  [`QPU_PC_SIZE-1:0] i_pc;
@@ -34,9 +34,9 @@ module tb_exu_disp();
   wire dec_bxx;
   wire [`QPU_XLEN-1:0] dec_bjp_imm;
 //////////////////////////////////////////////////////////////////////
-  
+/////////////////////////////////////////////////  
 
-
+/////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////
 ///////////////////////////disp////////////////////////////////////
     // The operands and decode info from dispatch
@@ -57,9 +57,7 @@ module tb_exu_disp();
   // Dispatch to ALU
 
   wire disp_alu_valid; 
-  reg  disp_alu_ready;
 
-  reg  disp_alu_longpipe;
 
   wire [`QPU_XLEN-1:0] disp_alu_rs1;
   wire [`QPU_XLEN-1:0] disp_alu_rs2;
@@ -104,10 +102,66 @@ module tb_exu_disp();
 
   wire [`QPU_QUBIT_NUM - 1 : 0] disp_oitf_qubitlist;//
 /////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////
 
 
+/////////////////////////////////////////////////////////
+///////////////////////////////////////////////
+///////////////////////////alu//////////////
+  wire disp_alu_ready; 
 
+  wire disp_alu_longpipe; // Indicate this instruction is 
+                     //   issued as a long pipe instruction
+                     ///reg->disp->qiu
+
+  // The Commit Interface
+  wire alu_cmt_valid; // Handshake valid
+  reg  alu_cmt_ready; // Handshake ready
+
+  wire [`QPU_PC_SIZE-1:0] alu_cmt_pc;  
+  wire [`QPU_XLEN-1:0]    alu_cmt_imm;// The resolved ture/false
+    //   The Branch and Jump Commit
+
+  wire alu_cmt_bjp;
+
+  wire alu_cmt_bjp_prdt;// The predicted ture/false  
+  wire alu_cmt_bjp_rslv;// The resolved ture/false
+
+
+  // The ALU Write-Back Interface
+  wire alu_cwbck_o_valid; // Handshake valid
+  reg  alu_cwbck_o_ready; // Handshake ready
+  wire [`QPU_XLEN-1:0] alu_cwbck_o_data;
+  wire [`QPU_RFIDX_REAL_WIDTH-1:0] alu_cwbck_o_rdidx;
+
+  wire alu_twbck_o_valid;
+  reg  alu_twbck_o_ready;
+  wire [`QPU_TIME_WIDTH - 1 : 0] alu_twbck_o_data;
+
+  wire alu_ewbck_o_valid;
+  reg  alu_ewbck_o_ready;
+  wire [(`QPU_EVENT_WIRE_WIDTH - 1) : 0]  alu_ewbck_o_data;
+  wire [(`QPU_EVENT_NUM - 1) : 0]        alu_ewbck_o_oprand;
+
+
+  // The lsu ICB Interface to LSU-ctrl
+  //    * Bus cmd channel
+  wire                         lsu_icb_cmd_valid; // Handshake valid
+  reg                          lsu_icb_cmd_ready; // Handshake ready
+  wire [`QPU_ADDR_SIZE-1:0]    lsu_icb_cmd_addr; // Bus transaction start addr 
+  wire                         lsu_icb_cmd_read;   // Read or write
+  wire [`QPU_XLEN-1:0]         lsu_icb_cmd_wdata; 
+  wire [`QPU_XLEN/8-1:0]       lsu_icb_cmd_wmask; 
   
+  //    * Bus RSP channel
+  reg                          lsu_icb_rsp_valid; // Response valid 
+  wire                         lsu_icb_rsp_ready; // Response ready
+  reg  [`QPU_XLEN-1:0]         lsu_icb_rsp_rdata;
+/////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////
+
+
+////////////////////////decode//////////////////////////////////////
   initial
   begin
     #0 i_instr = `instr_LOAD;
@@ -137,22 +191,21 @@ module tb_exu_disp();
     #2 i_instr = `instr_measure;
 
     #5 i_instr = `instr_WFI;
-
-
   end
+////////////////////////////////////////////////////////////////////
 
+
+/////////////////disp////////////////////////////
   initial
   begin
     i_valid = 1'b1;
+
     crf_rs1 = `QPU_XLEN'b0;
     crf_rs2 = `QPU_XLEN'b0;
     trf_data = `QPU_TIME_WIDTH'b110;
     mrf_data = `QPU_QUBIT_NUM'b10;
     erf_data = 66'b0;
     erf_oprand = 8'b0;
-
-    disp_alu_ready = 1'b1;
-    disp_alu_longpipe = 1'b1;
 
     oitfrd_match_disprs1 = 1'b0;
     oitfrd_match_disprs2 = 1'b0;
@@ -163,6 +216,22 @@ module tb_exu_disp();
     disp_moitf_ready = 1'b1;
 
   end
+////////////////////////////////////////////////
+
+
+///////////////////////////alu/////////////////////
+initial
+begin
+    alu_cmt_ready = 1'b1;
+    alu_cwbck_o_ready = 1'b1;
+    alu_twbck_o_ready = 1'b1;
+    alu_ewbck_o_ready = 1'b1;
+    lsu_icb_cmd_ready = 1'b1;
+    lsu_icb_rsp_valid = 1'b1;
+    lsu_icb_rsp_rdata = `QPU_XLEN'b0;
+
+end
+///////////////////////////////////////////////////
 
 
   QPU_exu_decode test_QPU_exu_decode (
@@ -262,15 +331,92 @@ module tb_exu_disp();
     .disp_oitf_rs1idx    (disp_oitf_rs1idx),
     .disp_oitf_rs2idx    (disp_oitf_rs2idx),
     .disp_oitf_rdidx     (disp_oitf_rdidx ),
-    .disp_oitf_qubitlist (disp_oitf_qubitlist),
+    .disp_oitf_qubitlist (disp_oitf_qubitlist)
    
-    .clk                 (clk  ),
-    .rst_n               (rst_n) 
+
   );
 
 
+  QPU_exu_alu test_QPU_exu_alu(
+
+
+    .i_valid             (disp_alu_valid   ),
+    .i_ready             (disp_alu_ready   ),
+    .i_longpipe          (disp_alu_longpipe),
+
+    .i_rs1               (disp_alu_rs1     ),
+    .i_rs2               (disp_alu_rs2     ),
+    .i_imm               (disp_alu_imm     ),
+    .i_info              (disp_alu_info    ),
+
+    .i_clk               (disp_alu_clk     ),
+    .i_qmr               (disp_alu_qmr     ),
+    .i_edata             (disp_alu_edata   ),
+    .i_oprand            (disp_alu_oprand  ),
+
+    .i_ntp               (disp_alu_ntp     ),
+    .i_fmr               (disp_alu_fmr     ),
+    .i_measure           (disp_alu_measure ),
+
+    .i_pc                (i_pc    ),
+    .i_rdidx             (disp_alu_rdidx   ),
+    .i_rdwen             (disp_alu_rdwen   ),
+
+    .cmt_o_valid         (alu_cmt_valid      ),
+    .cmt_o_ready         (alu_cmt_ready      ),
+    .cmt_o_pc            (alu_cmt_pc         ),
+    .cmt_o_imm           (alu_cmt_imm        ),
+    .cmt_o_bjp           (alu_cmt_bjp        ),
+    .cmt_o_bjp_prdt      (alu_cmt_bjp_prdt   ),
+    .cmt_o_bjp_rslv      (alu_cmt_bjp_rslv   ),
+
+    .cwbck_o_valid        (alu_cwbck_o_valid ), 
+    .cwbck_o_ready        (alu_cwbck_o_ready ),
+    .cwbck_o_data         (alu_cwbck_o_data  ),
+    .cwbck_o_rdidx        (alu_cwbck_o_rdidx ),
+  
+    .twbck_o_valid        (alu_twbck_o_valid ), 
+    .twbck_o_ready        (alu_twbck_o_ready ),
+    .twbck_o_data         (alu_twbck_o_data  ),
+
+    .ewbck_o_valid        (alu_ewbck_o_valid ), 
+    .ewbck_o_ready        (alu_ewbck_o_ready ),
+    .ewbck_o_data         (alu_ewbck_o_data  ),
+    .ewbck_o_oprand       (alu_ewbck_o_oprand),
+
+    .lsu_icb_cmd_valid   (lsu_icb_cmd_valid ),
+    .lsu_icb_cmd_ready   (lsu_icb_cmd_ready ),
+    .lsu_icb_cmd_addr    (lsu_icb_cmd_addr ),
+    .lsu_icb_cmd_read    (lsu_icb_cmd_read   ),
+    .lsu_icb_cmd_wdata   (lsu_icb_cmd_wdata ),
+    .lsu_icb_cmd_wmask   (lsu_icb_cmd_wmask ),
+
+    .lsu_icb_rsp_valid   (lsu_icb_rsp_valid ),
+    .lsu_icb_rsp_ready   (lsu_icb_rsp_ready ),
+    .lsu_icb_rsp_rdata   (lsu_icb_rsp_rdata)
+
+
+  );
 
 endmodule
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

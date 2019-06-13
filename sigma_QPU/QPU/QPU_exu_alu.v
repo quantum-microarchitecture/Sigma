@@ -92,12 +92,9 @@ module QPU_exu_alu(
   //    * Bus RSP channel
   input                          lsu_icb_rsp_valid, // Response valid 
   output                         lsu_icb_rsp_ready, // Response ready
-  input  [`QPU_XLEN-1:0]         lsu_icb_rsp_rdata,
+  input  [`QPU_XLEN-1:0]         lsu_icb_rsp_rdata
 
 
-
-  input  clk,
-  input  rst_n
   );
 
 
@@ -146,7 +143,6 @@ module QPU_exu_alu(
   //
   wire bjp_o_valid; 
   wire bjp_o_ready; 
-  wire bjp_o_cmt_bjp;
   wire bjp_o_cmt_prdt;
   wire bjp_o_cmt_rslv;
 
@@ -163,7 +159,7 @@ module QPU_exu_alu(
   wire  [`QPU_XLEN-1:0]           bjp_i_rs2  = {`QPU_XLEN         {bjp_op}} & i_rs2;
   wire  [`QPU_DECINFO_WIDTH-1:0]  bjp_i_info = {`QPU_DECINFO_WIDTH{bjp_op}} & i_info;  
 
-  e203_exu_alu_bjp u_e203_exu_alu_bjp(
+  QPU_exu_alu_bjp u_QPU_exu_alu_bjp(
       .bjp_i_valid         (bjp_i_valid         ),
       .bjp_i_ready         (bjp_i_ready         ),
       .bjp_i_rs1           (bjp_i_rs1           ),
@@ -183,9 +179,8 @@ module QPU_exu_alu(
       .bjp_req_alu_cmp_lt  (bjp_req_alu_cmp_lt    ),
       .bjp_req_alu_cmp_gt  (bjp_req_alu_cmp_gt    ),
       
-      .bjp_req_alu_cmp_res (bjp_req_alu_cmp_res   ),
-      .clk                 (clk),
-      .rst_n               (rst_n)
+      .bjp_req_alu_cmp_res (bjp_req_alu_cmp_res   )
+
   );
 
 
@@ -231,10 +226,8 @@ module QPU_exu_alu(
                                                      
       .lsu_req_alu_op1     (lsu_req_alu_op1     ),
       .lsu_req_alu_op2     (lsu_req_alu_op2     ),
-      .lsu_req_alu_res     (lsu_req_alu_res     ),
+      .lsu_req_alu_res     (lsu_req_alu_res     )
      
-      .clk                 (clk),
-      .rst_n               (rst_n)
   );
 
   //////////////////////////////////////////////////////////////
@@ -275,7 +268,7 @@ module QPU_exu_alu(
 
       .alu_o_valid         (alu_o_valid         ),
       .alu_o_ready         (alu_o_ready         ),
-      .alu_o_wbck_data     (alu_o_wbck_cdata     ),
+      .alu_o_wbck_cdata     (alu_o_wbck_cdata     ),
 
       .alu_req_alu_add     (alu_req_alu_add       ),
       .alu_req_alu_xor     (alu_req_alu_xor       ),
@@ -284,10 +277,9 @@ module QPU_exu_alu(
 
       .alu_req_alu_op1     (alu_req_alu_op1       ),
       .alu_req_alu_op2     (alu_req_alu_op2       ),
-      .alu_req_alu_res     (alu_req_alu_res       ),
+      .alu_req_alu_res     (alu_req_alu_res       )
 
-      .clk                 (clk           ),
-      .rst_n               (rst_n         ) 
+
   );
 
 
@@ -297,8 +289,9 @@ module QPU_exu_alu(
   //
   wire qiu_o_valid; 
   wire qiu_o_ready; 
-  wire [`QPU_XLEN-1:0] qiu_o_wbck_tdata;
-
+  wire [`QPU_TIME_WIDTH - 1 : 0] qiu_o_wbck_tdata;
+  wire [`QPU_EVENT_WIRE_WIDTH - 1 : 0] qiu_o_wbck_edata;
+  wire [`QPU_EVENT_NUM - 1 : 0] qiu_o_wbck_oprand;
 
   wire [`QPU_XLEN-1:0] qiu_req_alu_op1;
   wire [`QPU_XLEN-1:0] qiu_req_alu_op2;
@@ -339,10 +332,8 @@ module QPU_exu_alu(
 
       .qiu_req_alu_op1     (qiu_req_alu_op1       ),
       .qiu_req_alu_op2     (qiu_req_alu_op2       ),
-      .qiu_req_alu_res     (qiu_req_alu_res       ),
+      .qiu_req_alu_res     (qiu_req_alu_res       )
 
-      .clk                 (clk           ),
-      .rst_n               (rst_n         ) 
   );
 
 
@@ -381,12 +372,8 @@ module QPU_exu_alu(
       .qiu_req_alu         (qiu_req_alu           ),
       .qiu_req_alu_op1     (qiu_req_alu_op1       ),
       .qiu_req_alu_op2     (qiu_req_alu_op2       ),
-      .qiu_req_alu_res     (qiu_req_alu_res       ),
+      .qiu_req_alu_res     (qiu_req_alu_res       )
 
-
-
-      .clk                 (clk           ),
-      .rst_n               (rst_n         ) 
     );
 
   
@@ -420,7 +407,7 @@ module QPU_exu_alu(
                       | ({`QPU_TIME_WIDTH{(o_sel_qiu & i_ntp)}} & qiu_o_wbck_tdata[`QPU_TIME_WIDTH - 1 : 0]);
                
   assign ewbck_o_data = {`QPU_EVENT_WIRE_WIDTH{(o_sel_qiu)}} & qiu_o_wbck_edata;     
-
+  assign ewbck_o_oprand = {`QPU_EVENT_NUM{(o_sel_qiu)}} & qiu_o_wbck_oprand;    
   assign cwbck_o_rdidx = i_rdidx; 
 
   wire wbck_o_rdwen = i_rdwen;

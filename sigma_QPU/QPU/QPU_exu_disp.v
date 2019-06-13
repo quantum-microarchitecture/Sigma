@@ -89,7 +89,7 @@ module QPU_exu_disp(
   output [`QPU_RFIDX_REAL_WIDTH-1:0] disp_oitf_rs2idx,
   output [`QPU_RFIDX_REAL_WIDTH-1:0] disp_oitf_rdidx ,
 
-  output [`QPU_QUBIT_NUM - 1 : 0] disp_oitf_qubitlist,//
+  output [`QPU_QUBIT_NUM - 1 : 0] disp_oitf_qubitlist//
   
 
   );

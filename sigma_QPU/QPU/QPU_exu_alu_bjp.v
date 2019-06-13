@@ -50,11 +50,10 @@ module QPU_exu_alu_bjp(
   output bjp_req_alu_cmp_gt ,
 
  
-  input  bjp_req_alu_cmp_res,
+  input bjp_req_alu_cmp_res
 
 
-  input  clk,
-  input  rst_n
+
   );
 
 
