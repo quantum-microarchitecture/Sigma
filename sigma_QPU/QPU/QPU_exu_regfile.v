@@ -19,8 +19,8 @@ module QPU_exu_regfile(
   output [`QPU_XLEN-1:0] read_src1_data,                  //对于两比特GATE，输出的是执行GATE的掩码信息，同单比特门
   output [`QPU_XLEN-1:0] read_src2_data,
   input dec_tqg,                                         //two-qubit gate
-  output [`QPU_TWO_QUBIT_GATE_LIST_WIDTH - 1 : 0] read_tqgl1_data,
-  output [`QPU_TWO_QUBIT_GATE_LIST_WIDTH - 1 : 0] read_tqgl2_data,
+  //output [`QPU_TWO_QUBIT_GATE_LIST_WIDTH - 1 : 0] read_tqgl1_data,
+  //output [`QPU_TWO_QUBIT_GATE_LIST_WIDTH - 1 : 0] read_tqgl2_data,
 
   input  cwbck_dest_wen,
   input  [`QPU_RFIDX_REAL_WIDTH-1:0] cwbck_dest_idx,
@@ -41,11 +41,11 @@ module QPU_exu_regfile(
   input ewbck_dest_wen,                      //QI or QWAIT & ~full, from wbck
   input [(`QPU_EVENT_NUM - 1) : 0] ewbck_dest_oprand,
   input [(`QPU_EVENT_WIRE_WIDTH - 1) : 0] ewbck_dest_data,
-  input [(`QPU_TWO_QUBIT_GATE_LIST_WIDTH - 1) : 0] ewbck_dest_tqgl;
+  //input [(`QPU_TWO_QUBIT_GATE_LIST_WIDTH - 1) : 0] ewbck_dest_tqgl;
 
   output [(`QPU_EVENT_NUM - 1) : 0] read_event_oprand,      // to queue and alu
   output [(`QPU_EVENT_WIRE_WIDTH - 1) : 0] read_event_data,
-  output [(`QPU_TWO_QUBIT_GATE_LIST_WIDTH - 1) : 0] read_event_tqgl;
+  //output [(`QPU_TWO_QUBIT_GATE_LIST_WIDTH - 1) : 0] read_event_tqgl;
 
 
 //measurement result reg
@@ -169,12 +169,12 @@ module QPU_exu_regfile(
   wire [`QPU_RFREG_NUM-1:0] crf_wen;
   wire [`QPU_XLEN-1:0] qcrf_r [`QPU_RFREG_NUM-1:0];
   wire [`QPU_RFREG_NUM-1:0] qcrf_wen;
-  wire 
+
 
   genvar m;
   generate //{
   
-      for (m=0; m<`QPU_RFREG_NUM; m=m+1) begin: classical regfile//{
+      for (m=0; m<`QPU_CLASSICAL_RFREG_NUM; m=m+1) begin: classical_regfile//{
         
 
         if(m==0) begin: rf0
@@ -193,7 +193,7 @@ module QPU_exu_regfile(
   genvar n;
   generate //{
   
-      for (n=0; n<`QPU_RFREG_NUM; n=n+1) begin:quantum regfile//{
+      for (n=0; n<`QPU_QUANTUM_RFREG_NUM; n=n+1) begin:quantum_regfile//{
 
         if(n < `QPU_QUBIT_NUM) begin
             assign qcrf_wen[n] = 1'b0;
@@ -222,8 +222,8 @@ module QPU_exu_regfile(
   assign read_src1_data = ({`QPU_XLEN{~read_src1_idx[`QPU_RFIDX_REAL_WIDTH - 1]}} & read_src1_cdata) | ({`QPU_XLEN{read_src1_idx[`QPU_RFIDX_REAL_WIDTH - 1]}} & read_src1_oqdata);
   assign read_src2_data = ({`QPU_XLEN{~read_src2_idx[`QPU_RFIDX_REAL_WIDTH - 1]}} & read_src2_cdata) | ({`QPU_XLEN{read_src2_idx[`QPU_RFIDX_REAL_WIDTH - 1]}} & read_src2_oqdata);    
 
-  assign read_tqgl1_data = ;
-  assign read_tqgl2_data = ;
+  //assign read_tqgl1_data = ;
+  //assign read_tqgl2_data = ;
 
 
 endmodule
