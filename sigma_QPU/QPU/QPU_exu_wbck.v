@@ -75,12 +75,9 @@ module QPU_exu_wbck(
   output [`QPU_TIME_WIDTH - 1 : 0] tiq_wbck_o_data,
 
   output evq_wbck_o_ena,
-  input  evq_wbck_o_ready,
+  input  evq_wbck_o_ready
 
 
-  
-  input  clk,
-  input  rst_n
   );
 
   //////////////////////////////////////////////////////////////
