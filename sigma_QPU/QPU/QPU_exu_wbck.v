@@ -37,6 +37,13 @@ module QPU_exu_wbck(
   input  [`QPU_XLEN-1:0] alu_cwbck_i_data,   //for time reg and classical reg
   input  [`QPU_RFIDX_REAL_WIDTH-1:0] alu_cwbck_i_rdidx,  //for time reg and classical reg
 
+  input  alu_qcwbck_i_valid,                 
+  output alu_qcwbck_i_ready, 
+  input  [`QPU_XLEN-1:0] alu_qcwbck_i_data,   
+  input  [`QPU_RFIDX_REAL_WIDTH-1:0] alu_qcwbck_i_rdidx,  
+
+
+
   //for qwait instr
   input  alu_twbck_i_valid,  //new time point, QWAIT or QI & PI>0
   output alu_twbck_i_ready,
@@ -62,6 +69,10 @@ module QPU_exu_wbck(
   output  crf_wbck_o_ena,
   output  [`QPU_XLEN-1:0] crf_wbck_o_data,
   output  [`QPU_RFIDX_REAL_WIDTH-1:0] crf_wbck_o_rdidx,
+
+  output  qcrf_wbck_o_ena,
+  output  [`QPU_XLEN-1:0] qcrf_wbck_o_data,
+  output  [`QPU_RFIDX_REAL_WIDTH-1:0] qcrf_wbck_o_rdidx,
 
   output trf_wbck_o_ena,
   output [`QPU_TIME_WIDTH - 1 : 0] trf_wbck_o_data,
@@ -110,6 +121,15 @@ module QPU_exu_wbck(
   assign crf_wbck_o_ena   = crf_wbck_o_valid & crf_wbck_o_ready;
   assign crf_wbck_o_data  = wbck_sel_alu ? alu_cwbck_i_data  : longp_wbck_i_data;
   assign crf_wbck_o_rdidx = wbck_sel_alu ? alu_cwbck_i_rdidx : longp_wbck_i_rdidx;
+
+  wire   qcrf_wbck_o_ready = 1'b1;
+  assign qcrf_wbck_o_valid = alu_qcwbck_i_valid;
+  assign alu_qcwbck_i_ready = qcrf_wbck_o_ready;
+  
+  assign qcrf_wbck_o_ena   = qcrf_wbck_o_valid & qcrf_wbck_o_ready;
+  assign qcrf_wbck_o_data  = alu_qcwbck_i_data;
+  assign qcrf_wbck_o_rdidx = alu_qcwbck_i_rdidx;
+
 
 
   //////////////////////////////////////////////////////////////
