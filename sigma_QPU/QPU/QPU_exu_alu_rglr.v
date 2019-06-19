@@ -53,10 +53,9 @@ module QPU_exu_alu_rglr(
   output [`QPU_XLEN-1:0] alu_req_alu_op2,
 
 
-  input  [`QPU_XLEN-1:0] alu_req_alu_res,
+  input  [`QPU_XLEN-1:0] alu_req_alu_res
 
-  input  clk,
-  input  rst_n
+
   );
 
 //对于QI操作，DECINFO_ALU都为0！！！，因此不能根据信息总线判断给wbck以及datapath单元发送什么样的数据！！，也不能根据信息总线决定将什么数据发送到rglr_alu中！
@@ -67,7 +66,7 @@ module QPU_exu_alu_rglr(
   wire op1qmr  = alu_i_info [`QPU_DECINFO_ALU_FMR];
   wire op1clk  = alu_i_info [`QPU_DECINFO_ALU_QWAIT];
 
-  assign alu_req_alu_op1  =   op1zero ? {`QPU_XLEN{0}} 
+  assign alu_req_alu_op1  =   op1zero ? {`QPU_XLEN{1'b0}} 
                            :  op1clk  ?  {{(`QPU_XLEN - `QPU_TIME_WIDTH){1'b0}},alu_i_clk}
                            :  op1qmr  ?  {{(`QPU_XLEN - `QPU_QUBIT_NUM){1'b0}},alu_i_qmr}  
                            :  alu_i_rs1;

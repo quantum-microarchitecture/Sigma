@@ -59,10 +59,9 @@ module QPU_exu_alu_lsu(
      // The operands and info to ALU
   output [`QPU_XLEN-1:0] lsu_req_alu_op1,
   output [`QPU_XLEN-1:0] lsu_req_alu_op2,
-  input  [`QPU_XLEN-1:0] lsu_req_alu_res,
+  input  [`QPU_XLEN-1:0] lsu_req_alu_res
 
-  input  clk,
-  input  rst_n
+
   );
 
   wire lsu_i_load    = lsu_i_info [`QPU_DECINFO_LSU_LOAD   ];

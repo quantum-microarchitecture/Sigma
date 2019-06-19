@@ -50,10 +50,9 @@ module QPU_exu_longpwbck(
   //The itag of toppest entry of OITF
   input  [`QPU_RFIDX_REAL_WIDTH-1:0] oitf_ret_rdidx,
   input  oitf_ret_rdwen,     
-  output oitf_ret_ena,
+  output oitf_ret_ena
 
-  input  clk,
-  input  rst_n
+
   );
 
 

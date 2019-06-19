@@ -53,10 +53,9 @@ module QPU_exu_alu_dpath(
   input  [`QPU_XLEN-1:0] qiu_req_alu_op1,
   input  [`QPU_XLEN-1:0] qiu_req_alu_op2,
 
-  output [`QPU_XLEN-1:0] qiu_req_alu_res, 
+  output [`QPU_XLEN-1:0] qiu_req_alu_res
 
-  input  clk,
-  input  rst_n
+
   );
 
 
@@ -69,7 +68,7 @@ module QPU_exu_alu_dpath(
 
 
   wire op_add;
-  wire op_sub;
+  wire op_sub = op_cmp_lt | op_cmp_gt;
   wire op_addsub = op_add | op_sub; 
 
   wire op_or;

@@ -71,12 +71,13 @@ module QPU_exu_oitf (
   wire qret_ptr_ena = ret_qf_ena;
 
   wire oitf_full ;
-  wire moitf_full;
+
+  wire [`QPU_ITAG_WIDTH-1:0] ret_ptr;
+  wire [`QPU_ITAG_WIDTH-1:0] dis_ptr;
   
   wire [`QPU_ITAG_WIDTH-1:0] alc_ptr_r;
   wire [`QPU_ITAG_WIDTH-1:0] ret_ptr_r;
-  wire [`QPU_QITAG_WIDTH - 1 : 0] qalc_ptr_r;
-  wire [`QPU_QITAG_WIDTH - 1 : 0] qret_ptr_r;
+
 
   generate
   if(`QPU_OITF_DEPTH > 1) begin
@@ -170,16 +171,16 @@ module QPU_exu_oitf (
   //////////////////measure list is a standard FIFO which cut ready=1 ,for the ret signal can be asserted at any time. This may cause the timing problem/////////////////
   wire fifo_i_vld;
   wire fifo_i_rdy;
-  wire [`QPU_QUBIT_NUM - 1 : 0] fifo_i_data;
+  wire [`QPU_QUBIT_NUM - 1 : 0] fifo_i_dat;
   wire fifo_o_vld;
   wire fifo_o_rdy;
-  wire [`QPU_QUBIT_NUM - 1 : 0] fifo_o_data;
+  wire [`QPU_QUBIT_NUM - 1 : 0] fifo_o_dat;
 
   assign fifo_i_vld             = dis_qf_ena;
   assign dis_mf_ready = fifo_i_rdy;
-  assign fifo_i_data            = disp_i_ql;
+  assign fifo_i_dat            = disp_i_ql;
   assign fifo_o_rdy             = ret_qf_ena;
-  assign ret_mf       = fifo_o_data;
+  assign ret_mf       = fifo_o_dat;
   assign moitf_empty = fifo_o_vld;
 
   sirv_gnrl_fifo # (

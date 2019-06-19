@@ -354,10 +354,9 @@ module QPU_exu(
     .disp_oitf_rs1idx    (disp_oitf_rs1idx),
     .disp_oitf_rs2idx    (disp_oitf_rs2idx),
     .disp_oitf_rdidx     (disp_oitf_rdidx ),
-    .disp_oitf_qubitlist (disp_oitf_qubitlist),
+    .disp_oitf_qubitlist (disp_oitf_qubitlist)
    
-    .clk                 (clk  ),
-    .rst_n               (rst_n) 
+
   );
 
   //////////////////////////////////////////////////////////////
@@ -495,10 +494,9 @@ module QPU_exu(
 
     .lsu_icb_rsp_valid   (lsu_icb_rsp_valid ),
     .lsu_icb_rsp_ready   (lsu_icb_rsp_ready ),
-    .lsu_icb_rsp_rdata   (lsu_icb_rsp_rdata),
+    .lsu_icb_rsp_rdata   (lsu_icb_rsp_rdata)
 
-    .clk                 (clk          ),
-    .rst_n               (rst_n        ) 
+
   );
 
   //////////////////////////////////////////////////////////////
@@ -508,7 +506,7 @@ module QPU_exu(
   wire [`QPU_XLEN-1:0] longp_wbck_o_data;
   wire [`QPU_RFIDX_REAL_WIDTH-1:0] longp_wbck_o_rdidx;
 
-  e203_exu_longpwbck u_e203_exu_longpwbck(
+  QPU_exu_longpwbck u_QPU_exu_longpwbck(
 
     .lsu_wbck_i_valid   (lsu_o_valid ),
     .lsu_wbck_i_ready   (lsu_o_ready ),
@@ -521,10 +519,9 @@ module QPU_exu(
 
     .oitf_ret_rdidx      (oitf_ret_rdidx),
     .oitf_ret_rdwen      (oitf_ret_rdwen),
-    .oitf_ret_ena        (oitf_ret_ena  ),
+    .oitf_ret_ena        (oitf_ret_ena  )
     
-    .clk                 (clk          ),
-    .rst_n               (rst_n        ) 
+
   );
 
 
@@ -574,17 +571,15 @@ module QPU_exu(
     .tiq_wbck_o_data     (tiq_wbck_data   ),
 
     .evq_wbck_o_ena      (evq_wbck_ena    ),
-    .evq_wbck_o_ready    (evq_wbck_ready  ),
+    .evq_wbck_o_ready    (evq_wbck_ready  )
 
-    .clk                 (clk             ),
-    .rst_n               (rst_n           ) 
   );
 
   //////////////////////////////////////////////////////////////
   // Instantiate the Commit
 
 
-  e203_exu_commit u_e203_exu_commit(
+  QPU_exu_commit u_QPU_exu_commit(
 
 
     .alu_cmt_i_valid         (alu_cmt_valid      ),
