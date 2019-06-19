@@ -68,6 +68,12 @@ module QPU_exu_alu(
   output [`QPU_XLEN-1:0] cwbck_o_data,
   output [`QPU_RFIDX_REAL_WIDTH-1:0] cwbck_o_rdidx,
 
+  output qcwbck_o_valid, // Handshake valid
+  input  qcwbck_o_ready, // Handshake ready
+  output [`QPU_XLEN-1:0] qcwbck_o_data,
+  output [`QPU_RFIDX_REAL_WIDTH-1:0] qcwbck_o_rdidx,
+
+
   output twbck_o_valid,
   input  twbck_o_ready,
   output [`QPU_TIME_WIDTH - 1 : 0] twbck_o_data,
@@ -402,14 +408,17 @@ module QPU_exu_alu(
   assign qiu_o_ready      = o_sel_qiu & o_ready;
 
 /////////////////////在这里，将alu_o_wbck_wdat根据ntp的值，分配给classical reg or time reg
-  assign cwbck_o_data = ({`QPU_XLEN{(o_sel_alu & (~i_ntp))}} & alu_o_wbck_cdata);
+  assign cwbck_o_data = ({`QPU_XLEN{(o_sel_alu & (~i_ntp) & (~i_rdidx[`QPU_RFIDX_REAL_WIDTH - 1]))}} & alu_o_wbck_cdata);
   assign twbck_o_data = ({`QPU_TIME_WIDTH{(o_sel_alu & i_ntp)}} & alu_o_wbck_cdata [`QPU_TIME_WIDTH - 1 : 0]) 
                       | ({`QPU_TIME_WIDTH{(o_sel_qiu & i_ntp)}} & qiu_o_wbck_tdata[`QPU_TIME_WIDTH - 1 : 0]);
-               
+
+  assign qcwbck_o_data = ({`QPU_XLEN{(o_sel_alu & (~i_ntp) & (i_rdidx[`QPU_RFIDX_REAL_WIDTH - 1]))}} & alu_o_wbck_cdata);
+
   assign ewbck_o_data = {`QPU_EVENT_WIRE_WIDTH{(o_sel_qiu)}} & qiu_o_wbck_edata;     
   assign ewbck_o_oprand = {`QPU_EVENT_NUM{(o_sel_qiu)}} & qiu_o_wbck_oprand;    
   assign cwbck_o_rdidx = i_rdidx; 
-
+  assign qcwbck_o_rdidx = i_rdidx; 
+  
   wire wbck_o_rdwen = i_rdwen;
                   
 
@@ -418,7 +427,8 @@ module QPU_exu_alu(
   //     the result (need to write RD), and it is not a long-pipe uop
   //     (need to be write back by its long-pipe write-back, not here)
   //   * Each instruction need to be commited 
-  wire o_need_cwbck = wbck_o_rdwen & (~i_longpipe);
+  wire o_need_cwbck  = wbck_o_rdwen & (~i_longpipe) & (~i_rdidx[`QPU_RFIDX_REAL_WIDTH - 1]);
+  wire o_need_qcwbck = wbck_o_rdwen & (i_rdidx[`QPU_RFIDX_REAL_WIDTH - 1]);
   wire o_need_twbck = i_ntp;
   wire o_need_ewbck = o_sel_qiu;
 
@@ -426,13 +436,15 @@ module QPU_exu_alu(
 
   assign o_ready = 
            (o_need_cmt  ? cmt_o_ready  : 1'b1)  
-         & (  o_need_cwbck ? cwbck_o_ready 
-            : o_need_twbck ? twbck_o_ready
-            : o_need_ewbck ? ewbck_o_ready
+         & (  o_need_cwbck  ? cwbck_o_ready 
+            : o_need_qcwbck ? qcwbck_o_ready
+            : o_need_twbck  ? twbck_o_ready
+            : o_need_ewbck  ? ewbck_o_ready
             : 1'b1
             ); 
 
   assign cwbck_o_valid = o_need_cwbck & o_valid & (o_need_cmt  ? cmt_o_ready  : 1'b1);
+  assign qcwbck_o_valid = o_need_qcwbck & o_valid & (o_need_cmt  ? cmt_o_ready  : 1'b1);
   assign twbck_o_valid = o_need_twbck & o_valid & (o_need_cmt  ? cmt_o_ready  : 1'b1);
   assign ewbck_o_valid = o_need_ewbck & o_valid & (o_need_cmt  ? cmt_o_ready  : 1'b1);
 

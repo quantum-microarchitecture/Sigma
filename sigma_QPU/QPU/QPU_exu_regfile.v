@@ -19,8 +19,8 @@ module QPU_exu_regfile(
   output [`QPU_XLEN-1:0] read_src1_data,                  //对于两比特GATE，输出的是执行GATE的掩码信息，同单比特门
   output [`QPU_XLEN-1:0] read_src2_data,
   input dec_tqg,                                         //two-qubit gate
-  output [`QPU_TWO_QUBIT_GATE_LIST_WIDTH - 1 : 0] read_tqgl1_data,
-  output [`QPU_TWO_QUBIT_GATE_LIST_WIDTH - 1 : 0] read_tqgl2_data,
+  //output [`QPU_TWO_QUBIT_GATE_LIST_WIDTH - 1 : 0] read_tqgl1_data,
+  //output [`QPU_TWO_QUBIT_GATE_LIST_WIDTH - 1 : 0] read_tqgl2_data,
 
   input  cwbck_dest_wen,
   input  [`QPU_RFIDX_REAL_WIDTH-1:0] cwbck_dest_idx,
@@ -41,11 +41,11 @@ module QPU_exu_regfile(
   input ewbck_dest_wen,                      //QI or QWAIT & ~full, from wbck
   input [(`QPU_EVENT_NUM - 1) : 0] ewbck_dest_oprand,
   input [(`QPU_EVENT_WIRE_WIDTH - 1) : 0] ewbck_dest_data,
-  input [(`QPU_TWO_QUBIT_GATE_LIST_WIDTH - 1) : 0] ewbck_dest_tqgl;
+  //input [(`QPU_TWO_QUBIT_GATE_LIST_WIDTH - 1) : 0] ewbck_dest_tqgl;
 
   output [(`QPU_EVENT_NUM - 1) : 0] read_event_oprand,      // to queue and alu
   output [(`QPU_EVENT_WIRE_WIDTH - 1) : 0] read_event_data,
-  output [(`QPU_TWO_QUBIT_GATE_LIST_WIDTH - 1) : 0] read_event_tqgl;
+  //output [(`QPU_TWO_QUBIT_GATE_LIST_WIDTH - 1) : 0] read_event_tqgl;
 
 
 //measurement result reg
