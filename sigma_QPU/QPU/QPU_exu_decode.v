@@ -77,7 +77,7 @@ module QPU_exu_decode(
   wire classical_func3_001 = (classical_func3 == 3'b001);
   wire classical_func3_010 = (classical_func3 == 3'b010);
   wire classical_func3_011 = (classical_func3 == 3'b011);
-  
+  wire classical_func3_100 = (classical_func3 == 3'b100);
 
   wire classical_rs1_x0 = (classical_rs1 == 5'b00000);
   wire classical_rs2_x0 = (classical_rs2 == 5'b00000);
@@ -130,6 +130,7 @@ module QPU_exu_decode(
   wire classical_andi     = classical_op_imm & classical_func3_011;
 
   wire classical_add      = classical_op     & classical_func3_000;
+  wire classical_sub      = classical_op     & classical_func3_100;
   wire classical_xor      = classical_op     & classical_func3_001;
   wire classical_or       = classical_op     & classical_func3_010;
   wire classical_and      = classical_op     & classical_func3_011;
@@ -146,6 +147,7 @@ module QPU_exu_decode(
   wire [`QPU_DECINFO_ALU_WIDTH-1:0] alu_info_bus;
   assign alu_info_bus[`QPU_DECINFO_GRP    ]    = `QPU_DECINFO_GRP_ALU;
   assign alu_info_bus[`QPU_DECINFO_ALU_ADD]    = classical_add  | classical_addi; 
+  assign alu_info_bus[`QPU_DECINFO_ALU_SUB]    = classical_sub;
   assign alu_info_bus[`QPU_DECINFO_ALU_XOR]    = classical_xor  | classical_xori;       
   assign alu_info_bus[`QPU_DECINFO_ALU_OR ]    = classical_or   | classical_ori;     
   assign alu_info_bus[`QPU_DECINFO_ALU_AND]    = classical_and  | classical_andi;
@@ -221,26 +223,23 @@ module QPU_exu_decode(
                              };
 
   wire [31:0]  qpu_l_imm = { 
-                               {13{qpu_instr[31]}}
+                               {15{qpu_instr[31]}}
                               , qpu_instr[31:29] 
                               , qpu_instr[28:15]
-                              ,2'b0
                              };                                
 
   wire [31:0]  qpu_s_imm = {
-                               {13{qpu_instr[31]}}
+                               {15{qpu_instr[31]}}
                               , qpu_instr[31:29] 
                               , qpu_instr[9:5] 
                               , qpu_instr[23:15]
-                              ,2'b0
                              };
 
 //the last two bits of address is is always 00，so the last two bits of the imm of branch instruction is end up with the second bit  
   wire [31:0]  qpu_b_imm = {
-                               {16{qpu_instr[9]}} 
+                               {17{qpu_instr[9]}} 
                               , qpu_instr[9:5] 
                               , qpu_instr[23:15]
-                              , 2'b0
                               };
 //QWAIT instruction
   wire [31:0]  qpu_w_imm = {

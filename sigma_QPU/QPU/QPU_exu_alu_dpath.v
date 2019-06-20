@@ -16,6 +16,7 @@ module QPU_exu_alu_dpath(
   input  alu_req_alu,
 
   input  alu_req_alu_add ,
+  input  alu_req_alu_sub ,
   input  alu_req_alu_xor ,
   input  alu_req_alu_or  ,
   input  alu_req_alu_and ,
@@ -68,7 +69,7 @@ module QPU_exu_alu_dpath(
 
 
   wire op_add;
-  wire op_sub = op_cmp_lt | op_cmp_gt;
+  wire op_sub = op_cmp_lt | op_cmp_gt | op_sub;
   wire op_addsub = op_add | op_sub; 
 
   wire op_or;
@@ -111,7 +112,7 @@ module QPU_exu_alu_dpath(
   wire adder_sub;
 
   assign adder_add =  op_add; 
-  assign adder_sub =  op_cmp_lt | op_cmp_gt;
+  assign adder_sub =  op_cmp_lt | op_cmp_gt | op_sub;
 
   wire adder_addsub = adder_add | adder_sub; 
   
@@ -183,6 +184,7 @@ module QPU_exu_alu_dpath(
      mux_op1
     ,mux_op2
     ,op_add
+    ,op_sub
     ,op_or
     ,op_xor
     ,op_and
@@ -196,6 +198,7 @@ module QPU_exu_alu_dpath(
              alu_req_alu_op1
             ,alu_req_alu_op2
             ,alu_req_alu_add
+            ,alu_req_alu_sub
             ,alu_req_alu_or
             ,alu_req_alu_xor
             ,alu_req_alu_and

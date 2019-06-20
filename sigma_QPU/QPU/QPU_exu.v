@@ -13,7 +13,7 @@
 module QPU_exu(
 
   output exu_active,
-
+  input  i_tragger,
   //////////////////////////////////////////////////////////////
   //////////////////////////////////////////////////////////////
   // The IFU IR stage to EXU interface
@@ -27,7 +27,7 @@ module QPU_exu(
   input  [`QPU_RFIDX_REAL_WIDTH-1:0] i_rs1idx,   // The RS1 index
   input  [`QPU_RFIDX_REAL_WIDTH-1:0] i_rs2idx,   // The RS2 index
 
-
+  
 
   //////////////////////////////////////////////////////////////
   // The Flush interface to IFU
@@ -175,6 +175,7 @@ module QPU_exu(
     .tiq_dest_i_ready            (tiq_wbck_ready    ),
     .tiq_dest_i_data             (tiq_wbck_data     ),
 
+    .i_tragger                   (i_tragger         ),
     .tragger_o_clk_ena           (tragger_o_clk_ena ),
     .tragger_i_clk               (tragger_o_clk     ),
 
