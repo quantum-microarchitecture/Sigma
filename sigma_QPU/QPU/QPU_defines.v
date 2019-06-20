@@ -52,9 +52,9 @@
 `define QPU_EVENT_PTR_WIDTH 5                     //太小的话，有可能出现，PTR套一圈，导致事件的ptr出错！！！！！！！
 
 `define QPU_RFREG_NUM 64 ///classical and quantum
-`define QPU_CLASSICAL_RFREG_NUM 16
-`define QPU_QUANTUM_RFREG_NUM 16
-`define QPU_QUANTUM_RFREG_REAL_NUM (`QPU_QUANTUM_RFREG_NUM + `QPU_QUBIT_NUM + 1)
+`define QPU_CLASSICAL_RFREG_NUM 32
+`define QPU_QUANTUM_RFREG_NUM 32
+
 
 
 `define QPU_QUANTUM_NO_FEEDBACK_ADDR_BEGIN 0

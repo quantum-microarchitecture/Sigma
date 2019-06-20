@@ -93,6 +93,10 @@ module QPU_exu(
   wire [`QPU_XLEN-1:0] crf_wbck_data;
   wire [`QPU_RFIDX_REAL_WIDTH-1:0] crf_wbck_rdidx;
 
+  wire qcrf_wbck_ena;
+  wire [`QPU_XLEN-1:0] qcrf_wbck_data;
+  wire [`QPU_RFIDX_REAL_WIDTH-1:0] qcrf_wbck_rdidx;
+
   wire trf_wbck_ena;
   wire [`QPU_TIME_WIDTH - 1 : 0] trf_wbck_data;
 
@@ -123,6 +127,9 @@ module QPU_exu(
     .cwbck_dest_idx         (crf_wbck_rdidx ),
     .cwbck_dest_data        (crf_wbck_data  ),
 
+    .qcwbck_dest_wen        (qcrf_wbck_ena   ),
+    .qcwbck_dest_idx        (qcrf_wbck_rdidx   ),
+    .qcwbck_dest_data       (qcrf_wbck_data   ),
 
     .twbck_dest_wen         (trf_wbck_ena   ),
     .twbck_dest_data        (trf_wbck_data  ),
@@ -354,10 +361,9 @@ module QPU_exu(
     .disp_oitf_rs1idx    (disp_oitf_rs1idx),
     .disp_oitf_rs2idx    (disp_oitf_rs2idx),
     .disp_oitf_rdidx     (disp_oitf_rdidx ),
-    .disp_oitf_qubitlist (disp_oitf_qubitlist),
+    .disp_oitf_qubitlist (disp_oitf_qubitlist)
    
-    .clk                 (clk  ),
-    .rst_n               (rst_n) 
+
   );
 
   //////////////////////////////////////////////////////////////
@@ -415,6 +421,11 @@ module QPU_exu(
   wire alu_cwbck_o_ready;
   wire [`QPU_XLEN-1:0] alu_cwbck_o_data;
   wire [`QPU_RFIDX_REAL_WIDTH-1:0] alu_cwbck_o_rdidx;
+
+  wire alu_qcwbck_o_valid;
+  wire alu_qcwbck_o_ready;
+  wire [`QPU_XLEN-1:0] alu_qcwbck_o_data;
+  wire [`QPU_RFIDX_REAL_WIDTH-1:0] alu_qcwbck_o_rdidx;
 
   wire alu_twbck_o_valid;
   wire alu_twbck_o_ready;
@@ -476,6 +487,11 @@ module QPU_exu(
     .cwbck_o_ready        (alu_cwbck_o_ready ),
     .cwbck_o_data         (alu_cwbck_o_data  ),
     .cwbck_o_rdidx        (alu_cwbck_o_rdidx ),
+
+    .qcwbck_o_valid       (alu_qcwbck_o_valid ), 
+    .qcwbck_o_ready       (alu_qcwbck_o_ready ),
+    .qcwbck_o_data        (alu_qcwbck_o_data  ),
+    .qcwbck_o_rdidx       (alu_qcwbck_o_rdidx ),
   
     .twbck_o_valid        (alu_twbck_o_valid ), 
     .twbck_o_ready        (alu_twbck_o_ready ),
@@ -495,10 +511,9 @@ module QPU_exu(
 
     .lsu_icb_rsp_valid   (lsu_icb_rsp_valid ),
     .lsu_icb_rsp_ready   (lsu_icb_rsp_ready ),
-    .lsu_icb_rsp_rdata   (lsu_icb_rsp_rdata),
+    .lsu_icb_rsp_rdata   (lsu_icb_rsp_rdata)
 
-    .clk                 (clk          ),
-    .rst_n               (rst_n        ) 
+
   );
 
   //////////////////////////////////////////////////////////////
@@ -508,7 +523,7 @@ module QPU_exu(
   wire [`QPU_XLEN-1:0] longp_wbck_o_data;
   wire [`QPU_RFIDX_REAL_WIDTH-1:0] longp_wbck_o_rdidx;
 
-  e203_exu_longpwbck u_e203_exu_longpwbck(
+  QPU_exu_longpwbck u_QPU_exu_longpwbck(
 
     .lsu_wbck_i_valid   (lsu_o_valid ),
     .lsu_wbck_i_ready   (lsu_o_ready ),
@@ -521,10 +536,9 @@ module QPU_exu(
 
     .oitf_ret_rdidx      (oitf_ret_rdidx),
     .oitf_ret_rdwen      (oitf_ret_rdwen),
-    .oitf_ret_ena        (oitf_ret_ena  ),
+    .oitf_ret_ena        (oitf_ret_ena  )
     
-    .clk                 (clk          ),
-    .rst_n               (rst_n        ) 
+
   );
 
 
@@ -541,6 +555,12 @@ module QPU_exu(
     .alu_cwbck_i_ready   (alu_cwbck_o_ready ),
     .alu_cwbck_i_data    (alu_cwbck_o_data  ),
     .alu_cwbck_i_rdidx   (alu_cwbck_o_rdidx ),
+
+    .alu_qcwbck_i_valid  (alu_qcwbck_o_valid ),              
+    .alu_qcwbck_i_ready  (alu_qcwbck_o_ready ),
+    .alu_qcwbck_i_data   (alu_qcwbck_o_data  ),
+    .alu_qcwbck_i_rdidx  (alu_qcwbck_o_rdidx ),
+
 
     .alu_twbck_i_valid   (alu_twbck_o_valid ), 
     .alu_twbck_i_ready   (alu_twbck_o_ready ),
@@ -561,6 +581,10 @@ module QPU_exu(
     .crf_wbck_o_data     (crf_wbck_data   ),
     .crf_wbck_o_rdidx    (crf_wbck_rdidx  ),
     
+    .qcrf_wbck_o_ena      (qcrf_wbck_ena    ),
+    .qcrf_wbck_o_data     (qcrf_wbck_data   ),
+    .qcrf_wbck_o_rdidx    (qcrf_wbck_rdidx  ),
+
     .trf_wbck_o_ena      (trf_wbck_ena    ),
     .trf_wbck_o_data     (trf_wbck_data   ),
     
@@ -574,17 +598,15 @@ module QPU_exu(
     .tiq_wbck_o_data     (tiq_wbck_data   ),
 
     .evq_wbck_o_ena      (evq_wbck_ena    ),
-    .evq_wbck_o_ready    (evq_wbck_ready  ),
+    .evq_wbck_o_ready    (evq_wbck_ready  )
 
-    .clk                 (clk             ),
-    .rst_n               (rst_n           ) 
   );
 
   //////////////////////////////////////////////////////////////
   // Instantiate the Commit
 
 
-  e203_exu_commit u_e203_exu_commit(
+  QPU_exu_commit u_QPU_exu_commit(
 
 
     .alu_cmt_i_valid         (alu_cmt_valid      ),

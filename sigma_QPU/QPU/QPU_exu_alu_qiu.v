@@ -52,10 +52,9 @@ module QPU_exu_alu_qiu(
   output [`QPU_XLEN-1:0] qiu_req_alu_op2,
 
 
-  input  [`QPU_XLEN-1:0] qiu_req_alu_res,
+  input  [`QPU_XLEN-1:0] qiu_req_alu_res
 
-  input  clk,
-  input  rst_n
+
   );
   
 
@@ -68,13 +67,14 @@ module QPU_exu_alu_qiu(
       ///对于非测量指令，event oprand 的对应位，表示该比特是否做操作，opcode为操作波形的地址
       if (i < `QPU_QI_EVENT_NUM) begin
         assign qiu_o_wbck_oprand[i] = (~qiu_i_measure) & (qiu_i_rs1[i] | qiu_i_rs2[i] | (qiu_i_oprand[i] & (~qiu_i_ntp)));
-        assign qiu_o_wbck_edata[((i+1)*`QPU_QI_EVENT_WIDTH) - 1,i*`QPU_QI_EVENT_WIDTH] = ({`QPU_QI_EVENT_WIDTH{~qiu_i_measure}}) & ( ({`QPU_QI_EVENT_WIDTH{qiu_i_rs1[i]}} & opcode1) | ({`QPU_QI_EVENT_WIDTH{qiu_i_rs2[i]}} & opcode2) | (qiu_i_edata[((i+1)*`QPU_QI_EVENT_WIDTH) - 1,i*`QPU_QI_EVENT_WIDTH] & {`QPU_QI_EVENT_WIDTH{~qiu_i_ntp}}) );
+        assign qiu_o_wbck_edata[((i+1)*`QPU_QI_EVENT_WIDTH) - 1 : i*`QPU_QI_EVENT_WIDTH] = 
+        ({`QPU_QI_EVENT_WIDTH{~qiu_i_measure}}) & ( ({`QPU_QI_EVENT_WIDTH{qiu_i_rs1[i]}} & opcode1) | ({`QPU_QI_EVENT_WIDTH{qiu_i_rs2[i]}} & opcode2) | (qiu_i_edata[((i+1)*`QPU_QI_EVENT_WIDTH) - 1 : i*`QPU_QI_EVENT_WIDTH] & {`QPU_QI_EVENT_WIDTH{~qiu_i_ntp}}) );
       end
 
       ///对于测量指令，event oprand 的对应位，表示该该操作为测量操作，opcode为执行测量操作的比特掩码
       else begin
         assign qiu_o_wbck_oprand[i] = qiu_i_measure;
-        assign qiu_o_wbck_edata[(`QPU_QI_EVENT_NUM * `QPU_QI_EVENT_WIDTH + (i-`QPU_QI_EVENT_NUM + 1) * `QPU_MEASURE_EVENT_WIDTH - 1 , `QPU_QI_EVENT_NUM * `QPU_QI_EVENT_WIDTH + (i-`QPU_QI_EVENT_NUM) * `QPU_MEASURE_EVENT_WIDTH] = ({`QPU_MEASURE_EVENT_WIDTH{qiu_i_measure}}) & qiu_i_rs1;
+        assign qiu_o_wbck_edata[`QPU_QI_EVENT_NUM * `QPU_QI_EVENT_WIDTH + (i-`QPU_QI_EVENT_NUM + 1) * `QPU_MEASURE_EVENT_WIDTH - 1 : `QPU_QI_EVENT_NUM * `QPU_QI_EVENT_WIDTH + (i-`QPU_QI_EVENT_NUM) * `QPU_MEASURE_EVENT_WIDTH] = ({`QPU_MEASURE_EVENT_WIDTH{qiu_i_measure}}) & qiu_i_rs1;
 
       end
 
@@ -88,7 +88,7 @@ module QPU_exu_alu_qiu(
 
   assign qiu_req_alu_op1 = {{`QPU_XLEN - `QPU_TIME_WIDTH{1'b0}},qiu_i_clk};
   assign qiu_req_alu_op2 = qiu_i_imm;
-  assign qiu_o_wbck_tdata = qiu_req_alu_res;
+  assign qiu_o_wbck_tdata = qiu_req_alu_res[`QPU_TIME_WIDTH - 1 : 0];
 
 
 
