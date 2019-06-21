@@ -19,6 +19,7 @@ module QPU_exu_queue(
   input  [`QPU_TIME_WIDTH - 1 : 0] tiq_dest_i_data,   ///from wbck module
 
 //tragger clk
+  input i_tragger,
   output tragger_o_clk_ena,
   input [`QPU_TIME_WIDTH - 1 : 0] tragger_o_clk,
 
@@ -63,11 +64,11 @@ module QPU_exu_queue(
 
     // read/write enable
     wire tiq_wen = tiq_dest_wen;
-    wire tiq_o_valid = (tragger_i_clk == time_fifo_o_data) ;          ///有用信号！
+    wire tiq_o_valid = (tragger_i_clk == time_fifo_o_data) & i_tragger ;          ///当触发时才可以读，否则不可读
     wire tiq_o_ready = ((time_queue_one_left & tiq_dest_wen) | (~time_queue_one_left));
     wire tiq_ren =  tiq_o_valid &  tiq_o_ready;
 
-    assign tragger_o_clk_ena =  tiq_o_valid ? ((time_queue_one_left & tiq_wen) | (~time_queue_one_left))  :  1'b1;
+    assign tragger_o_clk_ena =  tiq_o_valid ? ((time_queue_one_left & tiq_wen) | (~time_queue_one_left))  :  i_tragger;         //只有触发时才可以控制外部时钟
     
     ///////// Read-Pointer and Write-Pointer
     wire [`QPU_TIME_QUEUE_DEPTH - 1 : 0] time_rptr_vec_nxt; 
@@ -207,7 +208,7 @@ module QPU_exu_queue(
     assign evq_fifo_i_valid[l]   = (~event_queue_full) & (~time_queue_full) & (evq_dest_wen) & evq_dest_oprand[l] & (~event_queue_byp[l])
     assign evq_fifo_o_ready[l]   = (evq_dis_ptr_qi_o_r[l] == evq_ret_ptr_r) & tiq_o_valid;
 
-    assign event_queue_byp[l]    = tiq_o_valid & (~event_queue_empty) & evq_dest_wen & (evq_dis_ptr_r == evq_ret_ptr_r);
+    assign event_queue_byp[l]    = tiq_o_valid & (~event_queue_empty) & evq_dest_wen & (evq_dis_ptr_r == evq_ret_ptr_r) & i_tragger;
     assign evq_dest_o_valid[l]   = evq_fifo_o_condi[l] & ((event_queue_byp[l] & evq_dest_oprand[l]) | (~event_queue_byp[l] & evq_fifo_o_ready[l] & evq_fifo_o_valid[l])); //////队列输出有效
 
     

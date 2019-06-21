@@ -45,6 +45,7 @@ module QPU_exu_alu_rglr(
   // 
   // The operands and info to ALU
   output alu_req_alu_add ,
+  output alu_req_alu_sub ,
   output alu_req_alu_xor ,
   output alu_req_alu_or  ,
   output alu_req_alu_and ,
@@ -80,6 +81,7 @@ module QPU_exu_alu_rglr(
 
      // The NOP is encoded as ADDI, so need to uncheck it
   assign alu_req_alu_add  = alu_i_info [`QPU_DECINFO_ALU_ADD ] | qwait | smis | fmr;
+  assign alu_req_alu_sub  = alu_i_info [`QPU_DECINFO_ALU_SUB ]; 
   assign alu_req_alu_xor  = alu_i_info [`QPU_DECINFO_ALU_XOR ];
   assign alu_req_alu_or   = alu_i_info [`QPU_DECINFO_ALU_OR  ];
   assign alu_req_alu_and  = alu_i_info [`QPU_DECINFO_ALU_AND ];

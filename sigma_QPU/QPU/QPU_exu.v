@@ -13,7 +13,7 @@
 module QPU_exu(
 
   output exu_active,
-
+  input  i_trigger,
   //////////////////////////////////////////////////////////////
   //////////////////////////////////////////////////////////////
   // The IFU IR stage to EXU interface
@@ -27,7 +27,7 @@ module QPU_exu(
   input  [`QPU_RFIDX_REAL_WIDTH-1:0] i_rs1idx,   // The RS1 index
   input  [`QPU_RFIDX_REAL_WIDTH-1:0] i_rs2idx,   // The RS2 index
 
-
+  
 
   //////////////////////////////////////////////////////////////
   // The Flush interface to IFU
@@ -73,11 +73,11 @@ module QPU_exu(
   input mcu_i_wen,
   ///////////////////////////////////////////////////////////////
   /////////////////////////////////////////////////////////////////
-  ///data to tragger
-  output tragger_o_clk_ena,
-  input  [`QPU_TIME_WIDTH - 1 : 0] tragger_o_clk,
-  output [`QPU_EVENT_WIRE_WIDTH - 1 : 0] tragger_o_data,
-  output [`QPU_EVENT_NUM - 1: 0] tragger_o_valid,
+  ///data to trigger
+  output trigger_o_clk_ena,
+  input  [`QPU_TIME_WIDTH - 1 : 0] trigger_o_clk,
+  output [`QPU_EVENT_WIRE_WIDTH - 1 : 0] trigger_o_data,
+  output [`QPU_EVENT_NUM - 1: 0] trigger_o_valid,
 
   input  clk,
   input  rst_n
@@ -175,16 +175,17 @@ module QPU_exu(
     .tiq_dest_i_ready            (tiq_wbck_ready    ),
     .tiq_dest_i_data             (tiq_wbck_data     ),
 
-    .tragger_o_clk_ena           (tragger_o_clk_ena ),
-    .tragger_i_clk               (tragger_o_clk     ),
+    .i_trigger                   (i_trigger         ),
+    .trigger_o_clk_ena           (trigger_o_clk_ena ),
+    .trigger_i_clk               (trigger_o_clk     ),
 
     .evq_dest_wen                (evq_wbck_ena      ),
     .evq_dest_i_ready            (evq_wbck_ready    ),
     .evq_dest_oprand             (erf_oprand        ),      
     .evq_dest_data               (erf_data          ),
 
-    .evq_dest_o_valid            (tragger_o_valid   ),
-    .evq_dest_o_data             (tragger_o_data    ),
+    .evq_dest_o_valid            (trigger_o_valid   ),
+    .evq_dest_o_data             (trigger_o_data    ),
 
     .qubit_measure_zero          (qubit_measure_zero),
     .qubit_measure_one           (qubit_measure_one ),

@@ -244,6 +244,7 @@ module QPU_exu_alu(
   wire [`QPU_XLEN-1:0] alu_o_wbck_cdata;
 
   wire alu_req_alu_add ;
+  wire alu_req_alu_sub ;
   wire alu_req_alu_xor ;
   wire alu_req_alu_or  ;
   wire alu_req_alu_and ;
@@ -277,6 +278,7 @@ module QPU_exu_alu(
       .alu_o_wbck_cdata     (alu_o_wbck_cdata     ),
 
       .alu_req_alu_add     (alu_req_alu_add       ),
+      .alu_req_alu_sub     (alu_req_alu_sub       ),
       .alu_req_alu_xor     (alu_req_alu_xor       ),
       .alu_req_alu_or      (alu_req_alu_or        ),
       .alu_req_alu_and     (alu_req_alu_and       ),
@@ -354,6 +356,7 @@ module QPU_exu_alu(
   QPU_exu_alu_dpath u_QPU_exu_alu_dpath(
       .alu_req_alu         (alu_req_alu           ),    
       .alu_req_alu_add     (alu_req_alu_add       ),
+      .alu_req_alu_sub     (alu_req_alu_sub       ),
       .alu_req_alu_xor     (alu_req_alu_xor       ),
       .alu_req_alu_or      (alu_req_alu_or        ),
       .alu_req_alu_and     (alu_req_alu_and       ),
@@ -427,10 +430,10 @@ module QPU_exu_alu(
   //     the result (need to write RD), and it is not a long-pipe uop
   //     (need to be write back by its long-pipe write-back, not here)
   //   * Each instruction need to be commited 
-  wire o_need_cwbck  = wbck_o_rdwen & (~i_longpipe) & (~i_rdidx[`QPU_RFIDX_REAL_WIDTH - 1]);
+  wire o_need_cwbck  = wbck_o_rdwen & (~i_longpipe) & (~i_rdidx[`QPU_RFIDX_REAL_WIDTH - 1]);      //QWAIT 指令不需要写回wbck_o_rdwen=0;但是需要通过alu_o_wbck_cdata传输写回数据！
   wire o_need_qcwbck = wbck_o_rdwen & (i_rdidx[`QPU_RFIDX_REAL_WIDTH - 1]);
   wire o_need_twbck = i_ntp;
-  wire o_need_ewbck = o_sel_qiu;
+  wire o_need_ewbck = o_sel_qiu | i_ntp;                                    //QI or QWAIT
 
   wire o_need_cmt  = 1'b1;
 
