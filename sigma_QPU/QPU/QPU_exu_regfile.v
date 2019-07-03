@@ -18,6 +18,7 @@ module QPU_exu_regfile(
   input  [`QPU_RFIDX_REAL_WIDTH-1:0] read_src2_idx,
   output [`QPU_XLEN-1:0] read_src1_data,                  //对于两比特GATE，输出的是执行GATE的掩码信息，同单比特门
   output [`QPU_XLEN-1:0] read_src2_data,
+  output [`QPU_TWO_QUBIT_GATE_LIST_WIDTH - 1 : 0] read_tqg_pair_idx,            //对于两比特GATE，输出的是两比特门的第二个参数，0表示非两比特门，或者该比特不执行两比特门！
   input dec_tqg,                                         //two-qubit gate
   //output [`QPU_TWO_QUBIT_GATE_LIST_WIDTH - 1 : 0] read_tqgl1_data,
   //output [`QPU_TWO_QUBIT_GATE_LIST_WIDTH - 1 : 0] read_tqgl2_data,
@@ -41,11 +42,11 @@ module QPU_exu_regfile(
   input ewbck_dest_wen,                      //QI or QWAIT & ~full, from wbck
   input [(`QPU_EVENT_NUM - 1) : 0] ewbck_dest_oprand,
   input [(`QPU_EVENT_WIRE_WIDTH - 1) : 0] ewbck_dest_data,
-  //input [(`QPU_TWO_QUBIT_GATE_LIST_WIDTH - 1) : 0] ewbck_dest_tqgl;
+  input [(`QPU_TWO_QUBIT_GATE_LIST_WIDTH - 1) : 0] ewbck_dest_tqgl;                 ///对于两比特GATE，输出的是两比特门的第二个参数，0表示非两比特门，或者该比特不执行两比特门！
 
   output [(`QPU_EVENT_NUM - 1) : 0] read_event_oprand,      // to queue and alu
   output [(`QPU_EVENT_WIRE_WIDTH - 1) : 0] read_event_data,
-  //output [(`QPU_TWO_QUBIT_GATE_LIST_WIDTH - 1) : 0] read_event_tqgl;
+  output [(`QPU_TWO_QUBIT_GATE_LIST_WIDTH - 1) : 0] read_event_tqgl;               ///对于两比特GATE，输出的是两比特门的第二个参数，0表示非两比特门，或者该比特不执行两比特门！
 
 
 //measurement result reg
@@ -93,16 +94,21 @@ module QPU_exu_regfile(
   wire [(`QPU_EVENT_WIRE_WIDTH - 1) : 0] ewbck_event_r;
   wire [(`QPU_EVENT_WIRE_WIDTH - 1) : 0] ewbck_event_nxt;
 
+  wire [(`QPU_TWO_QUBIT_GATE_LIST_WIDTH - 1) : 0] ewbck_tqgl_r;
+  wire [(`QPU_TWO_QUBIT_GATE_LIST_WIDTH - 1) : 0] ewbck_tqgl_nxt;
+
+
   assign read_event_oprand = ewbck_oprand_r;
-  assign read_event_data = ewbck_event_r;
+  assign read_event_data   = ewbck_event_r;
+  assign read_event_tqgl   = ewbck_tqgl_r;
 
   assign ewbck_oprand_nxt = ewbck_dest_oprand;
   assign ewbck_event_nxt  = ewbck_dest_data;
+  assign ewbck_tqgl_nxt   = ewbck_dest_tqgl; 
 
-  sirv_gnrl_dffl    #(`QPU_EVENT_WIRE_WIDTH) q_event_dffl         (ewbck_dest_wen, ewbck_event_nxt,  ewbck_event_r,      clk);
-  sirv_gnrl_dfflr   #(`QPU_EVENT_NUM)        q_oprand_dfflr       (ewbck_dest_wen, ewbck_oprand_nxt, ewbck_oprand_r,     clk, rst_n);
-
-
+  sirv_gnrl_dffl    #(`QPU_EVENT_WIRE_WIDTH)                q_event_dffl        (ewbck_dest_wen, ewbck_event_nxt , ewbck_event_r ,     clk); 
+  sirv_gnrl_dffl    #(`QPU_TWO_QUBIT_GATE_LIST_WIDTH)       q_tqgl_dffl         (ewbck_dest_wen, ewbck_tqgl_nxt  , ewbck_tqgl_r  ,     clk);
+  sirv_gnrl_dfflr   #(`QPU_EVENT_NUM)                       q_oprand_dfflr      (ewbck_dest_wen, ewbck_oprand_nxt, ewbck_oprand_r,     clk, rst_n);
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //qubit measure result
   wire [`QPU_QUBIT_NUM - 1 : 0] qubit_measure_wen;
@@ -199,7 +205,10 @@ module QPU_exu_regfile(
             assign qcrf_wen[n] = 1'b0;
             assign qcrf_r[n] = ((`QPU_XLEN'b1) << n);
         end
-
+        else if(n==(`QPU_RFREG_NUM-1)) begin
+            assign qcrf_wen[n] = 1'b0;
+            assign qcrf_r[n] = {`QPU_XLEN{1}};
+        end
         else begin
             assign qcrf_wen[n] = qcwbck_dest_wen & (qcwbck_dest_idx[`QPU_RFIDX_WIDTH-1:0] == n);       //不需要首位标记位
             sirv_gnrl_dffl #(`QPU_XLEN) qcrf_dffl (qcrf_wen[n], qcwbck_dest_data, qcrf_r[n], clk);
@@ -219,11 +228,97 @@ module QPU_exu_regfile(
   assign read_src1_oqdata = qcrf_r[read_src1_idx[`QPU_RFIDX_WIDTH-1:0]];
   assign read_src2_oqdata = qcrf_r[read_src2_idx[`QPU_RFIDX_WIDTH-1:0]];
 
-  assign read_src1_data = ({`QPU_XLEN{~read_src1_idx[`QPU_RFIDX_REAL_WIDTH - 1]}} & read_src1_cdata) | ({`QPU_XLEN{read_src1_idx[`QPU_RFIDX_REAL_WIDTH - 1]}} & read_src1_oqdata);
-  assign read_src2_data = ({`QPU_XLEN{~read_src2_idx[`QPU_RFIDX_REAL_WIDTH - 1]}} & read_src2_cdata) | ({`QPU_XLEN{read_src2_idx[`QPU_RFIDX_REAL_WIDTH - 1]}} & read_src2_oqdata);    
+  wire [`QPU_QUBIT_NUM - 1:0] tqg_qubitlist = read_src1_oqdata[`QPU_QUBIT_NUM - 1:0];   //输入的第一个操作数
+  wire [`QPU_QUBIT_NUM - 1:0] tqg_derection = read_src2_oqdata[`QPU_QUBIT_NUM - 1:0];   //输入的第二个操作数
+ 
 
-  //assign read_tqgl1_data = ;
-  //assign read_tqgl2_data = ;
+  
+  wire [`QPU_XLEN - 1 : 0] read_tqgl1_data;                                        //第一个量子操作的掩码
+  wire [`QPU_XLEN - 1 : 0] read_tqgl2_data;                                        //第二个量子操作的掩码
+
+  wire [`QPU_TWO_QUBIT_GATE_LIST_WIDTH - 1 : 0] tqg_pair_idx;                          //另一个比特对的编号
+  wire [`QPU_TWO_QUBIT_GATE_LIST_WIDTH - 1 : 0] tqg_target_idx;                        //source的target的编号
+  wire [`QPU_TWO_QUBIT_GATE_LIST_WIDTH - 1 : 0] tqg_source_idx;                        //target的source的编号 
+    
+  reg [`QPU_QUBIT_NUM_LENGTH - 1:0] tqg_source[`QPU_QUBIT_NUM - 1 : 0];                //target的source编号
+  reg [`QPU_QUBIT_NUM_LENGTH - 1:0] tqg_target[`QPU_QUBIT_NUM - 1 : 0];                //source的target编号
+
+
+    reg [`QPU_TWO_QUBIT_GATE_NUM_WIDTH - 1 : 0] tqg_pre_source_num [`QPU_QUBIT_NUM - 1 : 0];
+    reg [`QPU_QUBIT_NUM - 1 : 0] tqg_target_qubitlist;
+
+    
+
+  genvar i;
+  generate
+      
+    for (i = 0; i < `QPU_QUBIT_NUM; i = i + 1)
+    begin  
+        reg [`QPU_QUBIT_NUM_LENGTH - 1 : 0] tqg_current_source_num;
+        always @(tqg_qubitlist,tqg_derection)
+        begin
+            if(i == 0)
+            begin    
+             tqg_pre_source_num[i]=`QPU_QUBIT_NUM_LENGTH'b0;
+            end
+            else
+            begin
+              tqg_pre_source_num[i]=0;
+              for(tqg_current_source_num = `QPU_QUBIT_NUM_LENGTH'b0; tqg_current_source_num < i; tqg_current_source_num = tqg_current_source_num + 1)
+              begin
+                  tqg_pre_source_num[i]=tqg_pre_source_num[i]+tqg_qubitlist[tqg_current_source_num];        //每个比特前有多少个1
+              end
+            end
+            
+            case(tqg_pre_source_num[i])                                                              //只针对12个比特的情况，且4*3的线路！！！
+            `QPU_TWO_QUBIT_GATE_NUM_WIDTH'b000  : tqg_target[i] = {`QPU_QUBIT_NUM_LENGTH{tqg_qubitlist[i]}} & ( (tqg_derection[1:0]==2'b00) ?  i-4+1    : (tqg_derection[1:0]==2'b01) ? i+1+1 :  (tqg_derection[1:0]==2'b10) ? i+4+1 : i-1+1);
+            `QPU_TWO_QUBIT_GATE_NUM_WIDTH'b001  : tqg_target[i] = {`QPU_QUBIT_NUM_LENGTH{tqg_qubitlist[i]}} & ( (tqg_derection[3:2]==2'b00) ?  i-4+1    : (tqg_derection[3:2]==2'b01) ? i+1+1 :  (tqg_derection[3:2]==2'b10) ? i+4+1 : i-1+1);
+            `QPU_TWO_QUBIT_GATE_NUM_WIDTH'b010  : tqg_target[i] = {`QPU_QUBIT_NUM_LENGTH{tqg_qubitlist[i]}} & ( (tqg_derection[5:4]==2'b00) ?  i-4+1    : (tqg_derection[5:4]==2'b01) ? i+1+1 :  (tqg_derection[5:4]==2'b10) ? i+4+1 : i-1+1);            
+            `QPU_TWO_QUBIT_GATE_NUM_WIDTH'b011  : tqg_target[i] = {`QPU_QUBIT_NUM_LENGTH{tqg_qubitlist[i]}} & ( (tqg_derection[7:6]==2'b00) ?  i-4+1    : (tqg_derection[7:6]==2'b01) ? i+1+1 :  (tqg_derection[7:6]==2'b10) ? i+4+1 : i-1+1);            
+            `QPU_TWO_QUBIT_GATE_NUM_WIDTH'b100  : tqg_target[i] = {`QPU_QUBIT_NUM_LENGTH{tqg_qubitlist[i]}} & ( (tqg_derection[9:8]==2'b00) ?  i-4+1    : (tqg_derection[9:8]==2'b01) ? i+1+1 :  (tqg_derection[9:8]==2'b10) ? i+4+1 : i-1+1);            
+            default                             : tqg_target[i] = {`QPU_QUBIT_NUM_LENGTH{tqg_qubitlist[i]}} & ( (tqg_derection[11:10]==2'b00) ?  i-4+1    : (tqg_derection[11:10]==2'b01) ? i+1+1 :  (tqg_derection[11:10]==2'b10) ? i+4+1 : i-1+1);  
+            endcase          
+                     
+        end
+              
+        assign tqg_target_idx[`QPU_QUBIT_NUM_LENGTH*(i+1)-1 : `QPU_QUBIT_NUM_LENGTH*i] = tqg_target[i];
+        assign read_tqgl1_data[i] = {{(`QPU_XLEN - `QPU_QUBIT_NUM){0}},tqg_qubitlist[i]};
+                
+    end
+ 
+    endgenerate
+
+
+    genvar j;
+    generate
+    for (j=0;j<`QPU_QUBIT_NUM;j=j+1)
+    begin
+        reg [`QPU_QUBIT_NUM_LENGTH - 1 : 0] tqg_current_target_num;
+        always@(tqg_target_idx)
+        begin
+            
+            tqg_target_qubitlist[j]=1'b0;
+            tqg_source[j]=4'b0;
+        
+        for(tqg_current_target_num = 0; tqg_current_target_num < `QPU_QUBIT_NUM; tqg_current_target_num = tqg_current_target_num + 1)
+        begin
+            tqg_target_qubitlist[j] = tqg_target_qubitlist[j] | ((j+1) == tqg_target[tqg_current_target_num]);
+            tqg_source[j]           = tqg_source[j]           | ({`QPU_QUBIT_NUM_LENGTH{tqg_target[tqg_current_target_num]==(j+1)}} & (tqg_current_target_num+1));
+        
+        end        
+     
+        end
+        assign tqg_source_idx[`QPU_QUBIT_NUM_LENGTH*(j+1) - 1 : `QPU_QUBIT_NUM_LENGTH*j] = tqg_source[j];
+       
+    end
+    endgenerate
+  assign read_tqgl2_data = {{(`QPU_XLEN - `QPU_QUBIT_NUM){0}},tqg_target_qubitlist};  
+  assign tqg_pair_idx = tqg_target_idx | tqg_source_idx;
+  assign read_tqg_pair_idx = {`QPU_TWO_QUBIT_GATE_LIST_WIDTH{dec_tqg}} & tqg_pair_idx; 
+  
+  assign read_src1_data = ({`QPU_XLEN{~read_src1_idx[`QPU_RFIDX_REAL_WIDTH - 1]}} & read_src1_cdata) | ({`QPU_XLEN{read_src1_idx[`QPU_RFIDX_REAL_WIDTH - 1] & (~dec_tqg)}} & read_src1_oqdata) | ({`QPU_XLEN{read_src1_idx[`QPU_RFIDX_REAL_WIDTH - 1] & (dec_tqg)}} & read_tqgl1_data);
+  assign read_src2_data = ({`QPU_XLEN{~read_src2_idx[`QPU_RFIDX_REAL_WIDTH - 1]}} & read_src2_cdata) | ({`QPU_XLEN{read_src2_idx[`QPU_RFIDX_REAL_WIDTH - 1] & (~dec_tqg)}} & read_src2_oqdata) | ({`QPU_XLEN{read_src2_idx[`QPU_RFIDX_REAL_WIDTH - 1] & (dec_tqg)}} & read_tqgl2_data);
+  
 
 
 endmodule

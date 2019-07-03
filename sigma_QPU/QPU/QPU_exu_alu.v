@@ -33,6 +33,8 @@ module QPU_exu_alu(
   input [`QPU_QUBIT_NUM - 1 : 0] i_qmr,
   input [`QPU_EVENT_WIRE_WIDTH - 1 : 0] i_edata,               ///reg->disp->qiu
   input [`QPU_EVENT_NUM - 1 : 0] i_oprand,                     ///reg->disp->qiu
+  input [(`QPU_TWO_QUBIT_GATE_LIST_WIDTH - 1) : 0] i_tqgl_pre,
+  input [(`QPU_TWO_QUBIT_GATE_LIST_WIDTH - 1) : 0] i_tqgl_cur,
 
   input i_ntp,
   input i_fmr,
@@ -82,6 +84,7 @@ module QPU_exu_alu(
   input  ewbck_o_ready,
   output [(`QPU_EVENT_WIRE_WIDTH - 1) : 0]  ewbck_o_data,
   output [(`QPU_EVENT_NUM - 1) : 0]        ewbck_o_oprand,
+  output [(`QPU_TWO_QUBIT_GATE_LIST_WIDTH - 1) : 0] ewbck_o_tqgl, 
 
 
   //////////////////////////////////////////////////////////////
@@ -300,6 +303,7 @@ module QPU_exu_alu(
   wire [`QPU_TIME_WIDTH - 1 : 0] qiu_o_wbck_tdata;
   wire [`QPU_EVENT_WIRE_WIDTH - 1 : 0] qiu_o_wbck_edata;
   wire [`QPU_EVENT_NUM - 1 : 0] qiu_o_wbck_oprand;
+  wire [(`QPU_TWO_QUBIT_GATE_LIST_WIDTH - 1) : 0] qiu_o_wbck_tqgl;
 
   wire [`QPU_XLEN-1:0] qiu_req_alu_op1;
   wire [`QPU_XLEN-1:0] qiu_req_alu_op2;
@@ -313,6 +317,8 @@ module QPU_exu_alu(
   wire  [`QPU_TIME_WIDTH - 1 : 0] qiu_i_clk  =         {`QPU_TIME_WIDTH   {(i_ntp & qiu_op)}}  & i_clk;
   wire  [`QPU_EVENT_WIRE_WIDTH - 1 : 0] qiu_i_edata  = {`QPU_EVENT_WIRE_WIDTH    {qiu_op}}     & i_edata;
   wire  [`QPU_EVENT_NUM - 1 : 0]  qiu_i_oprand =       {`QPU_EVENT_NUM    {qiu_op}}            & i_oprand;
+  wire  [(`QPU_TWO_QUBIT_GATE_LIST_WIDTH - 1) : 0] qiu_i_tqgl_pre = {`QPU_TWO_QUBIT_GATE_LIST_WIDTH    {qiu_op}}            & i_tqgl_pre;
+  wire  [(`QPU_TWO_QUBIT_GATE_LIST_WIDTH - 1) : 0] qiu_i_tqgl_cur = {`QPU_TWO_QUBIT_GATE_LIST_WIDTH    {qiu_op}}            & i_tqgl_cur;
 
   QPU_exu_alu_qiu u_QPU_exu_alu_qiu(
 
@@ -328,6 +334,9 @@ module QPU_exu_alu(
       .qiu_i_ntp           (i_ntp               ),
       .qiu_i_edata         (qiu_i_edata         ),
       .qiu_i_oprand        (qiu_i_oprand        ),
+      .qiu_i_tqgl_pre      (qiu_i_tqgl_pre      ),
+      .qiu_i_tqgl_cur      (qiu_i_tqgl_cur      ),
+
       .qiu_i_clk           (qiu_i_clk           ),
 
 
@@ -336,6 +345,7 @@ module QPU_exu_alu(
 
       .qiu_o_wbck_edata    (qiu_o_wbck_edata     ),
       .qiu_o_wbck_oprand   (qiu_o_wbck_oprand    ),
+      .qiu_o_wbck_tqgl     (qiu_o_wbck_tqgl      ),
       .qiu_o_wbck_tdata    (qiu_o_wbck_tdata     ),
 
       .qiu_req_alu_op1     (qiu_req_alu_op1       ),
@@ -417,8 +427,10 @@ module QPU_exu_alu(
 
   assign qcwbck_o_data = ({`QPU_XLEN{(o_sel_alu & (~i_ntp) & (i_rdidx[`QPU_RFIDX_REAL_WIDTH - 1]))}} & alu_o_wbck_cdata);
 
-  assign ewbck_o_data = {`QPU_EVENT_WIRE_WIDTH{(o_sel_qiu)}} & qiu_o_wbck_edata;     
-  assign ewbck_o_oprand = {`QPU_EVENT_NUM{(o_sel_qiu)}} & qiu_o_wbck_oprand;    
+  assign ewbck_o_data   = {`QPU_EVENT_WIRE_WIDTH{(o_sel_qiu)}} & qiu_o_wbck_edata;     
+  assign ewbck_o_oprand = {`QPU_EVENT_NUM{(o_sel_qiu)}} & qiu_o_wbck_oprand;
+  assign ewbck_o_tqgl   = {`QPU_TWO_QUBIT_GATE_LIST_WIDTH{o_sel_qiu}} & qiu_o_wbck_tqgl;
+
   assign cwbck_o_rdidx = i_rdidx; 
   assign qcwbck_o_rdidx = i_rdidx; 
   

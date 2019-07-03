@@ -39,6 +39,8 @@ module QPU_exu_disp(
   input [`QPU_QUBIT_NUM - 1 : 0] disp_i_qmr,
   input [`QPU_EVENT_WIRE_WIDTH - 1 : 0] disp_i_edata,
   input [`QPU_EVENT_NUM - 1 : 0] disp_i_oprand,
+  input [(`QPU_TWO_QUBIT_GATE_LIST_WIDTH - 1) : 0] disp_i_tqgl_pre,
+  input [(`QPU_TWO_QUBIT_GATE_LIST_WIDTH - 1) : 0] disp_i_tqgl_cur,
   //////////////////////////////////////////////////////////////
   // Dispatch to ALU
 
@@ -59,6 +61,8 @@ module QPU_exu_disp(
   output [`QPU_QUBIT_NUM - 1 : 0] disp_o_alu_qmr,
   output [`QPU_EVENT_WIRE_WIDTH - 1 : 0] disp_o_alu_edata,
   output [`QPU_EVENT_NUM - 1 : 0] disp_o_alu_oprand,
+  output [(`QPU_TWO_QUBIT_GATE_LIST_WIDTH - 1) : 0] disp_o_alu_tqgl_pre,
+  output [(`QPU_TWO_QUBIT_GATE_LIST_WIDTH - 1) : 0] disp_o_alu_tqgl_cur,
         //Quantum instruction
   output disp_o_alu_ntp,//
   output disp_o_alu_fmr,
@@ -155,6 +159,9 @@ module QPU_exu_disp(
   assign disp_o_alu_clk  = disp_i_clk & {`QPU_TIME_WIDTH{disp_i_ntp}};
   assign disp_o_alu_edata = disp_i_edata;
   assign disp_o_alu_oprand = disp_i_oprand;
+  assign disp_o_alu_tqgl_pre = disp_i_tqgl_pre;
+  assign disp_o_alu_tqgl_cur = disp_i_tqgl_cur;
+  
   assign disp_o_alu_fmr  = disp_i_fmr;
   assign disp_o_alu_measure = disp_i_measure;
 endmodule                                      
