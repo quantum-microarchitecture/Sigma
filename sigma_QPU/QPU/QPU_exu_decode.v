@@ -37,6 +37,7 @@ module QPU_exu_decode(
   output dec_need_qubitflag,
   output dec_measure,
   output dec_fmr,
+  output dec_tqg,                 //two_qubit_gate
   //Branch instruction decode
   output dec_bxx,
   output [`QPU_XLEN-1:0] dec_bjp_imm
@@ -354,6 +355,7 @@ assign dec_rdidx = {{classical_smis}, classical_rd [`QPU_RFIDX_WIDTH-1:0]};
   assign dec_need_qubitflag = quantum_measure | classical_fmr;
   assign dec_measure = quantum_measure;
   assign dec_fmr = dec_need_qubitflag & (~dec_measure);
+  assign dec_tqg = qiu_op & ((quantum_opcode1 & `QPU_QUANTUM_TWO_QUBIT_GATE_BOUNDARY) ==`QPU_QUANTUM_TWO_QUBIT_GATE_BOUNDARY) & (~dec_measure);
 
 endmodule                                      
                                                

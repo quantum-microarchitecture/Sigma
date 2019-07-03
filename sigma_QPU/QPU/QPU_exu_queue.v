@@ -18,19 +18,22 @@ module QPU_exu_queue(
   output tiq_dest_i_ready,           ///time fifo is not full            to wbck
   input  [`QPU_TIME_WIDTH - 1 : 0] tiq_dest_i_data,   ///from wbck module
 
-//tragger clk
-  input i_tragger,
-  output tragger_o_clk_ena,
-  input [`QPU_TIME_WIDTH - 1 : 0] tragger_o_clk,
+//trigger clk
+  input i_trigger,
+  output trigger_o_clk_ena,
+  input [`QPU_TIME_WIDTH - 1 : 0] trigger_o_clk,
 
 //event queue
+
   input  evq_dest_wen,              ///ntp & event time not full  from wbck
   output evq_dest_i_ready,          //event fifo is not full   ,  to wbck
   input [(`QPU_EVENT_NUM - 1) : 0] evq_dest_oprand,                  ///From event reg
   input [(`QPU_EVENT_WIRE_WIDTH - 1) : 0] evq_dest_data,             ///From event reg
+  input [(`QPU_TWO_QUBIT_GATE_LIST_WIDTH - 1) : 0] evq_dest_tqgl,
 
-  output [`QPU_EVENT_NUM - 1: 0] evq_dest_o_valid,         //输出的事件是否有效 to tragger
-  output [`QPU_EVENT_WIRE_WIDTH - 1 : 0] evq_dest_o_data,  //                 to tragger
+
+  output [`QPU_EVENT_NUM - 1: 0] evq_dest_o_valid,         //输出的事件是否有效 to trigger
+  output [`QPU_EVNET_WIRE_FULL_WIDTH - 1 : 0] evq_dest_o_data,  //                 to trigger ,
 
   input [`QPU_QUBIT_NUM - 1 : 0] qubit_measure_zero,   ///做快反馈控制
   input [`QPU_QUBIT_NUM - 1 : 0] qubit_measure_one , 
@@ -64,11 +67,11 @@ module QPU_exu_queue(
 
     // read/write enable
     wire tiq_wen = tiq_dest_wen;
-    wire tiq_o_valid = (tragger_i_clk == time_fifo_o_data) & i_tragger ;          ///当触发时才可以读，否则不可读
+    wire tiq_o_valid = (trigger_i_clk == time_fifo_o_data) & i_trigger ;          ///当触发时才可以读，否则不可读
     wire tiq_o_ready = ((time_queue_one_left & tiq_dest_wen) | (~time_queue_one_left));
     wire tiq_ren =  tiq_o_valid &  tiq_o_ready;
 
-    assign tragger_o_clk_ena =  tiq_o_valid ? ((time_queue_one_left & tiq_wen) | (~time_queue_one_left))  :  i_tragger;         //只有触发时才可以控制外部时钟
+    assign trigger_o_clk_ena =  tiq_o_valid ? ((time_queue_one_left & tiq_wen) | (~time_queue_one_left))  :  i_trigger;         //只有触发时才可以控制外部时钟
     
     ///////// Read-Pointer and Write-Pointer
     wire [`QPU_TIME_QUEUE_DEPTH - 1 : 0] time_rptr_vec_nxt; 
@@ -181,6 +184,9 @@ module QPU_exu_queue(
   wire event_queue_empty;
 
 
+QPU_EVNET_WIRE_FULL_WIDTH
+
+
 
   wire [`QPU_EVENT_NUM - 1 : 0] evq_fifo_i_valid;
   wire [`QPU_EVENT_NUM - 1 : 0] evq_fifo_i_ready;         
@@ -188,15 +194,15 @@ module QPU_exu_queue(
   wire [`QPU_EVENT_NUM - 1 : 0] evq_fifo_o_ready;
   wire [`QPU_QI_EVENT_QUEUE_WIDTH - 1 : 0] evq_qi_fifo_i_data [`QPU_QI_EVENT_NUM - 1 : 0];
   wire [`QPU_QI_EVENT_QUEUE_WIDTH - 1 : 0] evq_qi_fifo_o_data [`QPU_QI_EVENT_NUM - 1 : 0];
-  wire [`QPU_QI_EVENT_QUEUE_WIDTH - 1 : 0] evq_qi_fifo_o_data_pre [`QPU_QI_EVENT_NUM - 1 : 0];
+  wire [`QPU_QI_EVNET_FULL_WIDTH - 1 : 0] evq_qi_fifo_o_data_pre [`QPU_QI_EVENT_NUM - 1 : 0];                           //除去了PTR部分，只留下事件编号以及qubit_num
   wire [`QPU_MEASURE_EVENT_QUEUE_WIDTH - 1 : 0] evq_measure_fifo_i_data [`QPU_MEASURE_EVENT_NUM - 1 : 0];
   wire [`QPU_MEASURE_EVENT_QUEUE_WIDTH - 1 : 0] evq_measure_fifo_o_data [`QPU_MEASURE_EVENT_NUM - 1 : 0];
   wire [`QPU_MEASURE_EVENT_QUEUE_WIDTH - 1 : 0] evq_measure_fifo_o_data_pre [`QPU_MEASURE_EVENT_NUM - 1 : 0];
   wire [`QPU_EVENT_NUM - 1 ：0] event_queue_byp;
 
 
-  wire [`QPU_QI_EVENT_QUEUE_WIDTH - 1 : 0] evq_dis_ptr_qi_o_r [`QPU_EVENT_PTR_WIDTH - 1 : 0];  
-  wire [`QPU_MEASURE_EVENT_QUEUE_WIDTH - 1 : 0] evq_dis_ptr_measure_o_r [`QPU_EVENT_PTR_WIDTH - 1 : 0];  
+  wire [`QPU_EVENT_PTR_WIDTH - 1 : 0] evq_dis_ptr_qi_o_r      [`QPU_QI_EVENT_NUM - 1 : 0];
+  wire [`QPU_EVENT_PTR_WIDTH - 1 : 0] evq_dis_ptr_measure_o_r [`QPU_MEASURE_EVENT_NUM - 1 : 0];
   wire [`QPU_EVENT_NUM - 1 : 0] evq_fifo_o_condi;
   wire [`QPU_QI_EVENT_WIRE_WIDTH - 1 : 0] evq_dest_o_data_pre;
 
@@ -208,7 +214,7 @@ module QPU_exu_queue(
     assign evq_fifo_i_valid[l]   = (~event_queue_full) & (~time_queue_full) & (evq_dest_wen) & evq_dest_oprand[l] & (~event_queue_byp[l])
     assign evq_fifo_o_ready[l]   = (evq_dis_ptr_qi_o_r[l] == evq_ret_ptr_r) & tiq_o_valid;
 
-    assign event_queue_byp[l]    = tiq_o_valid & (~event_queue_empty) & evq_dest_wen & (evq_dis_ptr_r == evq_ret_ptr_r) & i_tragger;
+    assign event_queue_byp[l]    = tiq_o_valid & (~event_queue_empty) & evq_dest_wen & (evq_dis_ptr_r == evq_ret_ptr_r) & i_trigger;
     assign evq_dest_o_valid[l]   = evq_fifo_o_condi[l] & ((event_queue_byp[l] & evq_dest_oprand[l]) | (~event_queue_byp[l] & evq_fifo_o_ready[l] & evq_fifo_o_valid[l])); //////队列输出有效
 
     
@@ -216,14 +222,14 @@ module QPU_exu_queue(
     if(l<`QPU_QI_EVENT_NUM) begin
       
 
-      assign evq_qi_fifo_i_data[l] = {evq_dis_ptr_r,evq_dest_data[(l+1)*`QPU_QI_EVENT_WIDTH) - 1,l*`QPU_QI_EVENT_WIDTH]};
-      assign {evq_dis_ptr_qi_o_r[l],evq_qi_fifo_o_data_pre[((l+1)*`QPU_QI_EVENT_WIDTH) - 1,l*`QPU_QI_EVENT_WIDTH]} = evq_qi_fifo_o_data[l];
-      assign evq_dest_o_data_pre[((l+1)*`QPU_QI_EVENT_WIDTH) - 1,l*`QPU_QI_EVENT_WIDTH] = event_queue_byp[l] ?  evq_dest_data[((l+1)*`QPU_QI_EVENT_WIDTH) - 1,l*`QPU_QI_EVENT_WIDTH]   : evq_qi_fifo_o_data_pre[((l+1)*`QPU_QI_EVENT_WIDTH) - 1,l*`QPU_QI_EVENT_WIDTH];
+      assign evq_qi_fifo_i_data[l] = {evq_dis_ptr_r, evq_dest_data[(l+1)*`QPU_QI_EVENT_WIDTH) - 1,l*`QPU_QI_EVENT_WIDTH], evq_dest_tqgl[(l+1)*`QPU_QUBIT_NUM_LENGTH) - 1,l*`QPU_QUBIT_NUM_LENGTH]};
+      assign {evq_dis_ptr_qi_o_r[l],evq_qi_fifo_o_data_pre[l]} = evq_qi_fifo_o_data[l];
+      assign evq_dest_o_data_pre[((l+1)*`QPU_QI_EVNET_FULL_WIDTH) - 1,l*`QPU_QI_EVNET_FULL_WIDTH] = event_queue_byp[l] ?  {evq_dest_data[((l+1)*`QPU_QI_EVENT_WIDTH) - 1,l*`QPU_QI_EVENT_WIDTH],evq_dest_tqgl[(l+1)*`QPU_QUBIT_NUM_LENGTH) - 1,l*`QPU_QUBIT_NUM_LENGTH]} : evq_qi_fifo_o_data_pre[l];
       assign evq_fifo_o_condi[l]  =   ( evq_dest_o_data_pre[((l+1)*`QPU_QI_EVENT_WIDTH) - 1,l*`QPU_QI_EVENT_WIDTH] <`QPU_QUANTUM_0_FEEDBACK_ADDR_BEGIN) ? 1'b1
                                   :   ( evq_dest_o_data_pre[((l+1)*`QPU_QI_EVENT_WIDTH) - 1,l*`QPU_QI_EVENT_WIDTH] <`QPU_QUANTUM_1_FEEDBACK_ADDR_BEGIN) ? (qubit_measure_zero[l])
                                   :   ( evq_dest_o_data_pre[((l+1)*`QPU_QI_EVENT_WIDTH) - 1,l*`QPU_QI_EVENT_WIDTH] <`QPU_QUANTUM_EQU_FEEDBACK_ADDR_BEGIN) ? (qubit_measure_one[l])
                                   :   qubit_measure_equ[l];
-      assign evq_dest_o_data [((l+1)*`QPU_QI_EVENT_WIDTH) - 1,l*`QPU_QI_EVENT_WIDTH] = {`QPU_QI_EVENT_WIDTH{evq_fifo_o_condi[l]}} & evq_dest_o_data_pre [((l+1)*`QPU_QI_EVENT_WIDTH) - 1,l*`QPU_QI_EVENT_WIDTH];
+      assign evq_dest_o_data [((l+1)*`QPU_QI_EVNET_FULL_WIDTH) - 1,l*`QPU_QI_EVNET_FULL_WIDTH] = {`QPU_QI_EVNET_FULL_WIDTH{evq_fifo_o_condi[l]}} & evq_dest_o_data_pre [((l+1)*`QPU_QI_EVNET_FULL_WIDTH) - 1,l*`QPU_QI_EVNET_FULL_WIDTH];
       
 
       sirv_gnrl_fifo # (
@@ -247,9 +253,9 @@ module QPU_exu_queue(
     else begin
 
       assign evq_fifo_o_condi[l] = 1'b1; 
-      assign evq_measure_fifo_i_data[l] = {evq_dis_ptr_r,evq_dest_data[(`QPU_QI_EVENT_NUM * `QPU_QI_EVENT_WIDTH + (l-`QPU_QI_EVENT_NUM + 1) * `QPU_MEASURE_EVENT_WIDTH - 1 , `QPU_QI_EVENT_NUM * `QPU_QI_EVENT_WIDTH + (l-`QPU_QI_EVENT_NUM) * `QPU_MEASURE_EVENT_WIDTH]};
-      assign {evq_dis_ptr_measure_o_r[l],evq_measure_fifo_o_data_pre[(`QPU_QI_EVENT_NUM * `QPU_QI_EVENT_WIDTH + (l-`QPU_QI_EVENT_NUM + 1) * `QPU_MEASURE_EVENT_WIDTH - 1 , `QPU_QI_EVENT_NUM * `QPU_QI_EVENT_WIDTH + (l-`QPU_QI_EVENT_NUM) * `QPU_MEASURE_EVENT_WIDTH]} = evq_qi_fifo_o_data[l];
-      assign evq_dest_o_data[(`QPU_QI_EVENT_NUM * `QPU_QI_EVENT_WIDTH + (l-`QPU_QI_EVENT_NUM + 1) * `QPU_MEASURE_EVENT_WIDTH - 1 , `QPU_QI_EVENT_NUM * `QPU_QI_EVENT_WIDTH + (l-`QPU_QI_EVENT_NUM) * `QPU_MEASURE_EVENT_WIDTH] = event_queue_byp[l] ?  evq_dest_data[(`QPU_QI_EVENT_NUM * `QPU_QI_EVENT_WIDTH + (l-`QPU_QI_EVENT_NUM + 1) * `QPU_MEASURE_EVENT_WIDTH - 1 , `QPU_QI_EVENT_NUM * `QPU_QI_EVENT_WIDTH + (l-`QPU_QI_EVENT_NUM) * `QPU_MEASURE_EVENT_WIDTH]   : evq_measure_fifo_o_data_pre[(`QPU_QI_EVENT_NUM * `QPU_QI_EVENT_WIDTH + (l-`QPU_QI_EVENT_NUM + 1) * `QPU_MEASURE_EVENT_WIDTH - 1 , `QPU_QI_EVENT_NUM * `QPU_QI_EVENT_WIDTH + (l-`QPU_QI_EVENT_NUM) * `QPU_MEASURE_EVENT_WIDTH];
+      assign evq_measure_fifo_i_data [l - `QPU_QI_EVENT_NUM] = {evq_dis_ptr_r,evq_dest_data[(`QPU_QI_EVENT_NUM * `QPU_QI_EVENT_WIDTH + (l-`QPU_QI_EVENT_NUM + 1) * `QPU_MEASURE_EVENT_WIDTH - 1 , `QPU_QI_EVENT_NUM * `QPU_QI_EVENT_WIDTH + (l-`QPU_QI_EVENT_NUM) * `QPU_MEASURE_EVENT_WIDTH]};
+      assign {evq_dis_ptr_measure_o_r[l - `QPU_QI_EVENT_NUM],evq_measure_fifo_o_data_pre[l - `QPU_QI_EVENT_NUM]} = evq_measure_fifo_o_data[l- `QPU_QI_EVENT_NUM];
+      assign evq_dest_o_data[(`QPU_QI_EVENT_NUM * `QPU_QI_EVNET_FULL_WIDTH + (l-`QPU_QI_EVENT_NUM + 1) * `QPU_MEASURE_EVENT_WIDTH - 1 , `QPU_QI_EVENT_NUM * `QPU_QI_EVNET_FULL_WIDTH + (l-`QPU_QI_EVENT_NUM) * `QPU_MEASURE_EVENT_WIDTH] = event_queue_byp[l] ?  evq_dest_data[(`QPU_QI_EVENT_NUM * `QPU_QI_EVENT_WIDTH + (l-`QPU_QI_EVENT_NUM + 1) * `QPU_MEASURE_EVENT_WIDTH - 1 , `QPU_QI_EVENT_NUM * `QPU_QI_EVENT_WIDTH + (l-`QPU_QI_EVENT_NUM) * `QPU_MEASURE_EVENT_WIDTH]   : evq_measure_fifo_o_data_pre[l - `QPU_QI_EVENT_NUM];
       
       sirv_gnrl_fifo # (
         .CUT_READY(1), 
@@ -259,10 +265,10 @@ module QPU_exu_queue(
       ) evq_measure_fifo (
         .i_vld   (evq_fifo_i_valid[l]),
         .i_rdy   (evq_fifo_i_ready[l]),
-        .i_dat   (evq_measure_fifo_i_data[l]),
+        .i_dat   (evq_measure_fifo_i_data[l - `QPU_QI_EVENT_NUM]),
         .o_vld   (evq_fifo_o_valid[l]),
         .o_rdy   (evq_fifo_o_ready[l]),
-        .o_dat   (evq_measure_fifo_o_data[l]),
+        .o_dat   (evq_measure_fifo_o_data[l - `QPU_QI_EVENT_NUM]),
         .clk     (clk  ),
         .rst_n   (rst_n)
       );

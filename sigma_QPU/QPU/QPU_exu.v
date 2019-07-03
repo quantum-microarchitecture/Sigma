@@ -76,7 +76,7 @@ module QPU_exu(
   ///data to trigger
   output trigger_o_clk_ena,
   input  [`QPU_TIME_WIDTH - 1 : 0] trigger_o_clk,
-  output [`QPU_EVENT_WIRE_WIDTH - 1 : 0] trigger_o_data,
+  output [`QPU_EVNET_WIRE_FULL_WIDTH - 1 : 0] trigger_o_data,
   output [`QPU_EVENT_NUM - 1: 0] trigger_o_valid,
 
   input  clk,
@@ -88,6 +88,9 @@ module QPU_exu(
   // Instantiate the Regfile
   wire [`QPU_XLEN-1:0] crf_rs1;
   wire [`QPU_XLEN-1:0] crf_rs2;
+  wire [`QPU_TWO_QUBIT_GATE_LIST_WIDTH - 1 : 0] tqgl_cur;
+  wire [`QPU_TWO_QUBIT_GATE_LIST_WIDTH - 1 : 0] tqgl_pre;
+  wire dec_tqg;
 
   wire crf_wbck_ena;
   wire [`QPU_XLEN-1:0] crf_wbck_data;
@@ -103,6 +106,7 @@ module QPU_exu(
   wire erf_wbck_ena;
   wire [`QPU_EVENT_WIRE_WIDTH-1:0] erf_wbck_data;
   wire [(`QPU_EVENT_NUM - 1) : 0] erf_wbck_oprand;
+  wire [(`QPU_TWO_QUBIT_GATE_LIST_WIDTH - 1) : 0] erf_wbck_tqgl;
 
   wire [`QPU_TIME_WIDTH - 1 : 0] trf_data;
   wire [`QPU_EVENT_NUM - 1 : 0] erf_oprand;
@@ -121,15 +125,16 @@ module QPU_exu(
     .read_src2_idx          (i_rs2idx       ),
     .read_src1_data         (crf_rs1        ),
     .read_src2_data         (crf_rs2        ),
-    
+    .read_tqg_pair_idx      (tqgl_cur       ),
+    .dec_tqg                (dec_tqg        ),
  
     .cwbck_dest_wen         (crf_wbck_ena   ),
     .cwbck_dest_idx         (crf_wbck_rdidx ),
     .cwbck_dest_data        (crf_wbck_data  ),
 
     .qcwbck_dest_wen        (qcrf_wbck_ena   ),
-    .qcwbck_dest_idx        (qcrf_wbck_rdidx   ),
-    .qcwbck_dest_data       (qcrf_wbck_data   ),
+    .qcwbck_dest_idx        (qcrf_wbck_rdidx ),
+    .qcwbck_dest_data       (qcrf_wbck_data  ),
 
     .twbck_dest_wen         (trf_wbck_ena   ),
     .twbck_dest_data        (trf_wbck_data  ),
@@ -139,9 +144,11 @@ module QPU_exu(
     .ewbck_dest_wen         (erf_wbck_ena   ),
     .ewbck_dest_oprand      (erf_wbck_oprand),
     .ewbck_dest_data        (erf_wbck_data  ),
+    .ewbck_dest_tqgl        (erf_wbck_tqgl  ),
 
     .read_event_oprand      (erf_oprand     ),
     .read_event_data        (erf_data       ),
+    .read_event_tqgl        (tqgl_pre       ),
 
     .mcu_measure_i_data     (mcu_i_measurement        ),
     .mcu_measure_i_wen      (mcu_i_wen                ),
@@ -183,6 +190,7 @@ module QPU_exu(
     .evq_dest_i_ready            (evq_wbck_ready    ),
     .evq_dest_oprand             (erf_oprand        ),      
     .evq_dest_data               (erf_data          ),
+    .evq_dest_tqgl               (tqgl_pre          ),
 
     .evq_dest_o_valid            (trigger_o_valid   ),
     .evq_dest_o_data             (trigger_o_data    ),
@@ -239,6 +247,7 @@ module QPU_exu(
     .dec_need_qubitflag           (dec_nqf    ),
     .dec_measure                  (dec_measure),
     .dec_fmr                      (dec_fmr    ),
+    .dec_tqg                      (dec_tqg    ),
 
     .dec_bxx                      (),
     .dec_bjp_imm                  ()
@@ -261,6 +270,8 @@ module QPU_exu(
   wire [`QPU_QUBIT_NUM  - 1 : 0]  disp_alu_qmr;
   wire [`QPU_EVENT_WIRE_WIDTH - 1 : 0] disp_alu_edata;
   wire [`QPU_EVENT_NUM - 1 : 0] disp_alu_oprand;
+  wire [(`QPU_TWO_QUBIT_GATE_LIST_WIDTH - 1) : 0] disp_alu_tqgl_pre;
+  wire [(`QPU_TWO_QUBIT_GATE_LIST_WIDTH - 1) : 0] disp_alu_tqgl_cur;
 
 
   wire disp_alu_ntp;
@@ -320,7 +331,8 @@ module QPU_exu(
     .disp_i_qmr            (mrf_data       ),
     .disp_i_edata          (erf_data       ),
     .disp_i_oprand         (erf_oprand     ),
-
+    .disp_i_tqgl_pre       (tqgl_pre       ),
+    .disp_i_tqgl_cur       (tqgl_cur       ),
 
     .disp_o_alu_valid    (disp_alu_valid   ),
     .disp_o_alu_ready    (disp_alu_ready   ),
@@ -338,6 +350,8 @@ module QPU_exu(
     .disp_o_alu_qmr      (disp_alu_qmr     ),
     .disp_o_alu_edata    (disp_alu_edata   ),
     .disp_o_alu_oprand   (disp_alu_oprand  ),
+    .disp_o_alu_tqgl_pre (disp_alu_tqgl_pre),
+    .disp_o_alu_tqgl_cur (disp_alu_tqgl_cur),
 
     .disp_o_alu_ntp      (disp_alu_ntp     ),
     .disp_o_alu_fmr      (disp_alu_fmr     ),
@@ -436,6 +450,7 @@ module QPU_exu(
   wire alu_ewbck_o_ready;
   wire [(`QPU_EVENT_WIRE_WIDTH - 1) : 0] alu_ewbck_o_data;
   wire [(`QPU_EVENT_NUM - 1) : 0]       alu_ewbck_o_oprand; 
+  wire [(`QPU_TWO_QUBIT_GATE_LIST_WIDTH - 1) : 0] alu_ewbck_o_tqgl;
 
   ///to cmt
   wire alu_cmt_valid;
@@ -467,6 +482,8 @@ module QPU_exu(
     .i_qmr               (disp_alu_qmr     ),
     .i_edata             (disp_alu_edata   ),
     .i_oprand            (disp_alu_oprand  ),
+    .i_tqgl_pre          (disp_alu_tqgl_pre),
+    .i_tqgl_cur          (disp_alu_tqgl_cur),
 
     .i_ntp               (disp_alu_ntp     ),
     .i_fmr               (disp_alu_fmr     ),
@@ -502,11 +519,12 @@ module QPU_exu(
     .ewbck_o_ready        (alu_ewbck_o_ready ),
     .ewbck_o_data         (alu_ewbck_o_data  ),
     .ewbck_o_oprand       (alu_ewbck_o_oprand),
+    .ewbck_o_tqgl         (alu_ewbck_o_tqgl  ),
 
     .lsu_icb_cmd_valid   (lsu_icb_cmd_valid ),
     .lsu_icb_cmd_ready   (lsu_icb_cmd_ready ),
-    .lsu_icb_cmd_addr    (lsu_icb_cmd_addr ),
-    .lsu_icb_cmd_read    (lsu_icb_cmd_read   ),
+    .lsu_icb_cmd_addr    (lsu_icb_cmd_addr  ),
+    .lsu_icb_cmd_read    (lsu_icb_cmd_read  ),
     .lsu_icb_cmd_wdata   (lsu_icb_cmd_wdata ),
     .lsu_icb_cmd_wmask   (lsu_icb_cmd_wmask ),
 
@@ -571,6 +589,7 @@ module QPU_exu(
     .alu_ewbck_i_ready   (alu_ewbck_o_ready ),
     .alu_ewbck_i_data    (alu_ewbck_o_data  ),
     .alu_ewbck_i_oprand  (alu_ewbck_o_oprand),
+    .alu_ewbck_i_tqgl    (alu_ewbck_o_tqgl  ),
                          
     .longp_wbck_i_valid (longp_wbck_o_valid ), 
     .longp_wbck_i_ready (longp_wbck_o_ready ),
@@ -593,6 +612,7 @@ module QPU_exu(
     .erf_wbck_o_ena      (erf_wbck_ena    ),
     .erf_wbck_o_data     (erf_wbck_data   ),
     .erf_wbck_o_oprand   (erf_wbck_oprand ),
+    .erf_wbck_o_tqgl     (erf_wbck_tqgl   ),
 
     .tiq_wbck_o_ena      (tiq_wbck_ena    ),
     .tiq_wbck_o_ready    (tiq_wbck_ready  ),
