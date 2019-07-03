@@ -18,9 +18,10 @@
 `define QPU_XLEN 32
 `define QPU_RFIDX_WIDTH 5
 `define QPU_RFIDX_REAL_WIDTH 6                       //加flag位后为6
+
 `define QPU_QUBIT_NUM 12
 `define QPU_QUBIT_NUM_LENGTH 4                       //log(qubit_num+1)   最多支持15 qubit，0000表示无操作     
-`define QPU_TWO_QUBIT_GATE_LIST_WIDTH (`QPU_QUBIT_NUM_LENGTH * `QPU_QUBIT_NUM);
+`define QPU_TWO_QUBIT_GATE_LIST_WIDTH (`QPU_QUBIT_NUM_LENGTH * `QPU_QUBIT_NUM)
 `define QPU_TWO_QUBIT_GATE_NUM 6                          //qubit_num/2 ，最多支持6个两比特门同时执行
 `define QPU_TWO_QUBIT_GATE_NUM_WIDTH 3
 
@@ -54,10 +55,10 @@
 
 `define QPU_EVENT_PTR_WIDTH 5                     //太小的话，有可能出现，PTR套一圈，导致事件的ptr出错！！！！！！！
 
-`define QPU_RFREG_NUM 32 ///classical and quantum
-`define QPU_CLASSICAL_RFREG_NUM 16
-`define QPU_QUANTUM_RFREG_NUM 16
-`define QPU_QUANTUM_RFREG_REAL_NUM (`QPU_QUANTUM_RFREG_NUM + `QPU_QUBIT_NUM + 1)
+`define QPU_RFREG_NUM 64 ///classical and quantum
+`define QPU_CLASSICAL_RFREG_NUM 32
+`define QPU_QUANTUM_RFREG_NUM 32
+
 
 
 `define QPU_QUANTUM_NO_FEEDBACK_ADDR_BEGIN 0                                              /// 0.无反馈单比特门；1.测量结果为0反馈；2.测量结果为1反馈；3.测量结果相同反馈；4.两比特门；5.测量

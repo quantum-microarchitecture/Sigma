@@ -175,12 +175,12 @@ module QPU_exu_regfile(
   wire [`QPU_RFREG_NUM-1:0] crf_wen;
   wire [`QPU_XLEN-1:0] qcrf_r [`QPU_RFREG_NUM-1:0];
   wire [`QPU_RFREG_NUM-1:0] qcrf_wen;
-  wire 
+
 
   genvar m;
   generate //{
   
-      for (m=0; m<`QPU_RFREG_NUM; m=m+1) begin: classical regfile//{
+      for (m=0; m<`QPU_CLASSICAL_RFREG_NUM; m=m+1) begin: classical_regfile//{
         
 
         if(m==0) begin: rf0
@@ -199,7 +199,7 @@ module QPU_exu_regfile(
   genvar n;
   generate //{
   
-      for (n=0; n<`QPU_RFREG_NUM; n=n+1) begin:quantum regfile//{
+      for (n=0; n<`QPU_QUANTUM_RFREG_NUM; n=n+1) begin:quantum_regfile//{
 
         if(n < `QPU_QUBIT_NUM) begin
             assign qcrf_wen[n] = 1'b0;
@@ -319,7 +319,6 @@ module QPU_exu_regfile(
   assign read_src1_data = ({`QPU_XLEN{~read_src1_idx[`QPU_RFIDX_REAL_WIDTH - 1]}} & read_src1_cdata) | ({`QPU_XLEN{read_src1_idx[`QPU_RFIDX_REAL_WIDTH - 1] & (~dec_tqg)}} & read_src1_oqdata) | ({`QPU_XLEN{read_src1_idx[`QPU_RFIDX_REAL_WIDTH - 1] & (dec_tqg)}} & read_tqgl1_data);
   assign read_src2_data = ({`QPU_XLEN{~read_src2_idx[`QPU_RFIDX_REAL_WIDTH - 1]}} & read_src2_cdata) | ({`QPU_XLEN{read_src2_idx[`QPU_RFIDX_REAL_WIDTH - 1] & (~dec_tqg)}} & read_src2_oqdata) | ({`QPU_XLEN{read_src2_idx[`QPU_RFIDX_REAL_WIDTH - 1] & (dec_tqg)}} & read_tqgl2_data);
   
-
 
 
 endmodule
