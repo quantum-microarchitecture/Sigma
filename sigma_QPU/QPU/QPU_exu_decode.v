@@ -37,6 +37,7 @@ module QPU_exu_decode(
   output dec_need_qubitflag,
   output dec_measure,
   output dec_fmr,
+  output dec_tqg,                 //two_qubit_gate
   //Branch instruction decode
   output dec_bxx,
   output [`QPU_XLEN-1:0] dec_bjp_imm
@@ -77,7 +78,7 @@ module QPU_exu_decode(
   wire classical_func3_001 = (classical_func3 == 3'b001);
   wire classical_func3_010 = (classical_func3 == 3'b010);
   wire classical_func3_011 = (classical_func3 == 3'b011);
-  
+  wire classical_func3_100 = (classical_func3 == 3'b100);
 
   wire classical_rs1_x0 = (classical_rs1 == 5'b00000);
   wire classical_rs2_x0 = (classical_rs2 == 5'b00000);
@@ -130,6 +131,7 @@ module QPU_exu_decode(
   wire classical_andi     = classical_op_imm & classical_func3_011;
 
   wire classical_add      = classical_op     & classical_func3_000;
+  wire classical_sub      = classical_op     & classical_func3_100;
   wire classical_xor      = classical_op     & classical_func3_001;
   wire classical_or       = classical_op     & classical_func3_010;
   wire classical_and      = classical_op     & classical_func3_011;
@@ -146,6 +148,7 @@ module QPU_exu_decode(
   wire [`QPU_DECINFO_ALU_WIDTH-1:0] alu_info_bus;
   assign alu_info_bus[`QPU_DECINFO_GRP    ]    = `QPU_DECINFO_GRP_ALU;
   assign alu_info_bus[`QPU_DECINFO_ALU_ADD]    = classical_add  | classical_addi; 
+  assign alu_info_bus[`QPU_DECINFO_ALU_SUB]    = classical_sub;
   assign alu_info_bus[`QPU_DECINFO_ALU_XOR]    = classical_xor  | classical_xori;       
   assign alu_info_bus[`QPU_DECINFO_ALU_OR ]    = classical_or   | classical_ori;     
   assign alu_info_bus[`QPU_DECINFO_ALU_AND]    = classical_and  | classical_andi;
@@ -221,26 +224,23 @@ module QPU_exu_decode(
                              };
 
   wire [31:0]  qpu_l_imm = { 
-                               {13{qpu_instr[31]}}
+                               {15{qpu_instr[31]}}
                               , qpu_instr[31:29] 
                               , qpu_instr[28:15]
-                              ,2'b0
                              };                                
 
   wire [31:0]  qpu_s_imm = {
-                               {13{qpu_instr[31]}}
+                               {15{qpu_instr[31]}}
                               , qpu_instr[31:29] 
                               , qpu_instr[9:5] 
                               , qpu_instr[23:15]
-                              ,2'b0
                              };
 
 //the last two bits of address is is always 00，so the last two bits of the imm of branch instruction is end up with the second bit  
   wire [31:0]  qpu_b_imm = {
-                               {16{qpu_instr[9]}} 
+                               {17{qpu_instr[9]}} 
                               , qpu_instr[9:5] 
                               , qpu_instr[23:15]
-                              , 2'b0
                               };
 //QWAIT instruction
   wire [31:0]  qpu_w_imm = {
@@ -355,6 +355,7 @@ assign dec_rdidx = {{classical_smis}, classical_rd [`QPU_RFIDX_WIDTH-1:0]};
   assign dec_need_qubitflag = quantum_measure | classical_fmr;
   assign dec_measure = quantum_measure;
   assign dec_fmr = dec_need_qubitflag & (~dec_measure);
+  assign dec_tqg = qiu_op & ((quantum_opcode1 & `QPU_QUANTUM_TWO_QUBIT_GATE_BOUNDARY) ==`QPU_QUANTUM_TWO_QUBIT_GATE_BOUNDARY) & (~dec_measure);
 
 endmodule                                      
                                                
