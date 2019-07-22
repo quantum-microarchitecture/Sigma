@@ -56,12 +56,7 @@ module QPU_exu_wbck(
   input [(`QPU_EVENT_NUM - 1) : 0] alu_ewbck_i_oprand,
  
 
-  //////////////////////////////////////////////////////////////
-  // The Longp Write-Back Interface
-  input  longp_wbck_i_valid, // Handshake valid
-  output longp_wbck_i_ready, // Handshake ready
-  input  [`QPU_XLEN-1:0] longp_wbck_i_data,
-  input  [`QPU_RFIDX_REAL_WIDTH-1:0] longp_wbck_i_rdidx,
+
 
 
   //////////////////////////////////////////////////////////////
@@ -95,32 +90,19 @@ module QPU_exu_wbck(
   // The Final arbitrated classical reg Write-Back Interface
 
 
-  // The ALU instruction can write-back only when there is no any 
-  //  long pipeline instruction writing-back
-  //    * Since ALU is the 1 cycle instructions, it have lowest 
-  //      priority in arbitration
-  wire wbck_ready4alu = (~longp_wbck_i_valid);
-  wire wbck_sel_alu = alu_cwbck_i_valid & wbck_ready4alu;
-  // The Long-pipe instruction can always write-back since it have high priority 
-  wire wbck_ready4longp = 1'b1;
-  wire wbck_sel_longp = longp_wbck_i_valid & wbck_ready4longp;
-
-
-
-
   wire crf_wbck_o_ready = 1'b1; // Regfile is always ready to be write because it just has 1 w-port
 
 
-  assign alu_cwbck_i_ready   = wbck_ready4alu   & crf_wbck_o_ready;
-  assign longp_wbck_i_ready = wbck_ready4longp  & crf_wbck_o_ready;
+  assign alu_cwbck_i_ready   = crf_wbck_o_ready;
+
   
-  wire crf_wbck_o_valid = wbck_sel_alu ? alu_cwbck_i_valid : longp_wbck_i_valid;
+  wire crf_wbck_o_valid = alu_cwbck_i_valid;
 
 
   
   assign crf_wbck_o_ena   = crf_wbck_o_valid & crf_wbck_o_ready;
-  assign crf_wbck_o_data  = wbck_sel_alu ? alu_cwbck_i_data  : longp_wbck_i_data;
-  assign crf_wbck_o_rdidx = wbck_sel_alu ? alu_cwbck_i_rdidx : longp_wbck_i_rdidx;
+  assign crf_wbck_o_data  = alu_cwbck_i_data;
+  assign crf_wbck_o_rdidx = alu_cwbck_i_rdidx;
 
   wire   qcrf_wbck_o_ready = 1'b1;
   assign qcrf_wbck_o_valid = alu_qcwbck_i_valid;

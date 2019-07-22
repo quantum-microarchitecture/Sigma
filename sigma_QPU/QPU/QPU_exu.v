@@ -42,29 +42,6 @@ module QPU_exu(
   output  [`QPU_PC_SIZE-1:0] pipe_flush_add_op1,  
   output  [`QPU_PC_SIZE-1:0] pipe_flush_add_op2,  
 
-  //////////////////////////////////////////////////////////////
-  //////////////////////////////////////////////////////////////
-  // The LSU Write-Back Interface
-  input  lsu_o_valid, // Handshake valid
-  output lsu_o_ready, // Handshake ready
-  input  [`QPU_XLEN-1:0] lsu_o_wbck_data,
-
-
-  //////////////////////////////////////////////////////////////
-  //////////////////////////////////////////////////////////////
-  // The AGU ICB Interface to LSU-ctrl
-  //    * Bus cmd channel
-  output                         lsu_icb_cmd_valid, // Handshake valid
-  input                          lsu_icb_cmd_ready, // Handshake ready
-  output [`QPU_ADDR_SIZE-1:0]    lsu_icb_cmd_addr, // Bus transaction start addr 
-  output                         lsu_icb_cmd_read,   // Read or write
-  output [`QPU_XLEN-1:0]         lsu_icb_cmd_wdata, 
-  output [`QPU_XLEN/8-1:0]       lsu_icb_cmd_wmask, 
-
-  //    * Bus RSP channel
-  input                          lsu_icb_rsp_valid, // Response valid 
-  output                         lsu_icb_rsp_ready, // Response ready
-  input  [`QPU_XLEN-1:0]         lsu_icb_rsp_rdata,
 
   //////////////////////////////////////////////////////////////////
   //////////////////////////////////////////////////////////////////
@@ -368,7 +345,7 @@ module QPU_exu(
 
   //////////////////////////////////////////////////////////////
   // Instantiate the OITF
-  wire oitf_ret_ena;
+  wire oitf_ret_ena = 1'b0;
   wire moitf_ret_ena = mcu_i_wen;
 
   wire [`QPU_RFIDX_REAL_WIDTH - 1 : 0] oitf_ret_rdidx;
@@ -502,44 +479,11 @@ module QPU_exu(
     .ewbck_o_data         (alu_ewbck_o_data  ),
     .ewbck_o_oprand       (alu_ewbck_o_oprand),
 
-    .lsu_icb_cmd_valid   (lsu_icb_cmd_valid ),
-    .lsu_icb_cmd_ready   (lsu_icb_cmd_ready ),
-    .lsu_icb_cmd_addr    (lsu_icb_cmd_addr ),
-    .lsu_icb_cmd_read    (lsu_icb_cmd_read   ),
-    .lsu_icb_cmd_wdata   (lsu_icb_cmd_wdata ),
-    .lsu_icb_cmd_wmask   (lsu_icb_cmd_wmask ),
 
-    .lsu_icb_rsp_valid   (lsu_icb_rsp_valid ),
-    .lsu_icb_rsp_ready   (lsu_icb_rsp_ready ),
-    .lsu_icb_rsp_rdata   (lsu_icb_rsp_rdata)
 
 
   );
 
-  //////////////////////////////////////////////////////////////
-  // Instantiate the Long-pipe Write-Back
-  wire longp_wbck_o_valid;
-  wire longp_wbck_o_ready;
-  wire [`QPU_XLEN-1:0] longp_wbck_o_data;
-  wire [`QPU_RFIDX_REAL_WIDTH-1:0] longp_wbck_o_rdidx;
-
-  QPU_exu_longpwbck u_QPU_exu_longpwbck(
-
-    .lsu_wbck_i_valid   (lsu_o_valid ),
-    .lsu_wbck_i_ready   (lsu_o_ready ),
-    .lsu_wbck_i_data    (lsu_o_wbck_data  ),
-
-    .longp_wbck_o_valid   (longp_wbck_o_valid ), 
-    .longp_wbck_o_ready   (longp_wbck_o_ready ),
-    .longp_wbck_o_data    (longp_wbck_o_data  ),
-    .longp_wbck_o_rdidx   (longp_wbck_o_rdidx ),
-
-    .oitf_ret_rdidx      (oitf_ret_rdidx),
-    .oitf_ret_rdwen      (oitf_ret_rdwen),
-    .oitf_ret_ena        (oitf_ret_ena  )
-    
-
-  );
 
 
   //////////////////////////////////////////////////////////////
@@ -570,11 +514,6 @@ module QPU_exu(
     .alu_ewbck_i_ready   (alu_ewbck_o_ready ),
     .alu_ewbck_i_data    (alu_ewbck_o_data  ),
     .alu_ewbck_i_oprand  (alu_ewbck_o_oprand),
-                         
-    .longp_wbck_i_valid (longp_wbck_o_valid ), 
-    .longp_wbck_i_ready (longp_wbck_o_ready ),
-    .longp_wbck_i_data  (longp_wbck_o_data  ),
-    .longp_wbck_i_rdidx (longp_wbck_o_rdidx ),
 
 
     .crf_wbck_o_ena      (crf_wbck_ena    ),
