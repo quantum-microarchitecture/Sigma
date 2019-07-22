@@ -38,14 +38,7 @@ module QPU_exu_alu_dpath(
 
   output bjp_req_alu_cmp_res,
 
-  //////////////////////////////////////////////////////
-  // LSU request the datapath
-  input  lsu_req_alu,
 
-  input  [`QPU_XLEN-1:0] lsu_req_alu_op1,
-  input  [`QPU_XLEN-1:0] lsu_req_alu_op2,
-
-  output [`QPU_XLEN-1:0] lsu_req_alu_res,
 
   ////////////////////////////////////////////////////
   // QIU request the datapath
@@ -219,19 +212,6 @@ module QPU_exu_alu_dpath(
             ,bjp_req_alu_cmp_lt 
             ,bjp_req_alu_cmp_gt 
         })
-      | ({DPATH_MUX_WIDTH{lsu_req_alu}} & {
-             lsu_req_alu_op1
-            ,lsu_req_alu_op2
-            ,1'b1
-            ,1'b0
-            ,1'b0
-            ,1'b0
-            ,1'b0
-            ,1'b0
-            ,1'b0
-            ,1'b0
-        })
-
       | ({DPATH_MUX_WIDTH{qiu_req_alu}} & {
              qiu_req_alu_op1
             ,qiu_req_alu_op2
@@ -247,7 +227,6 @@ module QPU_exu_alu_dpath(
         ;
         
   assign alu_req_alu_res     = alu_dpath_res[`QPU_XLEN-1:0];
-  assign lsu_req_alu_res     = alu_dpath_res[`QPU_XLEN-1:0];
   assign qiu_req_alu_res     = alu_dpath_res[`QPU_XLEN-1:0];
   assign bjp_req_alu_cmp_res = cmp_res;
 
