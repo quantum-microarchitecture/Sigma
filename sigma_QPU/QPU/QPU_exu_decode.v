@@ -37,7 +37,6 @@ module QPU_exu_decode(
   output dec_need_qubitflag,
   output dec_measure,
   output dec_fmr,
-  output dec_tqg,                 //two_qubit_gate
   //Branch instruction decode
   output dec_bxx,
   output [`QPU_XLEN-1:0] dec_bjp_imm
@@ -83,7 +82,6 @@ module QPU_exu_decode(
   wire classical_rs1_x0 = (classical_rs1 == 5'b00000);
   wire classical_rs2_x0 = (classical_rs2 == 5'b00000);
   wire classical_rd_x0  = (classical_rd  == 5'b00000);
-  wire quantum_rs2_x0 =   (quantum_rs2   == 5'b00000);
 
   wire classical_load   = opcode_4_3_00 & opcode_2_0_000; 
   wire classical_store  = opcode_4_3_01 & opcode_2_0_000; 
@@ -100,8 +98,13 @@ module QPU_exu_decode(
   wire classical_smis = opcode_4_3_00 & opcode_2_0_110;
 
 
-  wire quantum_single_opcode = quantum_instr & (quantum_opcode2 == 9'b000000000);
-  wire quantum_measure       = quantum_instr & (quantum_opcode1 == 9'b111111111);
+  wire quantum_measure       = quantum_instr & (quantum_opcode1 == 9'b011111111);
+  wire quantum_qop1_gate     = quantum_instr & (quantum_opcode1[8] = 1'b1);
+  wire quantum_qop2_gate     = quantum_instr & (quantum_opcode2[8] = 1'b1);
+  wire quantum_ffc           = quantum_instr & (quantum_opcode1[8:7] = 2'b01) & (~quantum_measure); //快反馈控制（第一个操作数为反馈控制，且不是测量）
+  wire quantum_need_oprand1  = quantum_instr & (quantum_opcode1[8] = 1'b0);
+  wire quantum_need_oprand2  = quantum_instr & (quantum_opcode2[8] = 1'b0);
+
   // ===========================================================================
   // Branch Instructions
   wire classical_beq      = classical_branch & classical_func3_000;
@@ -174,8 +177,10 @@ module QPU_exu_decode(
   wire qiu_op = quantum_instr;
   wire [`QPU_DECINFO_QIU_WIDTH-1:0] qiu_info_bus;
   assign qiu_info_bus[`QPU_DECINFO_GRP    ] = `QPU_DECINFO_GRP_QIU;
-  assign qiu_info_bus[`QPU_DECINFO_QIU_OPCODE1  ] = quantum_opcode1;
-  assign qiu_info_bus[`QPU_DECINFO_QIU_OPCODE2  ] = quantum_opcode2;
+  assign qiu_info_bus[`QPU_DECINFO_QIU_QOP1_GATE] = quantum_qop1_gate;
+  assign qiu_info_bus[`QPU_DECINFO_QIU_QOP2_GATE] = quantum_qop2_gate;
+  assign qiu_info_bus[`QPU_DECINFO_QIU_OPCODE1  ] = {quantum_opcode1,({5{quantum_qop1_gate}} & quantum_rs1)};
+  assign qiu_info_bus[`QPU_DECINFO_QIU_OPCODE2  ] = {quantum_opcode2,({5{quantum_qop2_gate}} & quantum_rs2)};
 
 
   // All the instruction need RD register except the
@@ -190,15 +195,15 @@ module QPU_exu_decode(
                    & (~quantum_instr)
                    ) ;
 
-  // All the instruction need RS1 register except the
+  // All the classical instruction need RS1 register except the
   //   * qwait
   //   * smist
-  // when rs1/rs2_x0=1,disp module will not access the register,just use mask to output rs1/rs2
-  wire qpu_need_rs1 = (~classical_rs1_x0) &
+  
+  wire qpu_need_rs1 = (~classical_rs1_x0) & (classical_instr)
                     (
                       (~classical_qwait)
                     & (~classical_smis)
-                    );
+                    ) | quantum_need_oprand1;
                     
   // Following instructions need RS2 register
   //   * branch
@@ -214,8 +219,7 @@ module QPU_exu_decode(
                     | (classical_fmr)
                     )  
                 |  
-                      (quantum_instr) & (~quantum_single_opcode)
-                    );
+                     quantum_need_oprand2;
 
 
   wire [31:0]  qpu_i_imm = { 
@@ -345,17 +349,17 @@ assign dec_rdidx = {{classical_smis}, classical_rd [`QPU_RFIDX_WIDTH-1:0]};
 
   //only assert when it is classical instruction
   assign dec_rs1x0 = classical_rs1_x0 & classical_instr;             
-  assign dec_rs2x0 = (classical_rs2_x0 & classical_instr) | (quantum_rs2_x0 & quantum_instr);
+  assign dec_rs2x0 = classical_rs2_x0 & classical_instr;
                      
   assign dec_bxx = bjp_op;
   assign dec_bjp_imm = qpu_b_imm;
 
   wire PI_IS_0 = (quantum_PI == 3'b0);
   assign dec_new_timepoint = classical_qwait | (quantum_instr & ~(PI_IS_0));
-  assign dec_need_qubitflag = quantum_measure | classical_fmr;
+  assign dec_need_qubitflag = quantum_measure | classical_fmr | quantum_ffc;
   assign dec_measure = quantum_measure;
   assign dec_fmr = dec_need_qubitflag & (~dec_measure);
-  assign dec_tqg = qiu_op & ((quantum_opcode1 & `QPU_QUANTUM_TWO_QUBIT_GATE_BOUNDARY) ==`QPU_QUANTUM_TWO_QUBIT_GATE_BOUNDARY) & (~dec_measure);
+
 
 endmodule                                      
                                                

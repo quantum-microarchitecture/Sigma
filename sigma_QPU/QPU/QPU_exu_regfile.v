@@ -16,12 +16,9 @@ module QPU_exu_regfile(
 
   input  [`QPU_RFIDX_REAL_WIDTH-1:0] read_src1_idx,
   input  [`QPU_RFIDX_REAL_WIDTH-1:0] read_src2_idx,
-  output [`QPU_XLEN-1:0] read_src1_data,                  //对于两比特GATE，输出的是执行GATE的掩码信息，同单比特门
+  output [`QPU_XLEN-1:0] read_src1_data,                  
   output [`QPU_XLEN-1:0] read_src2_data,
-  output [`QPU_TWO_QUBIT_GATE_LIST_WIDTH - 1 : 0] read_tqg_pair_idx,            //对于两比特GATE，输出的是两比特门的第二个参数，0表示非两比特门，或者该比特不执行两比特门！
-  input dec_tqg,                                         //two-qubit gate
-  //output [`QPU_TWO_QUBIT_GATE_LIST_WIDTH - 1 : 0] read_tqgl1_data,
-  //output [`QPU_TWO_QUBIT_GATE_LIST_WIDTH - 1 : 0] read_tqgl2_data,
+  
 
   input  cwbck_dest_wen,
   input  [`QPU_RFIDX_REAL_WIDTH-1:0] cwbck_dest_idx,
@@ -40,14 +37,13 @@ module QPU_exu_regfile(
 //event regfile
  
   input ewbck_dest_wen,                      //QI or QWAIT & ~full, from wbck
-  input [(`QPU_EVENT_NUM - 1) : 0] ewbck_dest_oprand,
+  input [(`QPU_EVENT_NUM - 1) : 0] ewbck_dest_oprand, //(XYevent + Zevent + measure_event)
   input [(`QPU_EVENT_WIRE_WIDTH - 1) : 0] ewbck_dest_data,
-  input [(`QPU_TWO_QUBIT_GATE_LIST_WIDTH - 1) : 0] ewbck_dest_tqgl;                 ///对于两比特GATE，输出的是两比特门的第二个参数，0表示非两比特门，或者该比特不执行两比特门！
+  
 
   output [(`QPU_EVENT_NUM - 1) : 0] read_event_oprand,      // to queue and alu
   output [(`QPU_EVENT_WIRE_WIDTH - 1) : 0] read_event_data,
-  output [(`QPU_TWO_QUBIT_GATE_LIST_WIDTH - 1) : 0] read_event_tqgl;               ///对于两比特GATE，输出的是两比特门的第二个参数，0表示非两比特门，或者该比特不执行两比特门！
-
+  
 
 //measurement result reg
   input [`QPU_QUBIT_NUM - 1 : 0] mcu_measure_i_data,
@@ -57,9 +53,9 @@ module QPU_exu_regfile(
 
   input read_qubit_ena,                                    //FMR指令为1，其余时刻均为0
   //input [`QPU_QUBIT_NUM - 1 : 0] read_qubit_list,          //控制读出列表,读出列表在rs1中，内部直连
-  output [`QPU_QUBIT_NUM - 1 : 0] read_qubit_data,         //返回测量结果，这里不存在正在写回的问题，因为如果正在写回，oitf中的qubitlist依旧为1，不可以派遣fmr指令,read_qubit_ena控制输出结果，会一直输出测量结果（加了mask）！
+  output read_qubit_data,         //返回测量结果，这里不存在正在写回的问题，因为如果正在写回，oitf中的qubitlist依旧为1，不可以派遣fmr指令,read_qubit_ena控制输出结果，会一直输出测量结果（加了mask）！只取一个比特的测量结果
 
-  output [`QPU_QUBIT_NUM - 1 : 0] qubit_measure_zero,   ///发送给event_queue，做快反馈控制
+  output [`QPU_QUBIT_NUM - 1 : 0] qubit_measure_zero,   ///发送给event_queue，做快反馈控制。只有当测量结果返回时，才可执行快反馈，因此无需要返回测量结果后立刻更改测量结果
   output [`QPU_QUBIT_NUM - 1 : 0] qubit_measure_one , 
   output [`QPU_QUBIT_NUM - 1 : 0] qubit_measure_equ,
 
@@ -94,20 +90,16 @@ module QPU_exu_regfile(
   wire [(`QPU_EVENT_WIRE_WIDTH - 1) : 0] ewbck_event_r;
   wire [(`QPU_EVENT_WIRE_WIDTH - 1) : 0] ewbck_event_nxt;
 
-  wire [(`QPU_TWO_QUBIT_GATE_LIST_WIDTH - 1) : 0] ewbck_tqgl_r;
-  wire [(`QPU_TWO_QUBIT_GATE_LIST_WIDTH - 1) : 0] ewbck_tqgl_nxt;
-
 
   assign read_event_oprand = ewbck_oprand_r;
   assign read_event_data   = ewbck_event_r;
-  assign read_event_tqgl   = ewbck_tqgl_r;
+
 
   assign ewbck_oprand_nxt = ewbck_dest_oprand;
   assign ewbck_event_nxt  = ewbck_dest_data;
-  assign ewbck_tqgl_nxt   = ewbck_dest_tqgl; 
+
 
   sirv_gnrl_dffl    #(`QPU_EVENT_WIRE_WIDTH)                q_event_dffl        (ewbck_dest_wen, ewbck_event_nxt , ewbck_event_r ,     clk); 
-  sirv_gnrl_dffl    #(`QPU_TWO_QUBIT_GATE_LIST_WIDTH)       q_tqgl_dffl         (ewbck_dest_wen, ewbck_tqgl_nxt  , ewbck_tqgl_r  ,     clk);
   sirv_gnrl_dfflr   #(`QPU_EVENT_NUM)                       q_oprand_dfflr      (ewbck_dest_wen, ewbck_oprand_nxt, ewbck_oprand_r,     clk, rst_n);
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //qubit measure result
@@ -147,18 +139,15 @@ module QPU_exu_regfile(
 
       ///conditional fast control and read data
       assign qubit_measure_result[k] = ( (~qubit_measure_flag_r[k][0]) & qubit_measure_r0[k] ) | ( (~qubit_measure_flag_r[k][1]) & qubit_measure_r1[k] ) ;
-      assign qubit_measure_realtime_result [k] =  ((~mcu_measure_i_wen) & qubit_measure_result[k])
-                                                | (( mcu_measure_i_wen) & ((qubit_measure_wen[k] & mcu_measure_i_data[k]) | ((~qubit_measure_wen[k]) & qubit_measure_result[k])));
-
+      
       assign qubit_measure_zero  [k] = ~qubit_measure_realtime_result[k];
       assign qubit_measure_one   [k] =  qubit_measure_realtime_result[k];
-      assign qubit_measure_equ   [k] =    ((~mcu_measure_i_wen) & (qubit_measure_r0[k] == qubit_measure_r1[k]))
-                                        | (( mcu_measure_i_wen) & ( (qubit_measure_wen[k] &  ( ((~qubit_measure_flag_r[k][0])&(qubit_measure_r0[k]== mcu_measure_i_data[k]))  | ((~qubit_measure_flag_r[k][1])&(qubit_measure_r1[k]== mcu_measure_i_data[k]))   ) ) | ((~qubit_measure_wen[k]) & (qubit_measure_r0[k] == qubit_measure_r1[k]))  ) );
-
+      assign qubit_measure_equ   [k] = (qubit_measure_r0[k] == qubit_measure_r1[k]))
+                                      
     end
   endgenerate
   
-  assign read_qubit_data = qubit_measure_result & qubit_measure_ren;
+  assign read_qubit_data = | (qubit_measure_result & qubit_measure_ren); //只能取一个比特的测量结果
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////classical reg
@@ -217,10 +206,6 @@ module QPU_exu_regfile(
   endgenerate//}
   
 
-  ///for two qubit gate rs
-  
-
-
 
   
   assign read_src1_cdata = crf_r[read_src1_idx[`QPU_RFIDX_WIDTH-1:0]];
@@ -228,7 +213,7 @@ module QPU_exu_regfile(
   assign read_src1_oqdata = qcrf_r[read_src1_idx[`QPU_RFIDX_WIDTH-1:0]];
   assign read_src2_oqdata = qcrf_r[read_src2_idx[`QPU_RFIDX_WIDTH-1:0]];
 
-  wire [`QPU_QUBIT_NUM - 1:0] tqg_qubitlist = read_src1_oqdata[`QPU_QUBIT_NUM - 1:0];   //输入的第一个操作数
+/*   wire [`QPU_QUBIT_NUM - 1:0] tqg_qubitlist = read_src1_oqdata[`QPU_QUBIT_NUM - 1:0];   //输入的第一个操作数
   wire [`QPU_QUBIT_NUM - 1:0] tqg_derection = read_src2_oqdata[`QPU_QUBIT_NUM - 1:0];   //输入的第二个操作数
  
 
@@ -310,7 +295,7 @@ module QPU_exu_regfile(
         end
         assign tqg_source_idx[`QPU_QUBIT_NUM_LENGTH*(j+1) - 1 : `QPU_QUBIT_NUM_LENGTH*j] = tqg_source[j];
        
-    end
+    end 
     endgenerate
   assign read_tqgl2_data = {{(`QPU_XLEN - `QPU_QUBIT_NUM){0}},tqg_target_qubitlist};  
   assign tqg_pair_idx = tqg_target_idx | tqg_source_idx;
@@ -318,7 +303,9 @@ module QPU_exu_regfile(
   
   assign read_src1_data = ({`QPU_XLEN{~read_src1_idx[`QPU_RFIDX_REAL_WIDTH - 1]}} & read_src1_cdata) | ({`QPU_XLEN{read_src1_idx[`QPU_RFIDX_REAL_WIDTH - 1] & (~dec_tqg)}} & read_src1_oqdata) | ({`QPU_XLEN{read_src1_idx[`QPU_RFIDX_REAL_WIDTH - 1] & (dec_tqg)}} & read_tqgl1_data);
   assign read_src2_data = ({`QPU_XLEN{~read_src2_idx[`QPU_RFIDX_REAL_WIDTH - 1]}} & read_src2_cdata) | ({`QPU_XLEN{read_src2_idx[`QPU_RFIDX_REAL_WIDTH - 1] & (~dec_tqg)}} & read_src2_oqdata) | ({`QPU_XLEN{read_src2_idx[`QPU_RFIDX_REAL_WIDTH - 1] & (dec_tqg)}} & read_tqgl2_data);
-  
+  */
+  assign read_src1_data = ({`QPU_XLEN{~read_src1_idx[`QPU_RFIDX_REAL_WIDTH - 1]}} & read_src1_cdata) | ({`QPU_XLEN{read_src1_idx[`QPU_RFIDX_REAL_WIDTH - 1] & read_src1_oqdata);
+  assign read_src2_data = ({`QPU_XLEN{~read_src2_idx[`QPU_RFIDX_REAL_WIDTH - 1]}} & read_src2_cdata) | ({`QPU_XLEN{read_src2_idx[`QPU_RFIDX_REAL_WIDTH - 1] & read_src2_oqdata);
 
 
 endmodule
