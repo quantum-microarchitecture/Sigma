@@ -496,7 +496,7 @@ module QPU_exu(
     .ewbck_o_ready        (alu_ewbck_o_ready ),
     .ewbck_o_data         (alu_ewbck_o_data  ),
     .ewbck_o_oprand       (alu_ewbck_o_oprand),
-    .ewbck_o_tqgl         (alu_ewbck_o_tqgl  ),
+    .ewbck_o_tqgl         (alu_ewbck_o_tqgl  )
 
 
 

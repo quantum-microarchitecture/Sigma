@@ -30,6 +30,7 @@ module tb_exu_disp();
   wire dec_nqf;
   wire dec_measure;
   wire dec_fmr;
+  wire dec_tqg;
   //Branch instruction decode
   wire dec_bxx;
   wire [`QPU_XLEN-1:0] dec_bjp_imm;
@@ -54,6 +55,9 @@ module tb_exu_disp();
   reg [`QPU_QUBIT_NUM - 1 : 0] mrf_data;
   reg [`QPU_EVENT_WIRE_WIDTH - 1 : 0] erf_data;
   reg [`QPU_EVENT_NUM - 1 : 0] erf_oprand;
+  reg [`QPU_TWO_QUBIT_GATE_LIST_WIDTH - 1 : 0] tqgl_cur;
+  reg [`QPU_TWO_QUBIT_GATE_LIST_WIDTH - 1 : 0] tqgl_pre;
+
   // Dispatch to ALU
 
   wire disp_alu_valid; 
@@ -73,6 +77,8 @@ module tb_exu_disp();
   wire [`QPU_QUBIT_NUM - 1 : 0] disp_alu_qmr;
   wire [`QPU_EVENT_WIRE_WIDTH - 1 : 0] disp_alu_edata;
   wire [`QPU_EVENT_NUM - 1 : 0] disp_alu_oprand;
+  wire [(`QPU_TWO_QUBIT_GATE_LIST_WIDTH - 1) : 0] disp_alu_tqgl_pre;
+  wire [(`QPU_TWO_QUBIT_GATE_LIST_WIDTH - 1) : 0] disp_alu_tqgl_cur;
         //Quantum instruction
   wire disp_alu_ntp;//
   wire disp_alu_fmr;
@@ -150,6 +156,8 @@ module tb_exu_disp();
     mrf_data = `QPU_QUBIT_NUM'b10;
     erf_data = 66'b0;
     erf_oprand = 8'b0;
+    tqgl_cur = 48'b0;
+    tqgl_pre = 48'b0;
 
     disp_alu_ready = 1'b1;
     disp_alu_longpipe = 1'b1;
@@ -187,6 +195,7 @@ module tb_exu_disp();
     .dec_need_qubitflag           (dec_nqf    ),
     .dec_measure                  (dec_measure),
     .dec_fmr                      (dec_fmr    ),
+    .dec_tqg                      (dec_tqg    ),
 
     .dec_bxx                      (dec_bxx),
     .dec_bjp_imm                  (dec_bjp_imm)
@@ -220,6 +229,8 @@ module tb_exu_disp();
     .disp_i_qmr            (mrf_data       ),
     .disp_i_edata          (erf_data       ),
     .disp_i_oprand         (erf_oprand     ),
+    .disp_i_tqgl_pre       (tqgl_pre       ),
+    .disp_i_tqgl_cur       (tqgl_cur       ),
 
 
     .disp_o_alu_valid    (disp_alu_valid   ),
@@ -238,6 +249,8 @@ module tb_exu_disp();
     .disp_o_alu_qmr      (disp_alu_qmr     ),
     .disp_o_alu_edata    (disp_alu_edata   ),
     .disp_o_alu_oprand   (disp_alu_oprand  ),
+    .disp_o_alu_tqgl_pre (disp_alu_tqgl_pre),
+    .disp_o_alu_tqgl_cur (disp_alu_tqgl_cur),
 
     .disp_o_alu_ntp      (disp_alu_ntp     ),
     .disp_o_alu_fmr      (disp_alu_fmr     ),
@@ -262,10 +275,9 @@ module tb_exu_disp();
     .disp_oitf_rs1idx    (disp_oitf_rs1idx),
     .disp_oitf_rs2idx    (disp_oitf_rs2idx),
     .disp_oitf_rdidx     (disp_oitf_rdidx ),
-    .disp_oitf_qubitlist (disp_oitf_qubitlist),
+    .disp_oitf_qubitlist (disp_oitf_qubitlist)
    
-    .clk                 (clk  ),
-    .rst_n               (rst_n) 
+
   );
 
 

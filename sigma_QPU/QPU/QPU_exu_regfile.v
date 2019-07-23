@@ -42,11 +42,11 @@ module QPU_exu_regfile(
   input ewbck_dest_wen,                      //QI or QWAIT & ~full, from wbck
   input [(`QPU_EVENT_NUM - 1) : 0] ewbck_dest_oprand,
   input [(`QPU_EVENT_WIRE_WIDTH - 1) : 0] ewbck_dest_data,
-  input [(`QPU_TWO_QUBIT_GATE_LIST_WIDTH - 1) : 0] ewbck_dest_tqgl;                 ///对于两比特GATE，输出的是两比特门的第二个参数，0表示非两比特门，或者该比特不执行两比特门！
+  input [(`QPU_TWO_QUBIT_GATE_LIST_WIDTH - 1) : 0] ewbck_dest_tqgl,                 ///对于两比特GATE，输出的是两比特门的第二个参数，0表示非两比特门，或者该比特不执行两比特门！
 
   output [(`QPU_EVENT_NUM - 1) : 0] read_event_oprand,      // to queue and alu
   output [(`QPU_EVENT_WIRE_WIDTH - 1) : 0] read_event_data,
-  output [(`QPU_TWO_QUBIT_GATE_LIST_WIDTH - 1) : 0] read_event_tqgl;               ///对于两比特GATE，输出的是两比特门的第二个参数，0表示非两比特门，或者该比特不执行两比特门！
+  output [(`QPU_TWO_QUBIT_GATE_LIST_WIDTH - 1) : 0] read_event_tqgl,               ///对于两比特GATE，输出的是两比特门的第二个参数，0表示非两比特门，或者该比特不执行两比特门！
 
 
 //measurement result reg
