@@ -54,8 +54,6 @@ module QPU_exu_wbck(
   output alu_ewbck_i_ready,
   input [(`QPU_EVENT_WIRE_WIDTH - 1) : 0] alu_ewbck_i_data,
   input [(`QPU_EVENT_NUM - 1) : 0] alu_ewbck_i_oprand,
-  input [(`QPU_TWO_QUBIT_GATE_LIST_WIDTH - 1) : 0] alu_ewbck_i_tqgl,
- 
 
   //////////////////////////////////////////////////////////////
   // The Longp Write-Back Interface
@@ -81,7 +79,6 @@ module QPU_exu_wbck(
   output erf_wbck_o_ena,
   output [(`QPU_EVENT_WIRE_WIDTH - 1) : 0] erf_wbck_o_data,
   output [(`QPU_EVENT_NUM - 1) : 0] erf_wbck_o_oprand,
-  output [(`QPU_TWO_QUBIT_GATE_LIST_WIDTH - 1) : 0] erf_wbck_o_tqgl,
 
   output tiq_wbck_o_ena,
   input  tiq_wbck_o_ready,
@@ -157,7 +154,6 @@ module QPU_exu_wbck(
 
   assign erf_wbck_o_data   = alu_ewbck_i_data;
   assign erf_wbck_o_oprand = alu_ewbck_i_oprand;
-  assign erf_wbck_o_tqgl   = alu_ewbck_i_tqgl;
 
   //////////////////////////////////////////////////////////////
   // time and event queue Write-Back Interface

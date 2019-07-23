@@ -31,8 +31,7 @@ module QPU_exu_alu_qiu(
   input  qiu_i_ntp,
   input  [`QPU_EVENT_WIRE_WIDTH - 1 : 0] qiu_i_edata,               ///reg->disp->qiu
   input  [`QPU_EVENT_NUM - 1 : 0] qiu_i_oprand,                    ///reg->disp->qiu
-  input  [(`QPU_TWO_QUBIT_GATE_LIST_WIDTH - 1) : 0] qiu_i_tqgl_pre, ///reg->disp->qiu
-  input  [(`QPU_TWO_QUBIT_GATE_LIST_WIDTH - 1) : 0] qiu_i_tqgl_cur, ///reg->disp->qiu
+
   input  [`QPU_TIME_WIDTH - 1 : 0] qiu_i_clk,
   //////////////////////////////////////////////////////////////
   //////////////////////////////////////////////////////////////
@@ -42,7 +41,6 @@ module QPU_exu_alu_qiu(
 
   output [`QPU_EVENT_WIRE_WIDTH - 1 : 0] qiu_o_wbck_edata,
   output [`QPU_EVENT_NUM - 1 : 0] qiu_o_wbck_oprand,
-  output [(`QPU_TWO_QUBIT_GATE_LIST_WIDTH - 1) : 0] qiu_o_wbck_tqgl,
   output [`QPU_TIME_WIDTH - 1 : 0] qiu_o_wbck_tdata,
 
   //////////////////////////////////////////////////////////////
@@ -53,35 +51,59 @@ module QPU_exu_alu_qiu(
  
   output [`QPU_XLEN-1:0] qiu_req_alu_op1,
   output [`QPU_XLEN-1:0] qiu_req_alu_op2,
-
-
   input  [`QPU_XLEN-1:0] qiu_req_alu_res
 
 
   );
-  
+
+  wire qop1_is_gate = qiu_i_info[`QPU_DECINFO_QIU_QOP1_GATE];
+  wire qop2_is_gate = qiu_i_info[`QPU_DECINFO_QIU_QOP2_GATE];
 
   wire [`QPU_QI_EVENT_WIDTH - 1 : 0] opcode1 = qiu_i_info[`QPU_DECINFO_QIU_OPCODE1];
   wire [`QPU_QI_EVENT_WIDTH - 1 : 0] opcode2 = qiu_i_info[`QPU_DECINFO_QIU_OPCODE2];
+
 
   genvar i;
   generate
     for(i = 0 ; i< `QPU_EVENT_NUM ; i = i + 1) begin
       ///对于非测量指令，event oprand 的对应位，表示该比特是否做操作，opcode为操作波形的地址
       if (i < `QPU_QI_EVENT_NUM) begin
-        assign qiu_o_wbck_oprand[i] = (~qiu_i_measure) & (qiu_i_rs1[i] | qiu_i_rs2[i] | (qiu_i_oprand[i] & (~qiu_i_ntp)));
-        assign qiu_o_wbck_edata[((i+1)*`QPU_QI_EVENT_WIDTH) - 1 : i*`QPU_QI_EVENT_WIDTH] = 
-        ({`QPU_QI_EVENT_WIDTH{~qiu_i_measure}}) & ( ({`QPU_QI_EVENT_WIDTH{qiu_i_rs1[i]}} & opcode1) | ({`QPU_QI_EVENT_WIDTH{qiu_i_rs2[i]}} & opcode2) | (qiu_i_edata[((i+1)*`QPU_QI_EVENT_WIDTH) - 1 : i*`QPU_QI_EVENT_WIDTH] & {`QPU_QI_EVENT_WIDTH{~qiu_i_ntp}}) );
-        assign qiu_o_wbck_tqgl[((i+1)*`QPU_QUBIT_NUM_LENGTH) - 1 : i*`QPU_QUBIT_NUM_LENGTH] =
-        (qiu_i_tqgl_cur[((i+1)*`QPU_QUBIT_NUM_LENGTH) - 1 : i*`QPU_QUBIT_NUM_LENGTH]  | (qiu_i_tqgl_pre[((i+1)*`QPU_QUBIT_NUM_LENGTH) - 1 : i*`QPU_QUBIT_NUM_LENGTH] & {`QPU_QUBIT_NUM_LENGTH{~qiu_i_ntp}}) );
-      
-      
+
+
+
+
+
+        assign qiu_o_wbck_oprand[i] =   (~qiu_i_measure)
+                                      & (
+                                          qop1_is_gate                                           //qop1_is_gate | ((~qop1_is_gate)&qiu_i_rs1[i])
+                                      |   qiu_i_rs1[i]
+                                      |   (~qop2_is_gate & qiu_i_rs2[i])
+                                      |   (~qiu_i_ntp    & qiu_i_oprand[i]) 
+
+                                        ); 
+
+
+
+        assign qiu_o_wbck_edata[((i+1)*`QPU_QI_XYEVENT_WIDTH) - 1 : i*`QPU_QI_XYEVENT_WIDTH] = 
+                                  ({`QPU_QI_XYEVENT_WIDTH{~qiu_i_measure}}) 
+                              & ( 
+                                  ({`QPU_QI_XYEVENT_WIDTH{(qiu_i_rs1[i] | qop1_is_gate)}}    & opcode1)
+                                | ({`QPU_QI_XYEVENT_WIDTH{(qiu_i_rs2[i] & (~qop2_is_gate))}} & opcode2)
+                                | (qiu_i_edata[((i+1)*`QPU_QI_XYEVENT_WIDTH) - 1 : i*`QPU_QI_XYEVENT_WIDTH] & {`QPU_QI_XYEVENT_WIDTH{~qiu_i_ntp}})                               
+                                );    
       end
 
       ///对于测量指令，event oprand 的对应位，表示该该操作为测量操作，opcode为执行测量操作的比特掩码
-      else begin
+      else if (i == `QPU_QI_EVENT_NUM) begin
+        assign qiu_o_wbck_oprand[i] = qop2_is_gate;
+        
+        assign qiu_o_wbck_edata[((i+1)*`QPU_QI_ZEVENT_WIDTH) - 1 : i*`QPU_QI_ZEVENT_WIDTH] = 
+                                 ({`QPU_QI_ZEVENT_WIDTH{qop2_is_gate}} & opcode2)
+                              |  (qiu_i_edata[((i+1)*`QPU_QI_ZEVENT_WIDTH) - 1 : i*`QPU_QI_ZEVENT_WIDTH] & {`QPU_QI_ZEVENT_WIDTH{~qiu_i_ntp}});  
+      end else begin
+
         assign qiu_o_wbck_oprand[i] = qiu_i_measure;
-        assign qiu_o_wbck_edata[`QPU_QI_EVENT_NUM * `QPU_QI_EVENT_WIDTH + (i-`QPU_QI_EVENT_NUM + 1) * `QPU_MEASURE_EVENT_WIDTH - 1 : `QPU_QI_EVENT_NUM * `QPU_QI_EVENT_WIDTH + (i-`QPU_QI_EVENT_NUM) * `QPU_MEASURE_EVENT_WIDTH] = ({`QPU_MEASURE_EVENT_WIDTH{qiu_i_measure}}) & qiu_i_rs1;
+        assign qiu_o_wbck_edata[(`QPU_QI_XYEVENT_NUM * `QPU_QI_XYEVENT_WIDTH + `QPU_QI_ZEVENT_NUM * `QPU_QI_ZEVENT_WIDTH + ( i- `QPU_QI_XYEVENT_NUM - `QPU_QI_ZEVENT_NUM + 1) * `QPU_MEASURE_EVENT_WIDTH - 1) : (`QPU_QI_XYEVENT_NUM * `QPU_QI_XYEVENT_WIDTH + `QPU_QI_ZEVENT_NUM * `QPU_QI_ZEVENT_WIDTH + (i- `QPU_QI_XYEVENT_NUM - `QPU_QI_ZEVENT_NUM) * `QPU_MEASURE_EVENT_WIDTH)] = ({`QPU_MEASURE_EVENT_WIDTH{qiu_i_measure}}) & qiu_i_rs1;
 
       end
 
