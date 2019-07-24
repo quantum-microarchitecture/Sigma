@@ -99,11 +99,11 @@ module QPU_exu_decode(
 
 
   wire quantum_measure       = quantum_instr & (quantum_opcode1 == 9'b011111111);
-  wire quantum_qop1_gate     = quantum_instr & (quantum_opcode1[8] = 1'b1);
-  wire quantum_qop2_gate     = quantum_instr & (quantum_opcode2[8] = 1'b1);
-  wire quantum_ffc           = quantum_instr & (quantum_opcode1[8:7] = 2'b01) & (~quantum_measure); //快反馈控制（第一个操作数为反馈控制，且不是测量）
-  wire quantum_need_oprand1  = quantum_instr & (quantum_opcode1[8] = 1'b0);
-  wire quantum_need_oprand2  = quantum_instr & (quantum_opcode2[8] = 1'b0);
+  wire quantum_qop1_gate     = quantum_instr & (quantum_opcode1[8] == 1'b1);
+  wire quantum_qop2_gate     = quantum_instr & (quantum_opcode2[8] == 1'b1);
+  wire quantum_ffc           = quantum_instr & (quantum_opcode1[8:7] == 2'b01) & (~quantum_measure); //快反馈控制（第一个操作数为反馈控制，且不是测量）
+  wire quantum_need_oprand1  = quantum_instr & (quantum_opcode1[8] == 1'b0);
+  wire quantum_need_oprand2  = quantum_instr & (quantum_opcode2[8] == 1'b0);
 
   // ===========================================================================
   // Branch Instructions
@@ -200,7 +200,7 @@ module QPU_exu_decode(
   //   * smist
   
   wire qpu_need_rs1 = (~classical_rs1_x0) & (classical_instr)
-                    (
+                    &(
                       (~classical_qwait)
                     & (~classical_smis)
                     ) | quantum_need_oprand1;
@@ -211,7 +211,7 @@ module QPU_exu_decode(
   //   * op
   //   * fmr
   //   * quantum instruction & exist the second quantum operate
-  wire qpu_need_rs2 = (~classical_rs2_x0) & (
+  wire qpu_need_rs2 = (~classical_rs2_x0) &
                     (
                       (classical_branch)
                     | (classical_store)
