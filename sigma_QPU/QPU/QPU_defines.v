@@ -21,9 +21,7 @@
 
 `define QPU_QUBIT_NUM 12
 `define QPU_QUBIT_NUM_LENGTH 4                       //log(qubit_num+1)   最多支持15 qubit，0000表示无操作     
-`define QPU_TWO_QUBIT_GATE_LIST_WIDTH (`QPU_QUBIT_NUM_LENGTH * `QPU_QUBIT_NUM)
-`define QPU_TWO_QUBIT_GATE_NUM 6                          //qubit_num/2 ，最多支持6个两比特门同时执行
-`define QPU_TWO_QUBIT_GATE_NUM_WIDTH 3
+
 
 `define QPU_OITF_DEPTH  4
 `define QPU_MOITF_DEPTH 4
@@ -33,25 +31,33 @@
 
 
 
-`define QPU_EVENT_NUM (`QPU_QUBIT_NUM + 2)         //1 QI event of each qubit , 1 measure event for AGU and 1 measure event for MCU
-`define QPU_QI_EVENT_NUM (`QPU_QUBIT_NUM)
+`define QPU_EVENT_NUM (`QPU_QI_XYEVENT_NUM + `QPU_QI_ZEVENT_NUM + `QPU_MEASURE_EVENT_NUM)         //1 QI xyevent of each qubit ,1 zevent , 1 measure event for AGU and 1 measure event for MCU
+`define QPU_QI_XYEVENT_NUM (`QPU_QUBIT_NUM)
 `define QPU_MEASURE_EVENT_NUM 2
+`define QPU_QI_ZEVENT_NUM 1
+`define QPU_QI_EVENT_NUM (`QPU_QI_XYEVENT_NUM + `QPU_QI_ZEVENT_NUM)  //先xy，最后一个为z
 
 `define QPU_QI_EVENT_QUEUE_DEPTH 10
 `define QPU_MEASURE_EVENT_QUEUE_DEPTH 10
 
 `define QPU_TIME_QUEUE_DEPTH 15                                
 
-`define QPU_QI_EVENT_WIDTH 9
+`define QPU_QI_EVENT_WIDTH 14
+`define QPU_QI_XYEVENT_WIDTH 14
+`define QPU_QI_ZEVENT_WIDTH 14
 `define QPU_MEASURE_EVENT_WIDTH `QPU_QUBIT_NUM
 `define QPU_TIME_WIDTH 16
-`define QPU_EVENT_WIRE_WIDTH (`QPU_QUBIT_NUM * `QPU_QI_EVENT_WIDTH + 2 * `QPU_MEASURE_EVENT_WIDTH)         //QI_event + measure_event
-`define QPU_QI_EVENT_WIRE_WIDTH (`QPU_QUBIT_NUM * `QPU_QI_EVENT_WIDTH + `QPU_TWO_QUBIT_GATE_LIST_WIDTH)
-`define QPU_EVNET_WIRE_FULL_WIDTH (`QPU_EVENT_WIRE_WIDTH + `QPU_TWO_QUBIT_GATE_LIST_WIDTH)                          //qi_event + measure_event + tqgl，输出至触发模块，不需要发送ptr
+`define QPU_EVENT_WIRE_WIDTH (`QPU_QUBIT_NUM * `QPU_QI_XYEVENT_WIDTH + `QPU_QI_ZEVENT_WIDTH + 2 * `QPU_MEASURE_EVENT_WIDTH)         //QI_xyevent + QI_zevent + measure_event
 
-`define QPU_QI_EVNET_FULL_WIDTH (`QPU_QI_EVENT_WIDTH + `QPU_QUBIT_NUM_LENGTH)
-`define QPU_QI_EVENT_QUEUE_WIDTH (`QPU_EVENT_PTR_WIDTH + `QPU_QI_EVENT_WIDTH + `QPU_QUBIT_NUM_LENGTH)               //只有QI事件需要qubit_num辅助定位波形，测量事件不需要，事件队列需要ptr
+
+`define QPU_QI_EVENT_WIRE_WIDTH (`QPU_QI_EVENT_NUM * `QPU_QI_EVENT_WIDTH)
+
+`define QPU_QI_EVENT_QUEUE_WIDTH (`QPU_EVENT_PTR_WIDTH + `QPU_QI_EVENT_WIDTH)               //只有QI事件需要qubit_num辅助定位波形，测量事件不需要，事件队列需要ptr
 `define QPU_MEASURE_EVENT_QUEUE_WIDTH (`QPU_EVENT_PTR_WIDTH + `QPU_MEASURE_EVENT_WIDTH)                            //事件队列需要ptr
+
+
+
+
 
 `define QPU_EVENT_PTR_WIDTH 5                     //太小的话，有可能出现，PTR套一圈，导致事件的ptr出错！！！！！！！
 
@@ -60,20 +66,21 @@
 `define QPU_QUANTUM_RFREG_NUM 32
 
 
-
-`define QPU_QUANTUM_NO_FEEDBACK_ADDR_BEGIN 0                                              /// 0.无反馈单比特门；1.测量结果为0反馈；2.测量结果为1反馈；3.测量结果相同反馈；4.两比特门；5.测量
-`define QPU_QUANTUM_NO_FEEDBACK_ADDR_END 9'b100000000
-`define QPU_QUANTUM_0_FEEDBACK_ADDR_BEGIN (`QPU_QUANTUM_NO_FEEDBACK_ADDR_END + 1)      //测量结果为0则执行
-`define QPU_QUANTUM_0_FEEDBACK_ADDR_END 9'b101000000
-`define QPU_QUANTUM_1_FEEDBACK_ADDR_BEGIN (`QPU_QUANTUM_0_FEEDBACK_ADDR_END + 1)
-`define QPU_QUANTUM_1_FEEDBACK_ADDR_END 9'b110000000
-
-`define QPU_QUANTUM_TWO_QUBIT_GATE_BOUNDARY 9'b111110000
-
-`define QPU_QUANTUM_EQU_FEEDBACK_ADDR_BEGIN (`QPU_QUANTUM_1_FEEDBACK_ADDR_END + 1)
-`define QPU_QUANTUM_EQU_FEEDBACK_ADDR_END (`QPU_QUANTUM_TWO_QUBIT_GATE_BOUNDARY - 1)
-
-
+        /*量子操作数编码 
+        首位：
+        0：xy方向单比特操作，包括反馈和非反馈，以及0门和测量
+        1：GATE
+        首位为0
+        测量操作0 00000000 ：无操作
+        0 0XXXXXXX：无反馈XY单门(127)
+        0 10XXXXXX：测量为1则执行的XY单门（64）
+        0 110XXXXX：测量为0则执行的XY单门（32）
+        0 111XXXXX：测量相同则执行的XY单门（31）
+        0 11111111：
+        首位为1
+        1 0XXXXXXX+XXXXX (XY方向GATE)（4096）
+        1 1XXXXXXX+XXXXX (Z方向GATE，包括组合GATE以及每个比特Z方向的单门及双门（4096）
+        */
 
 
  `define QPU_DECINFO_GRP_WIDTH    2
@@ -154,11 +161,17 @@
 `define QPU_DECINFO_BJP_WIDTH  (`QPU_DECINFO_BJP_BGT_MSB+1)
 
   //Quantum Instruction group
-      `define QPU_DECINFO_QIU_OPCODE1_LSB `QPU_DECINFO_SUBDECINFO_LSB
-      `define QPU_DECINFO_QIU_OPCODE1_MSB (`QPU_DECINFO_QIU_OPCODE1_LSB + 9 - 1)
+      `define QPU_DECINFO_QIU_QOP1_GATE_LSB `QPU_DECINFO_SUBDECINFO_LSB
+      `define QPU_DECINFO_QIU_QOP1_GATE_MSB (`QPU_DECINFO_QIU_QOP1_GATE_LSB + 1 - 1)
+    `define QPU_DECINFO_QIU_QOP1_GATE `QPU_DECINFO_QIU_QOP1_GATE_MSB : `QPU_DECINFO_QIU_QOP1_GATE_LSB
+      `define QPU_DECINFO_QIU_QOP2_GATE_LSB (`QPU_DECINFO_QIU_QOP1_GATE_MSB + 1)
+      `define QPU_DECINFO_QIU_QOP2_GATE_MSB (`QPU_DECINFO_QIU_QOP2_GATE_LSB + 1 - 1)
+    `define QPU_DECINFO_QIU_QOP1_GATE `QPU_DECINFO_QIU_QOP2_GATE_MSB : `QPU_DECINFO_QIU_QOP2_GATE_LSB
+      `define QPU_DECINFO_QIU_OPCODE1_LSB (`QPU_DECINFO_QIU_QOP2_GATE_MSB + 1)
+      `define QPU_DECINFO_QIU_OPCODE1_MSB (`QPU_DECINFO_QIU_OPCODE1_LSB + 14 - 1)
     `define QPU_DECINFO_QIU_OPCODE1 `QPU_DECINFO_QIU_OPCODE1_MSB : `QPU_DECINFO_QIU_OPCODE1_LSB
       `define QPU_DECINFO_QIU_OPCODE2_LSB (`QPU_DECINFO_QIU_OPCODE1_MSB + 1)
-      `define QPU_DECINFO_QIU_OPCODE2_MSB (`QPU_DECINFO_QIU_OPCODE2_LSB + 9 - 1)
+      `define QPU_DECINFO_QIU_OPCODE2_MSB (`QPU_DECINFO_QIU_OPCODE2_LSB + 14 - 1)
     `define QPU_DECINFO_QIU_OPCODE2 `QPU_DECINFO_QIU_OPCODE2_MSB : `QPU_DECINFO_QIU_OPCODE2_LSB
 
 `define QPU_DECINFO_QIU_WIDTH  (`QPU_DECINFO_QIU_OPCODE2_MSB+1)

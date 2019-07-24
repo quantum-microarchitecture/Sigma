@@ -26,7 +26,7 @@ module QPU_exu_alu_rglr(
   input  [`QPU_XLEN-1:0] alu_i_imm,
 
   input  [`QPU_TIME_WIDTH - 1 : 0] alu_i_clk,
-  input  [`QPU_QUBIT_NUM - 1 : 0] alu_i_qmr, ///qubit measure result
+  input   alu_i_qmr, ///qubit measure result(one result)
 
   input  [`QPU_DECINFO_ALU_WIDTH-1:0] alu_i_info,
   
@@ -69,7 +69,7 @@ module QPU_exu_alu_rglr(
 
   assign alu_req_alu_op1  =   op1zero ? {`QPU_XLEN{1'b0}} 
                            :  op1clk  ?  {{(`QPU_XLEN - `QPU_TIME_WIDTH){1'b0}},alu_i_clk}
-                           :  op1qmr  ?  {{(`QPU_XLEN - `QPU_QUBIT_NUM){1'b0}},alu_i_qmr}  
+                           :  op1qmr  ?  {{(`QPU_XLEN - 1){1'b0}},alu_i_qmr}  
                            :  alu_i_rs1;
 
   assign alu_req_alu_op2  = op2imm ? alu_i_imm : alu_i_rs2;
