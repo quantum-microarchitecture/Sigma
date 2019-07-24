@@ -17,10 +17,10 @@
 `define QPU_ADDR_SIZE 32
 `define QPU_XLEN 32
 `define QPU_RFIDX_WIDTH 5
-`define QPU_RFIDX_REAL_WIDTH 6                       //加flag位后为6
+`define QPU_RFIDX_REAL_WIDTH 6                       //加flag位后�?6
 
 `define QPU_QUBIT_NUM 12
-`define QPU_QUBIT_NUM_LENGTH 4                       //log(qubit_num+1)   最多支持15 qubit，0000表示无操作     
+`define QPU_QUBIT_NUM_LENGTH 4                       //log(qubit_num+1)   �?多支�?15 qubit�?0000表示无操�?     
 
 
 `define QPU_OITF_DEPTH  4
@@ -52,34 +52,34 @@
 
 `define QPU_QI_EVENT_WIRE_WIDTH (`QPU_QI_EVENT_NUM * `QPU_QI_EVENT_WIDTH)
 
-`define QPU_QI_EVENT_QUEUE_WIDTH (`QPU_EVENT_PTR_WIDTH + `QPU_QI_EVENT_WIDTH)               //只有QI事件需要qubit_num辅助定位波形，测量事件不需要，事件队列需要ptr
-`define QPU_MEASURE_EVENT_QUEUE_WIDTH (`QPU_EVENT_PTR_WIDTH + `QPU_MEASURE_EVENT_WIDTH)                            //事件队列需要ptr
+`define QPU_QI_EVENT_QUEUE_WIDTH (`QPU_EVENT_PTR_WIDTH + `QPU_QI_EVENT_WIDTH)               //只有QI事件�?要qubit_num辅助定位波形，测量事件不�?要，事件队列�?要ptr
+`define QPU_MEASURE_EVENT_QUEUE_WIDTH (`QPU_EVENT_PTR_WIDTH + `QPU_MEASURE_EVENT_WIDTH)                            //事件队列�?要ptr
 
 
 
 
 
-`define QPU_EVENT_PTR_WIDTH 5                     //太小的话，有可能出现，PTR套一圈，导致事件的ptr出错！！！！！！！
+`define QPU_EVENT_PTR_WIDTH 5                     //太小的话，有可能出现，PTR套一圈，导致事件的ptr出错！！！！！！�?
 
 `define QPU_RFREG_NUM 64 ///classical and quantum
 `define QPU_CLASSICAL_RFREG_NUM 32
 `define QPU_QUANTUM_RFREG_NUM 32
 
 
-        /*量子操作数编码 
-        首位：
-        0：xy方向单比特操作，包括反馈和非反馈，以及0门和测量
+        /*量子操作数编�? 
+        首位�?
+        0：xy方向单比特操作，包括反馈和非反馈，以�?0门和测量
         1：GATE
-        首位为0
+        首位�?0
         测量操作0 00000000 ：无操作
         0 0XXXXXXX：无反馈XY单门(127)
-        0 10XXXXXX：测量为1则执行的XY单门（64）
-        0 110XXXXX：测量为0则执行的XY单门（32）
-        0 111XXXXX：测量相同则执行的XY单门（31）
-        0 11111111：
-        首位为1
-        1 0XXXXXXX+XXXXX (XY方向GATE)（4096）
-        1 1XXXXXXX+XXXXX (Z方向GATE，包括组合GATE以及每个比特Z方向的单门及双门（4096）
+        0 10XXXXXX：测量为1则执行的XY单门�?64�?
+        0 110XXXXX：测量为0则执行的XY单门�?32�?
+        0 111XXXXX：测量相同则执行的XY单门�?31�?
+        0 11111111�?
+        首位�?1
+        1 0XXXXXXX+XXXXX (XY方向GATE)�?4096�?
+        1 1XXXXXXX+XXXXX (Z方向GATE，包括组合GATE以及每个比特Z方向的单门及双门�?4096�?
         */
 
 
@@ -166,7 +166,7 @@
     `define QPU_DECINFO_QIU_QOP1_GATE `QPU_DECINFO_QIU_QOP1_GATE_MSB : `QPU_DECINFO_QIU_QOP1_GATE_LSB
       `define QPU_DECINFO_QIU_QOP2_GATE_LSB (`QPU_DECINFO_QIU_QOP1_GATE_MSB + 1)
       `define QPU_DECINFO_QIU_QOP2_GATE_MSB (`QPU_DECINFO_QIU_QOP2_GATE_LSB + 1 - 1)
-    `define QPU_DECINFO_QIU_QOP1_GATE `QPU_DECINFO_QIU_QOP2_GATE_MSB : `QPU_DECINFO_QIU_QOP2_GATE_LSB
+    `define QPU_DECINFO_QIU_QOP2_GATE `QPU_DECINFO_QIU_QOP2_GATE_MSB : `QPU_DECINFO_QIU_QOP2_GATE_LSB
       `define QPU_DECINFO_QIU_OPCODE1_LSB (`QPU_DECINFO_QIU_QOP2_GATE_MSB + 1)
       `define QPU_DECINFO_QIU_OPCODE1_MSB (`QPU_DECINFO_QIU_OPCODE1_LSB + 14 - 1)
     `define QPU_DECINFO_QIU_OPCODE1 `QPU_DECINFO_QIU_OPCODE1_MSB : `QPU_DECINFO_QIU_OPCODE1_LSB
