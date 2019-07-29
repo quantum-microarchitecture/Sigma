@@ -68,7 +68,7 @@ module tb_exu_alu();
   wire [`QPU_PC_SIZE-1:0] disp_alu_pc;            
 
   wire [`QPU_TIME_WIDTH - 1 : 0] disp_alu_clk;
-  wire [`QPU_QUBIT_NUM - 1 : 0] disp_alu_qmr;
+  wire  disp_alu_qmr;
   wire [`QPU_EVENT_WIRE_WIDTH - 1 : 0] disp_alu_edata;
   wire [`QPU_EVENT_NUM - 1 : 0] disp_alu_oprand;
         //Quantum instruction
@@ -134,6 +134,11 @@ module tb_exu_alu();
   wire [`QPU_XLEN-1:0] alu_cwbck_o_data;
   wire [`QPU_RFIDX_REAL_WIDTH-1:0] alu_cwbck_o_rdidx;
 
+  wire alu_qcwbck_o_valid;
+  reg alu_qcwbck_o_ready;
+  wire [`QPU_XLEN-1:0] alu_qcwbck_o_data;
+  wire [`QPU_RFIDX_REAL_WIDTH-1:0] alu_qcwbck_o_rdidx;
+
   wire alu_twbck_o_valid;
   reg  alu_twbck_o_ready;
   wire [`QPU_TIME_WIDTH - 1 : 0] alu_twbck_o_data;
@@ -144,19 +149,6 @@ module tb_exu_alu();
   wire [(`QPU_EVENT_NUM - 1) : 0]        alu_ewbck_o_oprand;
 
 
-  // The lsu ICB Interface to LSU-ctrl
-  //    * Bus cmd channel
-  wire                         lsu_icb_cmd_valid; // Handshake valid
-  reg                          lsu_icb_cmd_ready; // Handshake ready
-  wire [`QPU_ADDR_SIZE-1:0]    lsu_icb_cmd_addr; // Bus transaction start addr 
-  wire                         lsu_icb_cmd_read;   // Read or write
-  wire [`QPU_XLEN-1:0]         lsu_icb_cmd_wdata; 
-  wire [`QPU_XLEN/8-1:0]       lsu_icb_cmd_wmask; 
-  
-  //    * Bus RSP channel
-  reg                          lsu_icb_rsp_valid; // Response valid 
-  wire                         lsu_icb_rsp_ready; // Response ready
-  reg  [`QPU_XLEN-1:0]         lsu_icb_rsp_rdata;
 /////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////
 
@@ -187,8 +179,11 @@ module tb_exu_alu();
     #10 i_instr = `instr_QWAIT;
     #2 i_instr = `instr_FMR;
     #2 i_instr = `instr_SMIS;
-    #2 i_instr = `instr_QI;
     #2 i_instr = `instr_measure;
+
+    #5 i_instr = `instr_QI_1;
+    #2 i_instr = `instr_QI_2;
+    #2 i_instr = `instr_QI_3;
 
     #5 i_instr = `instr_WFI;
   end
@@ -224,11 +219,10 @@ initial
 begin
     alu_cmt_ready = 1'b1;
     alu_cwbck_o_ready = 1'b1;
+    alu_qcwbck_o_ready = 1'b1; 
     alu_twbck_o_ready = 1'b1;
     alu_ewbck_o_ready = 1'b1;
-    lsu_icb_cmd_ready = 1'b1;
-    lsu_icb_rsp_valid = 1'b1;
-    lsu_icb_rsp_rdata = `QPU_XLEN'b0;
+
 
 end
 ///////////////////////////////////////////////////
@@ -374,6 +368,11 @@ end
     .cwbck_o_ready        (alu_cwbck_o_ready ),
     .cwbck_o_data         (alu_cwbck_o_data  ),
     .cwbck_o_rdidx        (alu_cwbck_o_rdidx ),
+
+    .qcwbck_o_valid       (alu_qcwbck_o_valid ), 
+    .qcwbck_o_ready       (alu_qcwbck_o_ready ),
+    .qcwbck_o_data        (alu_qcwbck_o_data  ),
+    .qcwbck_o_rdidx       (alu_qcwbck_o_rdidx ),
   
     .twbck_o_valid        (alu_twbck_o_valid ), 
     .twbck_o_ready        (alu_twbck_o_ready ),
@@ -382,18 +381,10 @@ end
     .ewbck_o_valid        (alu_ewbck_o_valid ), 
     .ewbck_o_ready        (alu_ewbck_o_ready ),
     .ewbck_o_data         (alu_ewbck_o_data  ),
-    .ewbck_o_oprand       (alu_ewbck_o_oprand),
+    .ewbck_o_oprand       (alu_ewbck_o_oprand)
 
-    .lsu_icb_cmd_valid   (lsu_icb_cmd_valid ),
-    .lsu_icb_cmd_ready   (lsu_icb_cmd_ready ),
-    .lsu_icb_cmd_addr    (lsu_icb_cmd_addr ),
-    .lsu_icb_cmd_read    (lsu_icb_cmd_read   ),
-    .lsu_icb_cmd_wdata   (lsu_icb_cmd_wdata ),
-    .lsu_icb_cmd_wmask   (lsu_icb_cmd_wmask ),
 
-    .lsu_icb_rsp_valid   (lsu_icb_rsp_valid ),
-    .lsu_icb_rsp_ready   (lsu_icb_rsp_ready ),
-    .lsu_icb_rsp_rdata   (lsu_icb_rsp_rdata)
+
 
 
   );

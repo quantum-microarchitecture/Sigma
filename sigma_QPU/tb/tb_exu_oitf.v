@@ -32,6 +32,7 @@ module tb_exu_oitf();
   wire dec_nqf;
   wire dec_measure;
   wire dec_fmr;
+  wire dec_tqg;
   //Branch instruction decode
   wire dec_bxx;
   wire [`QPU_XLEN-1:0] dec_bjp_imm;
@@ -56,6 +57,8 @@ module tb_exu_oitf();
   reg [`QPU_QUBIT_NUM - 1 : 0] mrf_data;
   reg [`QPU_EVENT_WIRE_WIDTH - 1 : 0] erf_data;
   reg [`QPU_EVENT_NUM - 1 : 0] erf_oprand;
+  reg [`QPU_TWO_QUBIT_GATE_LIST_WIDTH - 1 : 0] tqgl_cur;
+  reg [`QPU_TWO_QUBIT_GATE_LIST_WIDTH - 1 : 0] tqgl_pre;
   // Dispatch to ALU
 
   wire disp_alu_valid; 
@@ -73,6 +76,8 @@ module tb_exu_oitf();
   wire [`QPU_QUBIT_NUM - 1 : 0] disp_alu_qmr;
   wire [`QPU_EVENT_WIRE_WIDTH - 1 : 0] disp_alu_edata;
   wire [`QPU_EVENT_NUM - 1 : 0] disp_alu_oprand;
+  wire [(`QPU_TWO_QUBIT_GATE_LIST_WIDTH - 1) : 0] disp_alu_tqgl_pre;
+  wire [(`QPU_TWO_QUBIT_GATE_LIST_WIDTH - 1) : 0] disp_alu_tqgl_cur;
         //Quantum instruction
   wire disp_alu_ntp;//
   wire disp_alu_fmr;
@@ -126,6 +131,11 @@ module tb_exu_oitf();
   reg  alu_cwbck_o_ready; // Handshake ready
   wire [`QPU_XLEN-1:0] alu_cwbck_o_data;
   wire [`QPU_RFIDX_REAL_WIDTH-1:0] alu_cwbck_o_rdidx;
+
+  wire alu_qcwbck_o_valid;
+  reg alu_qcwbck_o_ready;
+  wire [`QPU_XLEN-1:0] alu_qcwbck_o_data;
+  wire [`QPU_RFIDX_REAL_WIDTH-1:0] alu_qcwbck_o_rdidx;
 
   wire alu_twbck_o_valid;
   reg  alu_twbck_o_ready;
@@ -235,6 +245,8 @@ module tb_exu_oitf();
     mrf_data = `QPU_QUBIT_NUM'b10;
     erf_data = 66'b0;
     erf_oprand = 8'b0;
+    tqgl_cur = 48'b0;
+    tqgl_pre = 48'b0;
 
 
   end
@@ -246,6 +258,7 @@ initial
 begin
     alu_cmt_ready = 1'b1;
     alu_cwbck_o_ready = 1'b1;
+    alu_qcwbck_o_ready = 1'b1; 
     alu_twbck_o_ready = 1'b1;
     alu_ewbck_o_ready = 1'b1;
     lsu_icb_cmd_ready = 1'b1;
@@ -290,6 +303,7 @@ always #(clk_period/2) clk = ~clk;
     .dec_need_qubitflag           (dec_nqf    ),
     .dec_measure                  (dec_measure),
     .dec_fmr                      (dec_fmr    ),
+    .dec_tqg                      (dec_tqg    ),
 
     .dec_bxx                      (dec_bxx),
     .dec_bjp_imm                  (dec_bjp_imm)
@@ -323,7 +337,8 @@ always #(clk_period/2) clk = ~clk;
     .disp_i_qmr            (mrf_data       ),
     .disp_i_edata          (erf_data       ),
     .disp_i_oprand         (erf_oprand     ),
-
+    .disp_i_tqgl_pre       (tqgl_pre       ),
+    .disp_i_tqgl_cur       (tqgl_cur       ),
 
     .disp_o_alu_valid    (disp_alu_valid   ),
     .disp_o_alu_ready    (disp_alu_ready   ),
@@ -341,6 +356,8 @@ always #(clk_period/2) clk = ~clk;
     .disp_o_alu_qmr      (disp_alu_qmr     ),
     .disp_o_alu_edata    (disp_alu_edata   ),
     .disp_o_alu_oprand   (disp_alu_oprand  ),
+    .disp_o_alu_tqgl_pre (disp_alu_tqgl_pre),
+    .disp_o_alu_tqgl_cur (disp_alu_tqgl_cur),
 
     .disp_o_alu_ntp      (disp_alu_ntp     ),
     .disp_o_alu_fmr      (disp_alu_fmr     ),
@@ -387,6 +404,8 @@ always #(clk_period/2) clk = ~clk;
     .i_qmr               (disp_alu_qmr     ),
     .i_edata             (disp_alu_edata   ),
     .i_oprand            (disp_alu_oprand  ),
+    .i_tqgl_pre          (disp_alu_tqgl_pre),
+    .i_tqgl_cur          (disp_alu_tqgl_cur),
 
     .i_ntp               (disp_alu_ntp     ),
     .i_fmr               (disp_alu_fmr     ),
@@ -408,6 +427,11 @@ always #(clk_period/2) clk = ~clk;
     .cwbck_o_ready        (alu_cwbck_o_ready ),
     .cwbck_o_data         (alu_cwbck_o_data  ),
     .cwbck_o_rdidx        (alu_cwbck_o_rdidx ),
+
+    .qcwbck_o_valid       (alu_qcwbck_o_valid ), 
+    .qcwbck_o_ready       (alu_qcwbck_o_ready ),
+    .qcwbck_o_data        (alu_qcwbck_o_data  ),
+    .qcwbck_o_rdidx       (alu_qcwbck_o_rdidx ),
   
     .twbck_o_valid        (alu_twbck_o_valid ), 
     .twbck_o_ready        (alu_twbck_o_ready ),
@@ -416,18 +440,9 @@ always #(clk_period/2) clk = ~clk;
     .ewbck_o_valid        (alu_ewbck_o_valid ), 
     .ewbck_o_ready        (alu_ewbck_o_ready ),
     .ewbck_o_data         (alu_ewbck_o_data  ),
-    .ewbck_o_oprand       (alu_ewbck_o_oprand),
+    .ewbck_o_oprand       (alu_ewbck_o_oprand)
 
-    .lsu_icb_cmd_valid   (lsu_icb_cmd_valid ),
-    .lsu_icb_cmd_ready   (lsu_icb_cmd_ready ),
-    .lsu_icb_cmd_addr    (lsu_icb_cmd_addr ),
-    .lsu_icb_cmd_read    (lsu_icb_cmd_read   ),
-    .lsu_icb_cmd_wdata   (lsu_icb_cmd_wdata ),
-    .lsu_icb_cmd_wmask   (lsu_icb_cmd_wmask ),
 
-    .lsu_icb_rsp_valid   (lsu_icb_rsp_valid ),
-    .lsu_icb_rsp_ready   (lsu_icb_rsp_ready ),
-    .lsu_icb_rsp_rdata   (lsu_icb_rsp_rdata)
 
 
   );

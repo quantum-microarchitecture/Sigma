@@ -1,4 +1,4 @@
-
+ 
 
 `include "../QPU/QPU_defines.v"
 `include "tb_define.v"
@@ -51,9 +51,11 @@ module tb_exu_disp();
 
 
   reg [`QPU_TIME_WIDTH - 1 : 0] trf_data;
-  reg [`QPU_QUBIT_NUM - 1 : 0] mrf_data;
+  reg  mrf_data;
   reg [`QPU_EVENT_WIRE_WIDTH - 1 : 0] erf_data;
   reg [`QPU_EVENT_NUM - 1 : 0] erf_oprand;
+
+
   // Dispatch to ALU
 
   wire disp_alu_valid; 
@@ -70,9 +72,10 @@ module tb_exu_disp();
   wire [`QPU_PC_SIZE-1:0] disp_alu_pc;            
 
   wire [`QPU_TIME_WIDTH - 1 : 0] disp_alu_clk;
-  wire [`QPU_QUBIT_NUM - 1 : 0] disp_alu_qmr;
+  wire  disp_alu_qmr;
   wire [`QPU_EVENT_WIRE_WIDTH - 1 : 0] disp_alu_edata;
   wire [`QPU_EVENT_NUM - 1 : 0] disp_alu_oprand;
+
         //Quantum instruction
   wire disp_alu_ntp;//
   wire disp_alu_fmr;
@@ -133,8 +136,11 @@ module tb_exu_disp();
     #10 i_instr = `instr_QWAIT;
     #2 i_instr = `instr_FMR;
     #2 i_instr = `instr_SMIS;
-    #2 i_instr = `instr_QI;
     #2 i_instr = `instr_measure;
+
+    #5 i_instr = `instr_QI_1;
+    #2 i_instr = `instr_QI_2;
+    #2 i_instr = `instr_QI_3;
 
     #5 i_instr = `instr_WFI;
 
@@ -147,9 +153,10 @@ module tb_exu_disp();
     crf_rs1 = `QPU_XLEN'b0;
     crf_rs2 = `QPU_XLEN'b0;
     trf_data = `QPU_TIME_WIDTH'b110;
-    mrf_data = `QPU_QUBIT_NUM'b10;
+    mrf_data = 1'b1;
     erf_data = 66'b0;
     erf_oprand = 8'b0;
+
 
     disp_alu_ready = 1'b1;
     disp_alu_longpipe = 1'b1;
@@ -262,10 +269,9 @@ module tb_exu_disp();
     .disp_oitf_rs1idx    (disp_oitf_rs1idx),
     .disp_oitf_rs2idx    (disp_oitf_rs2idx),
     .disp_oitf_rdidx     (disp_oitf_rdidx ),
-    .disp_oitf_qubitlist (disp_oitf_qubitlist),
+    .disp_oitf_qubitlist (disp_oitf_qubitlist)
    
-    .clk                 (clk  ),
-    .rst_n               (rst_n) 
+
   );
 
 

@@ -63,8 +63,11 @@ module tb_exu_decode();
     #10 i_instr = `instr_QWAIT;
     #2 i_instr = `instr_FMR;
     #2 i_instr = `instr_SMIS;
-    #2 i_instr = `instr_QI;
     #2 i_instr = `instr_measure;
+
+    #5 i_instr = `instr_QI_1;
+    #2 i_instr = `instr_QI_2;
+    #2 i_instr = `instr_QI_3;
 
     #5 i_instr = `instr_WFI;
 
