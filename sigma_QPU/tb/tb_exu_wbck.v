@@ -32,7 +32,6 @@ module tb_exu_wbck();
   wire dec_nqf;
   wire dec_measure;
   wire dec_fmr;
-  wire dec_tqg;
   //Branch instruction decode
   wire dec_bxx;
   wire [`QPU_XLEN-1:0] dec_bjp_imm;
@@ -76,8 +75,6 @@ module tb_exu_wbck();
   wire [`QPU_QUBIT_NUM - 1 : 0] disp_alu_qmr;
   wire [`QPU_EVENT_WIRE_WIDTH - 1 : 0] disp_alu_edata;
   wire [`QPU_EVENT_NUM - 1 : 0] disp_alu_oprand;
-  wire [(`QPU_TWO_QUBIT_GATE_LIST_WIDTH - 1) : 0] disp_alu_tqgl_pre;
-  wire [(`QPU_TWO_QUBIT_GATE_LIST_WIDTH - 1) : 0] disp_alu_tqgl_cur;
         //Quantum instruction
   wire disp_alu_ntp;//
   wire disp_alu_fmr;
@@ -142,7 +139,6 @@ module tb_exu_wbck();
   wire alu_ewbck_o_valid;
   wire [(`QPU_EVENT_WIRE_WIDTH - 1) : 0]  alu_ewbck_o_data;
   wire [(`QPU_EVENT_NUM - 1) : 0]        alu_ewbck_o_oprand;
-  wire [(`QPU_TWO_QUBIT_GATE_LIST_WIDTH - 1) : 0] alu_ewbck_o_tqgl;
 
 
 
@@ -231,25 +227,28 @@ module tb_exu_wbck();
 ////////////////////////decode//////////////////////////////////////
   initial
   begin
-    #0 i_instr = `SMIS_S6_010100;
-    #2 i_instr = `SMIS_S7_101000;
-    #2 i_instr = `SMIS_S8_100100;
-    #2 i_instr = `SMIS_S9_001100;
-    #2 i_instr = `T0_H_S6_X90_S7;
-    #2 i_instr = `T1_CNOTS_S2_CNOTT_S3;
-    #2 i_instr = `T2_Y90_S8;
-    #2 i_instr = `T1_MEASURE_S9;
-    #2 i_instr = `QWAIT_30;
-    #2 i_instr = `ADDI_R1_R0_001100;
-    #2 i_instr = `FMR_R2_S9;
-    #2 i_instr = `BEQ_R1_R2_CASE2;
-    #2 i_instr = `T0_X90_S2;
-    #2 i_instr = `QWAIT_1;
-    #2 i_instr = `BEQ_R0_R0_NEXT;
-    #2 i_instr = `T0_H_S2;
-    #2 i_instr = `QWAIT_1;
-    #2 i_instr = `T0_MEASURE_S2;
-    #2 i_instr = `QWAIT_30;
+    #0 i_pc = `QPU_PC_SIZE'b0;
+    #0 i_prdt_taken = 1'b0;
+
+    #0 i_instr = `SMIS_S6_010100;                         //1
+    #2 i_instr = `SMIS_S7_101000;                         //2
+    #2 i_instr = `SMIS_S8_100100;                         //3  
+    #2 i_instr = `SMIS_S9_001100;                         //4
+    #2 i_instr = `T0_H_S6_X90_S7;                         //5    
+    #2 i_instr = `T1_CNOTS_S2_CNOTT_S3;                   //6
+    #2 i_instr = `T2_Y90_S8;                              //7  
+    #2 i_instr = `T1_MEASURE_S9;                          //8
+    #2 i_instr = `QWAIT_30;                               //9    
+    #2 i_instr = `ADDI_R1_R0_001100;                      //10
+    #2 i_instr = `FMR_R2_S9;                              //11
+    #2 i_instr = `BEQ_R1_R2_CASE2;                        //12  
+    #2 i_instr = `T0_X90_S2;                              //13
+    #2 i_instr = `QWAIT_1;                                //14
+    #2 i_instr = `BEQ_R0_R0_NEXT;                         //15  
+    #2 i_instr = `T0_H_S2;                                //16    
+    #2 i_instr = `QWAIT_1;                                //17
+    #2 i_instr = `T0_MEASURE_S2;                          //18  
+    #2 i_instr = `QWAIT_30;                               //19
   end
 ////////////////////////////////////////////////////////////////////
 
@@ -265,8 +264,7 @@ module tb_exu_wbck();
     mrf_data = `QPU_QUBIT_NUM'b10;
     erf_data = 66'b0;
     erf_oprand = 8'b0;
-    tqgl_cur = 48'b0;
-    tqgl_pre = 48'b0;
+
 
 
   end
@@ -325,8 +323,6 @@ end
     .dec_new_timepoint            (dec_ntp    ),
     .dec_need_qubitflag           (dec_nqf    ),
     .dec_measure                  (dec_measure),
-    .dec_fmr                      (dec_fmr    ),
-    .dec_tqg                      (dec_tqg    ),
 
     .dec_bxx                      (dec_bxx),
     .dec_bjp_imm                  (dec_bjp_imm)
@@ -360,8 +356,7 @@ end
     .disp_i_qmr            (mrf_data       ),
     .disp_i_edata          (erf_data       ),
     .disp_i_oprand         (erf_oprand     ),
-    .disp_i_tqgl_pre       (tqgl_pre       ),
-    .disp_i_tqgl_cur       (tqgl_cur       ),
+
 
     .disp_o_alu_valid    (disp_alu_valid   ),
     .disp_o_alu_ready    (disp_alu_ready   ),
@@ -379,8 +374,7 @@ end
     .disp_o_alu_qmr      (disp_alu_qmr     ),
     .disp_o_alu_edata    (disp_alu_edata   ),
     .disp_o_alu_oprand   (disp_alu_oprand  ),
-    .disp_o_alu_tqgl_pre (disp_alu_tqgl_pre),
-    .disp_o_alu_tqgl_cur (disp_alu_tqgl_cur),
+
 
     .disp_o_alu_ntp      (disp_alu_ntp     ),
     .disp_o_alu_fmr      (disp_alu_fmr     ),
@@ -427,8 +421,7 @@ end
     .i_qmr               (disp_alu_qmr     ),
     .i_edata             (disp_alu_edata   ),
     .i_oprand            (disp_alu_oprand  ),
-    .i_tqgl_pre          (disp_alu_tqgl_pre),
-    .i_tqgl_cur          (disp_alu_tqgl_cur),
+
 
     .i_ntp               (disp_alu_ntp     ),
     .i_fmr               (disp_alu_fmr     ),
@@ -528,7 +521,6 @@ end
     .alu_ewbck_i_ready   (alu_ewbck_o_ready ),
     .alu_ewbck_i_data    (alu_ewbck_o_data  ),
     .alu_ewbck_i_oprand  (alu_ewbck_o_oprand),
-    .alu_ewbck_i_tqgl    (alu_ewbck_o_tqgl  ),
 
 
     .crf_wbck_o_ena      (crf_wbck_ena    ),
