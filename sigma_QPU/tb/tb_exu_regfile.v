@@ -32,7 +32,6 @@ module tb_exu_regfile();
   wire dec_nqf;
   wire dec_measure;
   wire dec_fmr;
-  wire dec_tqg;
   //Branch instruction decode
   wire dec_bxx;
   wire [`QPU_XLEN-1:0] dec_bjp_imm;
@@ -50,8 +49,6 @@ module tb_exu_regfile();
   wire  [`QPU_RFIDX_REAL_WIDTH-1:0] i_rs1idx;
   wire  [`QPU_RFIDX_REAL_WIDTH-1:0] i_rs2idx;
 
-  wire [`QPU_TWO_QUBIT_GATE_LIST_WIDTH - 1 : 0] tqgl_cur;
-  wire [`QPU_TWO_QUBIT_GATE_LIST_WIDTH - 1 : 0] tqgl_pre;
 
   // Dispatch to ALU
 
@@ -70,8 +67,6 @@ module tb_exu_regfile();
   wire [`QPU_QUBIT_NUM - 1 : 0] disp_alu_qmr;
   wire [`QPU_EVENT_WIRE_WIDTH - 1 : 0] disp_alu_edata;
   wire [`QPU_EVENT_NUM - 1 : 0] disp_alu_oprand;
-  wire [(`QPU_TWO_QUBIT_GATE_LIST_WIDTH - 1) : 0] disp_alu_tqgl_pre;
-  wire [(`QPU_TWO_QUBIT_GATE_LIST_WIDTH - 1) : 0] disp_alu_tqgl_cur;
         //Quantum instruction
   wire disp_alu_ntp;//
   wire disp_alu_fmr;
@@ -136,7 +131,7 @@ module tb_exu_regfile();
   wire alu_ewbck_o_valid;
   wire [(`QPU_EVENT_WIRE_WIDTH - 1) : 0]  alu_ewbck_o_data;
   wire [(`QPU_EVENT_NUM - 1) : 0]        alu_ewbck_o_oprand;
-  wire [(`QPU_TWO_QUBIT_GATE_LIST_WIDTH - 1) : 0] alu_ewbck_o_tqgl;
+
 
 
 
@@ -212,7 +207,7 @@ module tb_exu_regfile();
   wire erf_wbck_ena;
   wire [(`QPU_EVENT_WIRE_WIDTH - 1) : 0] erf_wbck_data;
   wire [(`QPU_EVENT_NUM - 1) : 0] erf_wbck_oprand;
-  wire [(`QPU_TWO_QUBIT_GATE_LIST_WIDTH - 1) : 0] erf_wbck_tqgl;
+
 
   wire tiq_wbck_ena;
   reg  tiq_wbck_ready;
@@ -356,7 +351,6 @@ end
     .dec_need_qubitflag           (dec_nqf    ),
     .dec_measure                  (dec_measure),
     .dec_fmr                      (dec_fmr    ),
-    .dec_tqg                      (dec_tqg    ),
 
     .dec_bxx                      (dec_bxx),
     .dec_bjp_imm                  (dec_bjp_imm)
@@ -390,8 +384,6 @@ end
     .disp_i_qmr            (mrf_data       ),
     .disp_i_edata          (erf_data       ),
     .disp_i_oprand         (erf_oprand     ),
-    .disp_i_tqgl_pre       (tqgl_pre       ),
-    .disp_i_tqgl_cur       (tqgl_cur       ),
 
     .disp_o_alu_valid    (disp_alu_valid   ),
     .disp_o_alu_ready    (disp_alu_ready   ),
@@ -409,8 +401,6 @@ end
     .disp_o_alu_qmr      (disp_alu_qmr     ),
     .disp_o_alu_edata    (disp_alu_edata   ),
     .disp_o_alu_oprand   (disp_alu_oprand  ),
-    .disp_o_alu_tqgl_pre (disp_alu_tqgl_pre),
-    .disp_o_alu_tqgl_cur (disp_alu_tqgl_cur),
 
     .disp_o_alu_ntp      (disp_alu_ntp     ),
     .disp_o_alu_fmr      (disp_alu_fmr     ),
@@ -457,8 +447,6 @@ end
     .i_qmr               (disp_alu_qmr     ),
     .i_edata             (disp_alu_edata   ),
     .i_oprand            (disp_alu_oprand  ),
-    .i_tqgl_pre          (disp_alu_tqgl_pre),
-    .i_tqgl_cur          (disp_alu_tqgl_cur),
 
     .i_ntp               (disp_alu_ntp     ),
     .i_fmr               (disp_alu_fmr     ),
@@ -493,8 +481,7 @@ end
     .ewbck_o_valid        (alu_ewbck_o_valid ), 
     .ewbck_o_ready        (alu_ewbck_o_ready ),
     .ewbck_o_data         (alu_ewbck_o_data  ),
-    .ewbck_o_oprand       (alu_ewbck_o_oprand),
-    .ewbck_o_tqgl         (alu_ewbck_o_tqgl  )
+    .ewbck_o_oprand       (alu_ewbck_o_oprand)
 
 
 
@@ -558,8 +545,7 @@ end
     .alu_ewbck_i_valid   (alu_ewbck_o_valid ), 
     .alu_ewbck_i_ready   (alu_ewbck_o_ready ),
     .alu_ewbck_i_data    (alu_ewbck_o_data  ),
-    .alu_ewbck_i_oprand  (alu_ewbck_o_oprand),
-    .alu_ewbck_i_tqgl    (alu_ewbck_o_tqgl  ),                         
+    .alu_ewbck_i_oprand  (alu_ewbck_o_oprand),                       
 
 
     .crf_wbck_o_ena      (crf_wbck_ena    ),
@@ -577,7 +563,6 @@ end
     .erf_wbck_o_ena      (erf_wbck_ena    ),
     .erf_wbck_o_data     (erf_wbck_data   ),
     .erf_wbck_o_oprand   (erf_wbck_oprand ),
-    .erf_wbck_o_tqgl     (erf_wbck_tqgl   ),
 
     .tiq_wbck_o_ena      (tiq_wbck_ena    ),
     .tiq_wbck_o_ready    (tiq_wbck_ready  ),
@@ -593,8 +578,6 @@ end
     .read_src2_idx          (i_rs2idx       ),
     .read_src1_data         (crf_rs1        ),
     .read_src2_data         (crf_rs2        ),
-    .read_tqg_pair_idx      (tqgl_cur       ),
-    .dec_tqg                (dec_tqg        ),
  
     .cwbck_dest_wen         (crf_wbck_ena   ),
     .cwbck_dest_idx         (crf_wbck_rdidx ),
@@ -612,11 +595,9 @@ end
     .ewbck_dest_wen         (erf_wbck_ena   ),
     .ewbck_dest_oprand      (erf_wbck_oprand),
     .ewbck_dest_data        (erf_wbck_data  ),
-    .ewbck_dest_tqgl        (erf_wbck_tqgl  ),
 
     .read_event_oprand      (erf_oprand     ),
     .read_event_data        (erf_data       ),
-    .read_event_tqgl        (tqgl_pre       ),
 
     .mcu_measure_i_data     (mcu_i_measurement        ),
     .mcu_measure_i_wen      (mcu_i_wen                ),

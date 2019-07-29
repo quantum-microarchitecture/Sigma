@@ -75,7 +75,7 @@
   `define T0_H_S6_X90_S7 {3'b000,5'b00110,`GATE_H,5'b00111,`GATE_X90,`flag_1}
   `define T1_CNOTS_S2_CNOTT_S3 {3'b001,5'b00010,`GATE_CNOTS,5'b00011,`GATE_CNOTT,`flag_1}
   `define T2_Y90_S8 {3'b010,5'b01000,`GATE_Y90,5'b00000,`GATE_0,`flag_1}
-  `define T1_MEASURE_S9 {3'b001,5'b0,9'b0,5'b01001,9'b111111111,`flag_1}
+  `define T1_MEASURE_S9 {3'b001,5'b0,9'b0,5'b01001,9'b011111111,`flag_1}
   `define QWAIT_30 {3'b0,5'b0,9'b000011110,5'b0,5'b0,`opcode_10,`opcode_01,`flag_0}
   `define ADDI_R1_R0_001100 {`func_000,5'b0,9'b000001100,5'b00000,5'b00001,`opcode_00,`opcode_01,`flag_0}
   `define FMR_R2_S9 {`func_000,5'b0,9'b0,5'b01001,5'b00010,`opcode_11,`opcode_01,`flag_0}

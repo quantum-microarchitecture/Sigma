@@ -56,8 +56,6 @@ module tb_exu_wbck();
   reg [`QPU_QUBIT_NUM - 1 : 0] mrf_data;
   reg [`QPU_EVENT_WIRE_WIDTH - 1 : 0] erf_data;
   reg [`QPU_EVENT_NUM - 1 : 0] erf_oprand;
-  reg [`QPU_TWO_QUBIT_GATE_LIST_WIDTH - 1 : 0] tqgl_cur;
-  reg [`QPU_TWO_QUBIT_GATE_LIST_WIDTH - 1 : 0] tqgl_pre;
   // Dispatch to ALU
 
   wire disp_alu_valid; 
@@ -72,7 +70,7 @@ module tb_exu_wbck();
   wire [`QPU_PC_SIZE-1:0] disp_alu_pc;            
 
   wire [`QPU_TIME_WIDTH - 1 : 0] disp_alu_clk;
-  wire [`QPU_QUBIT_NUM - 1 : 0] disp_alu_qmr;
+  wire  disp_alu_qmr;
   wire [`QPU_EVENT_WIRE_WIDTH - 1 : 0] disp_alu_edata;
   wire [`QPU_EVENT_NUM - 1 : 0] disp_alu_oprand;
         //Quantum instruction
@@ -213,7 +211,7 @@ module tb_exu_wbck();
   wire erf_wbck_ena;
   wire [(`QPU_EVENT_WIRE_WIDTH - 1) : 0] erf_wbck_data;
   wire [(`QPU_EVENT_NUM - 1) : 0] erf_wbck_oprand;
-  wire [(`QPU_TWO_QUBIT_GATE_LIST_WIDTH - 1) : 0] erf_wbck_tqgl;
+
 
   wire tiq_wbck_ena;
   reg  tiq_wbck_ready;
@@ -456,8 +454,7 @@ end
     .ewbck_o_valid        (alu_ewbck_o_valid ), 
     .ewbck_o_ready        (alu_ewbck_o_ready ),
     .ewbck_o_data         (alu_ewbck_o_data  ),
-    .ewbck_o_oprand       (alu_ewbck_o_oprand),
-    .ewbck_o_tqgl         (alu_ewbck_o_tqgl  )
+    .ewbck_o_oprand       (alu_ewbck_o_oprand)
 
 
   );
@@ -538,7 +535,6 @@ end
     .erf_wbck_o_ena      (erf_wbck_ena    ),
     .erf_wbck_o_data     (erf_wbck_data   ),
     .erf_wbck_o_oprand   (erf_wbck_oprand ),
-    .erf_wbck_o_tqgl     (erf_wbck_tqgl   ),
 
     .tiq_wbck_o_ena      (tiq_wbck_ena    ),
     .tiq_wbck_o_ready    (tiq_wbck_ready  ),
