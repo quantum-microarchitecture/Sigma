@@ -6,7 +6,7 @@
   `define func_010 3'b010
   `define func_011 3'b011
 
-  `define imm_13_9 5'b10101
+  `define imm_13_9 5'b00101
   `define imm_8_0 9'b101010101
 
   `define rs2 5'b01010
@@ -21,8 +21,14 @@
   `define flag_0 1'b0
   `define flag_1 1'b1
 
-  `define GATE1 9'b111100001
-  `define GATE2 9'b000011110
+  `define GATEZ 9'b111100001
+  `define GATEXY 9'b100011110
+
+  `define NGATE1 9'b000101010  //无反馈XY单门
+  `define NGATE2 9'b010010101  //测量为1则执行的XY单门
+  `define NGATE3 9'b011001010  //测量为0则执行的XY单门
+  `define NGATE4 9'b011101010  //测量相同则执行的XY单门
+
   
   `define instr_LOAD {`func_010,`imm_13_9,`imm_8_0,`rs1,`rd,`opcode_00,`opcode_00,`flag_0}
   `define instr_STORE {`func_010,`rs2,`imm_8_0,`rs1,`imm_13_9,`opcode_01,`opcode_00,`flag_0}
@@ -46,8 +52,11 @@
   `define instr_QWAIT {`func_010,`rs2,`imm_8_0,`imm_13_9,`rd,`opcode_10,`opcode_01,`flag_0}
   `define instr_FMR {`func_000,5'b0,9'b0,`rs1,`rd,`opcode_11,`opcode_01,`flag_0}
   `define instr_SMIS {`func_010,`rs2,`imm_8_0,`imm_13_9,`rd,`opcode_00,`opcode_11,`flag_0}
-  `define instr_QI {3'b111,`rs2,`GATE2,`rs1,`GATE1,`flag_1}
-  `define instr_measure{3'b011,5'b0,9'b0,`rs1,9'b111111111,`flag_1}
+  `define instr_measure{3'b011,5'b0,9'b0,`rs1,9'b011111111,`flag_1}
+
+  `define instr_QI_1 {3'b011,`rs2,`NGATE1,`rs1,`NGATE2,`flag_1}
+  `define instr_QI_2 {3'b011,`rs2,`NGATE3,`rs1,`NGATE4,`flag_1}
+  `define instr_QI_3 {3'b011,`rs2,`GATEZ,`rs1,`GATEXY,`flag_1}
 
   `define instr_WFI {27'b0,`opcode_00,`opcode_10,`flag_0}
 

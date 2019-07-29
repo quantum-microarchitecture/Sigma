@@ -67,7 +67,7 @@ module QPU_exu_alu_qiu(
   generate
     for(i = 0 ; i< `QPU_EVENT_NUM ; i = i + 1) begin
       ///对于非测量指令，event oprand 的对应位，表示该比特是否做操作，opcode为操作波形的地址
-      if (i < `QPU_QI_EVENT_NUM) begin
+      if (i < `QPU_QI_XYEVENT_NUM) begin
 
 
 
@@ -94,7 +94,7 @@ module QPU_exu_alu_qiu(
       end
 
       ///对于测量指令，event oprand 的对应位，表示该该操作为测量操作，opcode为执行测量操作的比特掩码
-      else if (i == `QPU_QI_EVENT_NUM) begin
+      else if (i == `QPU_QI_XYEVENT_NUM) begin
         assign qiu_o_wbck_oprand[i] = qop2_is_gate;
         
         assign qiu_o_wbck_edata[((i+1)*`QPU_QI_ZEVENT_WIDTH) - 1 : i*`QPU_QI_ZEVENT_WIDTH] = 

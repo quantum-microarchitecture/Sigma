@@ -62,8 +62,7 @@ module QPU_exu_alu_dpath(
 
 
   wire op_add;
-  wire op_sub = op_cmp_lt | op_cmp_gt | op_sub;
-  wire op_addsub = op_add | op_sub; 
+  wire op_sub;
 
   wire op_or;
   wire op_xor;
@@ -163,7 +162,7 @@ module QPU_exu_alu_dpath(
         ({`QPU_XLEN{op_or       }} & orer_res )
       | ({`QPU_XLEN{op_and      }} & ander_res)
       | ({`QPU_XLEN{op_xor      }} & xorer_res)
-      | ({`QPU_XLEN{op_addsub   }} & adder_res[`QPU_XLEN-1:0])
+      | ({`QPU_XLEN{adder_addsub   }} & adder_res[`QPU_XLEN-1:0])
         ;
 
   /////////////////////////////////////////////////////////////////////
@@ -171,7 +170,7 @@ module QPU_exu_alu_dpath(
   /////////////////////////////////////////////////////////////////////
   //  The ALU-Datapath Mux for the requestors 
   // for LSU,only add to get the real address
-  localparam DPATH_MUX_WIDTH = ((`QPU_XLEN*2)+8);
+  localparam DPATH_MUX_WIDTH = ((`QPU_XLEN*2)+9);
 
   assign  {
      mux_op1
@@ -207,6 +206,7 @@ module QPU_exu_alu_dpath(
             ,1'b0
             ,1'b0
             ,1'b0
+            ,1'b0
             ,bjp_req_alu_cmp_eq 
             ,bjp_req_alu_cmp_ne 
             ,bjp_req_alu_cmp_lt 
@@ -216,6 +216,7 @@ module QPU_exu_alu_dpath(
              qiu_req_alu_op1
             ,qiu_req_alu_op2
             ,1'b1
+            ,1'b0
             ,1'b0
             ,1'b0
             ,1'b0

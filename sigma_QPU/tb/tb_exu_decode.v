@@ -33,7 +33,6 @@ module tb_exu_decode();
   wire dec_need_qubitflag;
   wire dec_measure;
   wire dec_fmr;
-  wire dec_tqg;
   //Branch instruction decode
   wire dec_bxx;
   wire [`QPU_XLEN-1:0] dec_bjp_imm;
@@ -64,8 +63,11 @@ module tb_exu_decode();
     #10 i_instr = `instr_QWAIT;
     #2 i_instr = `instr_FMR;
     #2 i_instr = `instr_SMIS;
-    #2 i_instr = `instr_QI;
     #2 i_instr = `instr_measure;
+
+    #5 i_instr = `instr_QI_1;
+    #2 i_instr = `instr_QI_2;
+    #2 i_instr = `instr_QI_3;
 
     #5 i_instr = `instr_WFI;
 
@@ -96,7 +98,6 @@ module tb_exu_decode();
       .dec_need_qubitflag(dec_need_qubitflag),
       .dec_measure(dec_measure),
       .dec_fmr(dec_fmr),
-      .dec_tqg(dec_tqg    ),
 
       .dec_bxx(dec_bxx),
       .dec_bjp_imm(dec_bjp_imm)

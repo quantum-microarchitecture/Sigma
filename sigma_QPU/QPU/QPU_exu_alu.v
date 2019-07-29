@@ -81,7 +81,7 @@ module QPU_exu_alu(
   input  ewbck_o_ready,
   output [(`QPU_EVENT_WIRE_WIDTH - 1) : 0]  ewbck_o_data,
 
-  output [(`QPU_EVENT_NUM - 1) : 0]        ewbck_o_oprand,
+  output [(`QPU_EVENT_NUM - 1) : 0]        ewbck_o_oprand
 
 
   );
@@ -122,7 +122,7 @@ module QPU_exu_alu(
                    | (qiu_i_ready & qiu_op)
                      ;
 
-  
+  assign i_longpipe =  1'b0;
 
 
   
