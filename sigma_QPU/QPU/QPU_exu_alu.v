@@ -3,7 +3,7 @@
                                                                          
 //=====================================================================
 //
-// Designer   : QI ZHOU test1
+// Designer   : QI ZHOU
 //
 // Description:
 //  The ALU module to implement the compute function unit

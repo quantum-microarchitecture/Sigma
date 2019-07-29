@@ -2,7 +2,7 @@
                                                                          
 //=====================================================================
 //
-// Designer   : QI ZHOU test2
+// Designer   : QI ZHOU
 //
 // Description:
 //  This module to implement the LSU 
