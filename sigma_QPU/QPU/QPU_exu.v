@@ -53,7 +53,7 @@ module QPU_exu(
   ///data to trigger
   output trigger_o_clk_ena,
   input  [`QPU_TIME_WIDTH - 1 : 0] trigger_o_clk,
-  output [`QPU_EVNET_WIRE_FULL_WIDTH - 1 : 0] trigger_o_data,
+  output [`QPU_EVENT_WIRE_WIDTH - 1 : 0] trigger_o_data,
   output [`QPU_EVENT_NUM - 1: 0] trigger_o_valid,
 
   input  clk,
@@ -254,7 +254,7 @@ module QPU_exu(
   wire  [`QPU_RFIDX_REAL_WIDTH-1:0] disp_oitf_rs1idx;
   wire  [`QPU_RFIDX_REAL_WIDTH-1:0] disp_oitf_rs2idx;
   wire  [`QPU_RFIDX_REAL_WIDTH-1:0] disp_oitf_rdidx;
-  wire [`QPU_QUBIT_NUM - 1 : 0] disp_oitf_qubitlist
+  wire [`QPU_QUBIT_NUM - 1 : 0] disp_oitf_qubitlist;
 
   wire  disp_oitf_rs1en;
   wire  disp_oitf_rs2en;
