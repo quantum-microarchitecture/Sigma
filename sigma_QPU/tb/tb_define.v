@@ -25,8 +25,8 @@
   `define GATEXY 9'b100011110
 
   `define NGATE1 9'b000101010  //无反馈XY单门
-  `define NGATE2 9'b010010101  //测量为1则执行的XY单门
-  `define NGATE3 9'b011001010  //测量为0则执行的XY单门
+  `define NGATE2 9'b010010101  //测量�?1则执行的XY单门
+  `define NGATE3 9'b011001010  //测量�?0则执行的XY单门
   `define NGATE4 9'b011101010  //测量相同则执行的XY单门
 
   
@@ -65,16 +65,23 @@
   `define GATE_H 9'b000000001
   `define GATE_X90 9'b000000010
   `define GATE_Y90 9'b000000011
-  `define GATE_CNOTS 9'b000000100
-  `define GATE_CNOTT 9'b000000101
+  `define ZGATE_0 14'b11000_000000001
+  `define ZGATE_1 14'b11000_000000010
+  `define ZGATE_2 14'b11000_000000100
+  `define XYGATE_1 14'b10000_000000001
 
   `define SMIS_S14_010100 {8'b0,9'b000010100,5'b0,5'b01110,`opcode_00,`opcode_11,`flag_0}                      //1
   `define SMIS_S15_101000 {8'b0,9'b000101000,5'b0,5'b01111,`opcode_00,`opcode_11,`flag_0}                      //2
   `define SMIS_S16_100100 {8'b0,9'b000100100,5'b0,5'b10000,`opcode_00,`opcode_11,`flag_0}                      //3
   `define SMIS_S17_001100 {8'b0,9'b000001100,5'b0,5'b10001,`opcode_00,`opcode_11,`flag_0}                      //4
+
   `define T0_H_S14_X90_S15 {3'b000,5'b01110,`GATE_H,5'b01111,`GATE_X90,`flag_1}                                 //5
-  `define T1_CNOTS_S2_CNOTT_S3 {3'b001,5'b00010,`GATE_CNOTS,5'b00011,`GATE_CNOTT,`flag_1}                     //6
-  `define T2_Y90_S16 {3'b010,5'b10000,`GATE_Y90,5'b00000,`GATE_0,`flag_1}                                      //7
+  `define T1_Y90_S2_X90_S3 {3'b001,5'b00010,`GATE_Y90,5'b00011,`GATE_X90,`flag_1}                               //6
+  `define T2_Y90_S16_GATE0_S0 {3'b010,5'b10000,`GATE_Y90,5'b00000,`GATE_0,`flag_1}   
+  `define T3_ZGATE0_XYGATE1 {3'b010,`ZGATE_0,`XYGATE_1,`flag_1}
+  `define T4_ZGATE1_X90_S3  {3'b010,`ZGATE_1,5'b00011,`GATE_X90,`flag_1}
+  `define T5_ZGATE2_GATE0_S0 {3'b010,`ZGATE_2,5'b00000,`GATE_0,`flag_1}
+  
   `define T1_MEASURE_S17 {3'b001,5'b0,9'b0,5'b10001,9'b011111111,`flag_1}                                      //8
   `define QWAIT_30 {3'b0,5'b0,9'b000011110,5'b0,5'b0,`opcode_10,`opcode_01,`flag_0}                           //9
   `define ADDI_R1_R0_001100 {`func_000,5'b0,9'b000001100,5'b00000,5'b00001,`opcode_00,`opcode_01,`flag_0}     //10

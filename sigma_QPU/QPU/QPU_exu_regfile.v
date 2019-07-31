@@ -99,7 +99,7 @@ module QPU_exu_regfile(
   assign ewbck_event_nxt  = ewbck_dest_data;
 
 
-  sirv_gnrl_dffl    #(`QPU_EVENT_WIRE_WIDTH)                q_event_dffl        (ewbck_dest_wen, ewbck_event_nxt , ewbck_event_r ,     clk); 
+  sirv_gnrl_dfflr    #(`QPU_EVENT_WIRE_WIDTH)               q_event_dfflr       (ewbck_dest_wen, ewbck_event_nxt , ewbck_event_r ,     clk, rst_n); 
   sirv_gnrl_dfflr   #(`QPU_EVENT_NUM)                       q_oprand_dfflr      (ewbck_dest_wen, ewbck_oprand_nxt, ewbck_oprand_r,     clk, rst_n);
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //qubit measure result
@@ -186,14 +186,14 @@ module QPU_exu_regfile(
   generate //{
   
       for (n=0; n<`QPU_QUANTUM_RFREG_NUM; n=n+1) begin:quantum_regfile//{
+        if (n == 0) begin
+          assign qcrf_wen[n] = 1'b0;
+          assign qcrf_r[n] = {`QPU_XLEN{0}};
 
-        if(n < `QPU_QUBIT_NUM) begin
+        end 
+        else if(n < `QPU_QUBIT_NUM+1) begin
             assign qcrf_wen[n] = 1'b0;
-            assign qcrf_r[n] = ((`QPU_XLEN'b1) << n);
-        end
-        else if(n==(`QPU_QUANTUM_RFREG_NUM-1)) begin
-            assign qcrf_wen[n] = 1'b0;
-            assign qcrf_r[n] = {`QPU_XLEN{1}};
+            assign qcrf_r[n] = ((`QPU_XLEN'b1) << (n-1));
         end
         else begin
             assign qcrf_wen[n] = qcwbck_dest_wen & (qcwbck_dest_idx[`QPU_RFIDX_WIDTH-1:0] == n);       //不需要首位标记位

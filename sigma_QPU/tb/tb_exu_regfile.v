@@ -239,11 +239,11 @@ module tb_exu_regfile();
   reg [`QPU_QUBIT_NUM - 1 : 0] mcu_i_measurement;
   reg  mcu_i_wen;
 
-  reg read_mrf_ena;                                    //FMR指令为1，其余时刻均为0
+  reg read_mrf_ena;                                    //FMR指令�?1，其余时刻均�?0
   //input [`QPU_QUBIT_NUM - 1 : 0] read_qubit_list,          //控制读出列表,读出列表在rs1中，内部直连
-  wire [`QPU_QUBIT_NUM - 1 : 0] mrf_data;        //返回测量结果，这里不存在正在写回的问题，因为如果正在写回，oitf中的qubitlist依旧为1，不可以派遣fmr指令,read_qubit_ena控制输出结果，会一直输出测量结果（加了mask）！
+  wire [`QPU_QUBIT_NUM - 1 : 0] mrf_data;        //返回测量结果，这里不存在正在写回的问题，因为如果正在写回，oitf中的qubitlist依旧�?1，不可以派遣fmr指令,read_qubit_ena控制输出结果，会�?直输出测量结果（加了mask）！
 
-  wire [`QPU_QUBIT_NUM - 1 : 0] qubit_measure_zero;   ///发送给event_queue，做快反馈控制
+  wire [`QPU_QUBIT_NUM - 1 : 0] qubit_measure_zero;   ///发�?�给event_queue，做快反馈控�?
   wire [`QPU_QUBIT_NUM - 1 : 0] qubit_measure_one ; 
   wire [`QPU_QUBIT_NUM - 1 : 0] qubit_measure_equ;
 
@@ -263,9 +263,14 @@ module tb_exu_regfile();
     #2 i_instr = `SMIS_S15_101000;                         //2
     #2 i_instr = `SMIS_S16_100100;                         //3  
     #2 i_instr = `SMIS_S17_001100;                         //4
-    #2 i_instr = `T0_H_S14_X90_S15;                         //5    
-    #2 i_instr = `T1_CNOTS_S2_CNOTT_S3;                   //6
-    #2 i_instr = `T2_Y90_S16;                              //7  
+    #2 i_instr = `T0_H_S14_X90_S15;                        //5
+    #2 i_instr = `T1_Y90_S2_X90_S3;                        //6
+    #2 i_instr = `T2_Y90_S16_GATE0_S0;                     //7
+    #2 i_instr = `T3_ZGATE0_XYGATE1;                       //8
+    #2 i_instr = `T4_ZGATE1_X90_S3;                        //9
+    #2 i_instr = `T5_ZGATE2_GATE0_S0;                      //10
+
+
     #2 i_instr = `T1_MEASURE_S17;                          //8
     #2 i_instr = `QWAIT_30;                               //9    
     #2 i_instr = `ADDI_R1_R0_001100;                      //10
