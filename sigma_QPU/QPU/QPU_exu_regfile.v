@@ -99,7 +99,7 @@ module QPU_exu_regfile(
   assign ewbck_event_nxt  = ewbck_dest_data;
 
 
-  sirv_gnrl_dffl    #(`QPU_EVENT_WIRE_WIDTH)                q_event_dffl        (ewbck_dest_wen, ewbck_event_nxt , ewbck_event_r ,     clk); 
+  sirv_gnrl_dfflr    #(`QPU_EVENT_WIRE_WIDTH)                q_event_dfflr        (ewbck_dest_wen, ewbck_event_nxt , ewbck_event_r ,     clk, rst_n); 
   sirv_gnrl_dfflr   #(`QPU_EVENT_NUM)                       q_oprand_dfflr      (ewbck_dest_wen, ewbck_oprand_nxt, ewbck_oprand_r,     clk, rst_n);
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //qubit measure result

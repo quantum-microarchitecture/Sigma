@@ -64,7 +64,7 @@ module tb_exu_regfile();
   wire [`QPU_PC_SIZE-1:0] disp_alu_pc;            
 
   wire [`QPU_TIME_WIDTH - 1 : 0] disp_alu_clk;
-  wire [`QPU_QUBIT_NUM - 1 : 0] disp_alu_qmr;
+  wire  disp_alu_qmr;
   wire [`QPU_EVENT_WIRE_WIDTH - 1 : 0] disp_alu_edata;
   wire [`QPU_EVENT_NUM - 1 : 0] disp_alu_oprand;
         //Quantum instruction
@@ -241,7 +241,7 @@ module tb_exu_regfile();
 
   reg read_mrf_ena;                                    //FMR指令为1，其余时刻均为0
   //input [`QPU_QUBIT_NUM - 1 : 0] read_qubit_list,          //控制读出列表,读出列表在rs1中，内部直连
-  wire [`QPU_QUBIT_NUM - 1 : 0] mrf_data;        //返回测量结果，这里不存在正在写回的问题，因为如果正在写回，oitf中的qubitlist依旧为1，不可以派遣fmr指令,read_qubit_ena控制输出结果，会一直输出测量结果（加了mask）！
+  wire mrf_data;        //返回测量结果，这里不存在正在写回的问题，因为如果正在写回，oitf中的qubitlist依旧为1，不可以派遣fmr指令,read_qubit_ena控制输出结果，会一直输出测量结果（加了mask）！
 
   wire [`QPU_QUBIT_NUM - 1 : 0] qubit_measure_zero;   ///发送给event_queue，做快反馈控制
   wire [`QPU_QUBIT_NUM - 1 : 0] qubit_measure_one ; 
