@@ -68,25 +68,25 @@
   `define GATE_CNOTS 9'b000000100
   `define GATE_CNOTT 9'b000000101
 
-  `define SMIS_S6_010100 {8'b0,9'b000010100,5'b0,5'b00110,`opcode_00,`opcode_11,`flag_0}
-  `define SMIS_S7_101000 {8'b0,9'b000101000,5'b0,5'b00111,`opcode_00,`opcode_11,`flag_0}
-  `define SMIS_S8_100100 {8'b0,9'b000100100,5'b0,5'b01000,`opcode_00,`opcode_11,`flag_0}
-  `define SMIS_S9_001100 {8'b0,9'b000001100,5'b0,5'b01001,`opcode_00,`opcode_11,`flag_0}
-  `define T0_H_S6_X90_S7 {3'b000,5'b00110,`GATE_H,5'b00111,`GATE_X90,`flag_1}
-  `define T1_CNOTS_S2_CNOTT_S3 {3'b001,5'b00010,`GATE_CNOTS,5'b00011,`GATE_CNOTT,`flag_1}
-  `define T2_Y90_S8 {3'b010,5'b01000,`GATE_Y90,5'b00000,`GATE_0,`flag_1}
-  `define T1_MEASURE_S9 {3'b001,5'b0,9'b0,5'b01001,9'b011111111,`flag_1}
-  `define QWAIT_30 {3'b0,5'b0,9'b000011110,5'b0,5'b0,`opcode_10,`opcode_01,`flag_0}
-  `define ADDI_R1_R0_001100 {`func_000,5'b0,9'b000001100,5'b00000,5'b00001,`opcode_00,`opcode_01,`flag_0}
-  `define FMR_R2_S9 {`func_000,5'b0,9'b0,5'b01001,5'b00010,`opcode_11,`opcode_01,`flag_0}
-  `define BEQ_R1_R2_CASE2 {`func_000,5'b00010,9'b000000010,5'b00001,5'b00000,`opcode_11,`opcode_00,`flag_0}
+  `define SMIS_S14_010100 {8'b0,9'b000010100,5'b0,5'b01110,`opcode_00,`opcode_11,`flag_0}                      //1
+  `define SMIS_S15_101000 {8'b0,9'b000101000,5'b0,5'b01111,`opcode_00,`opcode_11,`flag_0}                      //2
+  `define SMIS_S16_100100 {8'b0,9'b000100100,5'b0,5'b10000,`opcode_00,`opcode_11,`flag_0}                      //3
+  `define SMIS_S17_001100 {8'b0,9'b000001100,5'b0,5'b10001,`opcode_00,`opcode_11,`flag_0}                      //4
+  `define T0_H_S14_X90_S15 {3'b000,5'b01110,`GATE_H,5'b01111,`GATE_X90,`flag_1}                                 //5
+  `define T1_CNOTS_S2_CNOTT_S3 {3'b001,5'b00010,`GATE_CNOTS,5'b00011,`GATE_CNOTT,`flag_1}                     //6
+  `define T2_Y90_S16 {3'b010,5'b10000,`GATE_Y90,5'b00000,`GATE_0,`flag_1}                                      //7
+  `define T1_MEASURE_S17 {3'b001,5'b0,9'b0,5'b10001,9'b011111111,`flag_1}                                      //8
+  `define QWAIT_30 {3'b0,5'b0,9'b000011110,5'b0,5'b0,`opcode_10,`opcode_01,`flag_0}                           //9
+  `define ADDI_R1_R0_001100 {`func_000,5'b0,9'b000001100,5'b00000,5'b00001,`opcode_00,`opcode_01,`flag_0}     //10
+  `define FMR_R2_S17 {`func_000,5'b0,9'b0,5'b10001,5'b00010,`opcode_11,`opcode_01,`flag_0}                     //11
+  `define BEQ_R1_R2_CASE2 {`func_000,5'b00010,9'b000000010,5'b00001,5'b00000,`opcode_11,`opcode_00,`flag_0}   //12
   //CASE1:
-  `define T0_X90_S2 {3'b000,5'b00010,`GATE_X90,5'b00000,`GATE_0,`flag_1}
-  `define QWAIT_1 {3'b001,5'b0,9'b000000001,5'b0,5'b0,`opcode_10,`opcode_01,`flag_0}
-  `define BEQ_R0_R0_NEXT {`func_000,5'b00000,9'b000000100,5'b00000,5'b00000,`opcode_11,`opcode_00,`flag_0}
+  `define T0_X90_S2 {3'b000,5'b00010,`GATE_X90,5'b00000,`GATE_0,`flag_1}                                      //13
+  `define QWAIT_1 {3'b001,5'b0,9'b000000001,5'b0,5'b0,`opcode_10,`opcode_01,`flag_0}                          //14
+  `define BEQ_R0_R0_NEXT {`func_000,5'b00000,9'b000000100,5'b00000,5'b00000,`opcode_11,`opcode_00,`flag_0}    //15
   //CASE2:
-  `define T0_H_S2 {3'b000,5'b00010,`GATE_H,5'b00000,`GATE_0,`flag_1}
+  `define T0_H_S2 {3'b000,5'b00010,`GATE_H,5'b00000,`GATE_0,`flag_1}                                          //16
   //QWAIT 1;
   //NEXT:
-  `define T0_MEASURE_S2 {3'b000,5'b0,9'b0,5'b00010,9'b111111111,`flag_1}
+  `define T0_MEASURE_S2 {3'b000,5'b0,9'b0,5'b00010,9'b111111111,`flag_1}                                      //17
   //QWAIT 30;

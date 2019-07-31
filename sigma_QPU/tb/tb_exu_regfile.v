@@ -255,20 +255,21 @@ module tb_exu_regfile();
 ////////////////////////decode//////////////////////////////////////
   initial
   begin
-    #0 i_pc = `QPU_PC_SIZE'b0;
+    #3 i_instr = 32'b0;
+    #1 i_pc = `QPU_PC_SIZE'b0;
     #0 i_prdt_taken = 1'b0;
 
-    #0 i_instr = `SMIS_S6_010100;                         //1
-    #2 i_instr = `SMIS_S7_101000;                         //2
-    #2 i_instr = `SMIS_S8_100100;                         //3  
-    #2 i_instr = `SMIS_S9_001100;                         //4
-    #2 i_instr = `T0_H_S6_X90_S7;                         //5    
+    #0 i_instr = `SMIS_S14_010100;                         //1
+    #2 i_instr = `SMIS_S15_101000;                         //2
+    #2 i_instr = `SMIS_S16_100100;                         //3  
+    #2 i_instr = `SMIS_S17_001100;                         //4
+    #2 i_instr = `T0_H_S14_X90_S15;                         //5    
     #2 i_instr = `T1_CNOTS_S2_CNOTT_S3;                   //6
-    #2 i_instr = `T2_Y90_S8;                              //7  
-    #2 i_instr = `T1_MEASURE_S9;                          //8
+    #2 i_instr = `T2_Y90_S16;                              //7  
+    #2 i_instr = `T1_MEASURE_S17;                          //8
     #2 i_instr = `QWAIT_30;                               //9    
     #2 i_instr = `ADDI_R1_R0_001100;                      //10
-    #2 i_instr = `FMR_R2_S9;                              //11
+    #2 i_instr = `FMR_R2_S17;                              //11
     #2 i_instr = `BEQ_R1_R2_CASE2;                        //12  
     #2 i_instr = `T0_X90_S2;                              //13
     #2 i_instr = `QWAIT_1;                                //14
@@ -301,10 +302,10 @@ end
 initial
 begin
     oitf_ret_ena = 1'b1;
-    moitf_ret_ena = 1'b1;
+    moitf_ret_ena = 1'b0;
     clk = 1'b1;
     rst_n = 1'b0;
-    #1 rst_n = 1'b1;
+    #3 rst_n = 1'b1;
 end
 
 always #(clk_period/2) clk = ~clk;

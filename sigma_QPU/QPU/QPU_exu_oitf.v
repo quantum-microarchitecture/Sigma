@@ -85,26 +85,26 @@ module QPU_exu_oitf (
       wire alc_ptr_flg_nxt = ~alc_ptr_flg_r;
       wire alc_ptr_flg_ena = (alc_ptr_r == ($unsigned(`QPU_OITF_DEPTH-1))) & alc_ptr_ena;
       
-      sirv_gnrl_dfflr #(1) alc_ptr_flg_dfflrs(alc_ptr_flg_ena, alc_ptr_flg_nxt, alc_ptr_flg_r, clk, rst_n);
+      sirv_gnrl_dfflr #(1) alc_ptr_flg_dfflr(alc_ptr_flg_ena, alc_ptr_flg_nxt, alc_ptr_flg_r, clk, rst_n);
       
       wire [`QPU_ITAG_WIDTH-1:0] alc_ptr_nxt; 
       
       assign alc_ptr_nxt = alc_ptr_flg_ena ? `QPU_ITAG_WIDTH'b0 : (alc_ptr_r + 1'b1);
       
-      sirv_gnrl_dfflr #(`QPU_ITAG_WIDTH) alc_ptr_dfflrs(alc_ptr_ena, alc_ptr_nxt, alc_ptr_r, clk, rst_n);
+      sirv_gnrl_dfflr #(`QPU_ITAG_WIDTH) alc_ptr_dfflr(alc_ptr_ena, alc_ptr_nxt, alc_ptr_r, clk, rst_n);
       
       
       wire ret_ptr_flg_r;
       wire ret_ptr_flg_nxt = ~ret_ptr_flg_r;
       wire ret_ptr_flg_ena = (ret_ptr_r == ($unsigned(`QPU_OITF_DEPTH-1))) & ret_ptr_ena;
       
-      sirv_gnrl_dfflr #(1) ret_ptr_flg_dfflrs(ret_ptr_flg_ena, ret_ptr_flg_nxt, ret_ptr_flg_r, clk, rst_n);
+      sirv_gnrl_dfflr #(1) ret_ptr_flg_dfflr(ret_ptr_flg_ena, ret_ptr_flg_nxt, ret_ptr_flg_r, clk, rst_n);
       
       wire [`QPU_ITAG_WIDTH-1:0] ret_ptr_nxt; 
       
       assign ret_ptr_nxt = ret_ptr_flg_ena ? `QPU_ITAG_WIDTH'b0 : (ret_ptr_r + 1'b1);
 
-      sirv_gnrl_dfflr #(`QPU_ITAG_WIDTH) ret_ptr_dfflrs(ret_ptr_ena, ret_ptr_nxt, ret_ptr_r, clk, rst_n);
+      sirv_gnrl_dfflr #(`QPU_ITAG_WIDTH) ret_ptr_dfflr(ret_ptr_ena, ret_ptr_nxt, ret_ptr_r, clk, rst_n);
 
       assign oitf_empty = (ret_ptr_r == alc_ptr_r) &   (ret_ptr_flg_r == alc_ptr_flg_r);
       assign oitf_full  = (ret_ptr_r == alc_ptr_r) & (~(ret_ptr_flg_r == alc_ptr_flg_r));
@@ -149,10 +149,10 @@ module QPU_exu_oitf (
         assign vld_ena[i] = vld_set[i] |   vld_clr[i];
         assign vld_nxt[i] = vld_set[i] | (~vld_clr[i]);
   
-        sirv_gnrl_dfflr #(1) vld_dfflrs(vld_ena[i], vld_nxt[i], vld_r[i], clk, rst_n);
+        sirv_gnrl_dfflr #(1) vld_dfflr(vld_ena[i], vld_nxt[i], vld_r[i], clk, rst_n);
         //Payload only set, no need to clear
-        sirv_gnrl_dffl #(`QPU_RFIDX_REAL_WIDTH) rdidx_dfflrs(vld_set[i], disp_i_rdidx, rdidx_r[i], clk);
-        sirv_gnrl_dffl #(1)                 rdwen_dfflrs(vld_set[i], disp_i_rdwen, rdwen_r[i], clk);
+        sirv_gnrl_dffl #(`QPU_RFIDX_REAL_WIDTH) rdidx_dffl(vld_set[i], disp_i_rdidx, rdidx_r[i], clk);
+        sirv_gnrl_dffl #(1)                 rdwen_dffl(vld_set[i], disp_i_rdwen, rdwen_r[i], clk);
 
         assign rd_match_rs1idx[i] = vld_r[i] & rdwen_r[i] & disp_i_rs1en & (rdidx_r[i] == disp_i_rs1idx);
         assign rd_match_rs2idx[i] = vld_r[i] & rdwen_r[i] & disp_i_rs2en & (rdidx_r[i] == disp_i_rs2idx);
@@ -219,7 +219,7 @@ module QPU_exu_oitf (
         assign qf_nxt[j] = qf_set[j] & (qf_r[j] | disp_i_ql[j] )
                          | qf_clr[j] & (qf_r[j] & (~ret_mf[j]) );
   
-        sirv_gnrl_dfflr #(1) qf_dfflrs(qf_ena[j], qf_nxt[j], qf_r[j], clk, rst_n);
+        sirv_gnrl_dfflr #(1) qf_dfflr(qf_ena[j], qf_nxt[j], qf_r[j], clk, rst_n);
         
         assign qf_match_ql[j] = qf_r[j] & disp_i_ql[j] & disp_i_qfren;
       end//}

@@ -122,7 +122,7 @@ module QPU_exu_alu(
                    | (qiu_i_ready & qiu_op)
                      ;
 
-  assign i_longpipe =  1'b1;
+  assign i_longpipe =  1'b0;
 
 
   

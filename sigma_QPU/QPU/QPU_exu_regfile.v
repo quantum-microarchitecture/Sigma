@@ -118,7 +118,6 @@ module QPU_exu_regfile(
   wire [1 : 0] qubit_measure_flag_nxt [`QPU_QUBIT_NUM - 1 : 0];
   wire [1 : 0] qubit_measure_flag_r [`QPU_QUBIT_NUM - 1 : 0];
   wire [`QPU_QUBIT_NUM - 1 : 0] qubit_measure_result;
-  wire [`QPU_QUBIT_NUM - 1 : 0] qubit_measure_realtime_result;
 
   
 
@@ -134,14 +133,14 @@ module QPU_exu_regfile(
       assign qubit_measure_wen0[k] = qubit_measure_wen[k] & qubit_measure_flag_r[k][0] ;
       assign qubit_measure_wen1[k] = qubit_measure_wen[k] & qubit_measure_flag_r[k][1] ;
       assign qubit_measure_nxt [k] = mcu_measure_i_data[k] ;
-      sirv_gnrl_dfflrs #(1)    qubit_measure0_dfflrs   (qubit_measure_wen0[k], qubit_measure_nxt[k], qubit_measure_r0[k], clk, rst_n);
-      sirv_gnrl_dfflrs #(1)    qubit_measure1_dfflrs   (qubit_measure_wen1[k], qubit_measure_nxt[k], qubit_measure_r1[k], clk, rst_n);
+      sirv_gnrl_dfflr #(1)    qubit_measure0_dfflr   (qubit_measure_wen0[k], qubit_measure_nxt[k], qubit_measure_r0[k], clk, rst_n);
+      sirv_gnrl_dfflr #(1)    qubit_measure1_dfflr   (qubit_measure_wen1[k], qubit_measure_nxt[k], qubit_measure_r1[k], clk, rst_n);
 
       ///conditional fast control and read data
-      assign qubit_measure_result[k] = ( (~qubit_measure_flag_r[k][0]) & qubit_measure_r0[k] ) | ( (~qubit_measure_flag_r[k][1]) & qubit_measure_r1[k] ) ;
+      assign qubit_measure_result[k] = ( (qubit_measure_flag_r[k][1]) & qubit_measure_r0[k] ) | ( (qubit_measure_flag_r[k][0]) & qubit_measure_r1[k] ) ;
       
-      assign qubit_measure_zero  [k] = ~qubit_measure_realtime_result[k];
-      assign qubit_measure_one   [k] =  qubit_measure_realtime_result[k];
+      assign qubit_measure_zero  [k] = ~qubit_measure_result[k];
+      assign qubit_measure_one   [k] =  qubit_measure_result[k];
       assign qubit_measure_equ   [k] = (qubit_measure_r0[k] == qubit_measure_r1[k]);
                                       
     end
@@ -151,19 +150,17 @@ module QPU_exu_regfile(
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////classical reg
-  wire [`QPU_XLEN-1:0] read_src1_qdata;
+
+  wire [`QPU_XLEN-1:0] read_src1_cdata;
+  wire [`QPU_XLEN-1:0] read_src2_cdata;
+  wire [`QPU_XLEN-1:0] read_src1_qdata;        //one qubit
   wire [`QPU_XLEN-1:0] read_src2_qdata;
-  wire [`QPU_XLEN-1:0] read_src1_cqdata;
-  wire [`QPU_XLEN-1:0] read_src2_cqdata;
-  wire [`QPU_XLEN-1:0] read_src1_oqdata;        //one qubit
-  wire [`QPU_XLEN-1:0] read_src2_oqdata;
-  wire [`QPU_XLEN-1:0] read_src1_mqdata;        //mutiple qubits
-  wire [`QPU_XLEN-1:0] read_src2_mqdata;
+
   
-  wire [`QPU_XLEN-1:0] crf_r [`QPU_RFREG_NUM-1:0];
-  wire [`QPU_RFREG_NUM-1:0] crf_wen;
-  wire [`QPU_XLEN-1:0] qcrf_r [`QPU_RFREG_NUM-1:0];
-  wire [`QPU_RFREG_NUM-1:0] qcrf_wen;
+  wire [`QPU_XLEN-1:0] crf_r [`QPU_CLASSICAL_RFREG_NUM-1:0];
+  wire [`QPU_CLASSICAL_RFREG_NUM-1:0] crf_wen;
+  wire [`QPU_XLEN-1:0] qcrf_r [`QPU_QUANTUM_RFREG_NUM-1:0];
+  wire [`QPU_QUANTUM_RFREG_NUM-1:0] qcrf_wen;
 
 
   genvar m;
@@ -194,7 +191,7 @@ module QPU_exu_regfile(
             assign qcrf_wen[n] = 1'b0;
             assign qcrf_r[n] = ((`QPU_XLEN'b1) << n);
         end
-        else if(n==(`QPU_RFREG_NUM-1)) begin
+        else if(n==(`QPU_QUANTUM_RFREG_NUM-1)) begin
             assign qcrf_wen[n] = 1'b0;
             assign qcrf_r[n] = {`QPU_XLEN{1}};
         end
@@ -210,11 +207,11 @@ module QPU_exu_regfile(
   
   assign read_src1_cdata = crf_r[read_src1_idx[`QPU_RFIDX_WIDTH-1:0]];
   assign read_src2_cdata = crf_r[read_src2_idx[`QPU_RFIDX_WIDTH-1:0]];
-  assign read_src1_oqdata = qcrf_r[read_src1_idx[`QPU_RFIDX_WIDTH-1:0]];
-  assign read_src2_oqdata = qcrf_r[read_src2_idx[`QPU_RFIDX_WIDTH-1:0]];
+  assign read_src1_qdata = qcrf_r[read_src1_idx[`QPU_RFIDX_WIDTH-1:0]];
+  assign read_src2_qdata = qcrf_r[read_src2_idx[`QPU_RFIDX_WIDTH-1:0]];
 
-/*   wire [`QPU_QUBIT_NUM - 1:0] tqg_qubitlist = read_src1_oqdata[`QPU_QUBIT_NUM - 1:0];   //输入的第一个操作数
-  wire [`QPU_QUBIT_NUM - 1:0] tqg_derection = read_src2_oqdata[`QPU_QUBIT_NUM - 1:0];   //输入的第二个操作数
+/*   wire [`QPU_QUBIT_NUM - 1:0] tqg_qubitlist = read_src1_qdata[`QPU_QUBIT_NUM - 1:0];   //输入的第一个操作数
+  wire [`QPU_QUBIT_NUM - 1:0] tqg_derection = read_src2_qdata[`QPU_QUBIT_NUM - 1:0];   //输入的第二个操作数
  
 
   
@@ -301,11 +298,11 @@ module QPU_exu_regfile(
   assign tqg_pair_idx = tqg_target_idx | tqg_source_idx;
   assign read_tqg_pair_idx = {`QPU_TWO_QUBIT_GATE_LIST_WIDTH{dec_tqg}} & tqg_pair_idx; 
   
-  assign read_src1_data = ({`QPU_XLEN{~read_src1_idx[`QPU_RFIDX_REAL_WIDTH - 1]}} & read_src1_cdata) | ({`QPU_XLEN{read_src1_idx[`QPU_RFIDX_REAL_WIDTH - 1] & (~dec_tqg)}} & read_src1_oqdata) | ({`QPU_XLEN{read_src1_idx[`QPU_RFIDX_REAL_WIDTH - 1] & (dec_tqg)}} & read_tqgl1_data);
-  assign read_src2_data = ({`QPU_XLEN{~read_src2_idx[`QPU_RFIDX_REAL_WIDTH - 1]}} & read_src2_cdata) | ({`QPU_XLEN{read_src2_idx[`QPU_RFIDX_REAL_WIDTH - 1] & (~dec_tqg)}} & read_src2_oqdata) | ({`QPU_XLEN{read_src2_idx[`QPU_RFIDX_REAL_WIDTH - 1] & (dec_tqg)}} & read_tqgl2_data);
+  assign read_src1_data = ({`QPU_XLEN{~read_src1_idx[`QPU_RFIDX_REAL_WIDTH - 1]}} & read_src1_cdata) | ({`QPU_XLEN{read_src1_idx[`QPU_RFIDX_REAL_WIDTH - 1] & (~dec_tqg)}} & read_src1_qdata) | ({`QPU_XLEN{read_src1_idx[`QPU_RFIDX_REAL_WIDTH - 1] & (dec_tqg)}} & read_tqgl1_data);
+  assign read_src2_data = ({`QPU_XLEN{~read_src2_idx[`QPU_RFIDX_REAL_WIDTH - 1]}} & read_src2_cdata) | ({`QPU_XLEN{read_src2_idx[`QPU_RFIDX_REAL_WIDTH - 1] & (~dec_tqg)}} & read_src2_qdata) | ({`QPU_XLEN{read_src2_idx[`QPU_RFIDX_REAL_WIDTH - 1] & (dec_tqg)}} & read_tqgl2_data);
   */
-  assign read_src1_data = ({`QPU_XLEN{~read_src1_idx[`QPU_RFIDX_REAL_WIDTH - 1]}} & read_src1_cdata) | ({`QPU_XLEN{read_src1_idx[`QPU_RFIDX_REAL_WIDTH - 1]}} & read_src1_oqdata);
-  assign read_src2_data = ({`QPU_XLEN{~read_src2_idx[`QPU_RFIDX_REAL_WIDTH - 1]}} & read_src2_cdata) | ({`QPU_XLEN{read_src2_idx[`QPU_RFIDX_REAL_WIDTH - 1]}} & read_src2_oqdata);
+  assign read_src1_data = ({`QPU_XLEN{~read_src1_idx[`QPU_RFIDX_REAL_WIDTH - 1]}} & read_src1_cdata) | ({`QPU_XLEN{read_src1_idx[`QPU_RFIDX_REAL_WIDTH - 1]}} & read_src1_qdata);
+  assign read_src2_data = ({`QPU_XLEN{~read_src2_idx[`QPU_RFIDX_REAL_WIDTH - 1]}} & read_src2_cdata) | ({`QPU_XLEN{read_src2_idx[`QPU_RFIDX_REAL_WIDTH - 1]}} & read_src2_qdata);
 
 
 endmodule
