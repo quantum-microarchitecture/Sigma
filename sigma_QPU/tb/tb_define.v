@@ -65,10 +65,10 @@
   `define GATE_H 9'b000000001
   `define GATE_X90 9'b000000010
   `define GATE_Y90 9'b000000011
-  `define ZGATE_0 14'b11000_000000001
-  `define ZGATE_1 14'b11000_000000010
-  `define ZGATE_2 14'b11000_000000100
-  `define XYGATE_1 14'b10000_000000001
+  `define ZGATE_0 14'b00001_110000000
+  `define ZGATE_1 14'b00010_110000000
+  `define ZGATE_2 14'b00100_110000000
+  `define XYGATE_1 14'b00001_100000000
 
   `define SMIS_S14_010100 {8'b0,9'b000010100,5'b0,5'b01110,`opcode_00,`opcode_11,`flag_0}                      //1
   `define SMIS_S15_101000 {8'b0,9'b000101000,5'b0,5'b01111,`opcode_00,`opcode_11,`flag_0}                      //2
