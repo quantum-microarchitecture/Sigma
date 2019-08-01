@@ -210,11 +210,11 @@ module tb_exu_regfile();
 
 
   wire tiq_wbck_ena;
-  reg  tiq_wbck_ready;
+  wire  tiq_wbck_ready;
   wire [`QPU_TIME_WIDTH - 1 : 0] tiq_wbck_data;
 
   wire evq_wbck_ena;
-  reg  evq_wbck_ready;
+  wire evq_wbck_ready;
 ///////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////
 
@@ -239,11 +239,11 @@ module tb_exu_regfile();
   reg [`QPU_QUBIT_NUM - 1 : 0] mcu_i_measurement;
   reg  mcu_i_wen;
 
-  reg read_mrf_ena;                                    //FMR指令�?1，其余时刻均�?0
+  reg read_mrf_ena;                                    //FMR指令�??1，其余时刻均�??0
   //input [`QPU_QUBIT_NUM - 1 : 0] read_qubit_list,          //控制读出列表,读出列表在rs1中，内部直连
-  wire mrf_data;        //返回测量结果，这里不存在正在写回的问题，因为如果正在写回，oitf中的qubitlist依旧为1，不可以派遣fmr指令,read_qubit_ena控制输出结果，会一直输出测量结果（加了mask）！
+  wire mrf_data;        //返回测量结果，这里不存在正在写回的问题，因为如果正在写回，oitf中的qubitlist依旧�?1，不可以派遣fmr指令,read_qubit_ena控制输出结果，会�?直输出测量结果（加了mask）！
 
-  wire [`QPU_QUBIT_NUM - 1 : 0] qubit_measure_zero;   ///发�?�给event_queue，做快反馈控�?
+  wire [`QPU_QUBIT_NUM - 1 : 0] qubit_measure_zero;   ///发�?�给event_queue，做快反馈控�??
   wire [`QPU_QUBIT_NUM - 1 : 0] qubit_measure_one ; 
   wire [`QPU_QUBIT_NUM - 1 : 0] qubit_measure_equ;
 
@@ -289,6 +289,13 @@ module tb_exu_regfile();
   reg  [`QPU_XLEN-1:0]         lsu_icb_rsp_rdata;
 
   //////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////
+/////////////////////queue/////////////////////////////////
+  reg i_trigger;
+  wire trigger_o_clk_ena;
+  reg [`QPU_TIME_WIDTH - 1 : 0] trigger_o_clk;
+  wire  [`QPU_EVENT_NUM - 1: 0] evq_dest_o_valid;        
+  wire  [`QPU_EVENT_WIRE_WIDTH - 1 : 0] evq_dest_o_data;
 
 
 ////////////////////////decode//////////////////////////////////////
@@ -357,14 +364,7 @@ initial
 begin
     pipe_flush_ack = 1'b1;
 end
-///////////////////////wbck//////////////////////////
-initial
-begin
-    tiq_wbck_ready = 1'b1;
-    evq_wbck_ready = 1'b1;
 
-
-end
 ////////////////////////////////////////////////
 
 ///////////////////LSU///////////////////////////
@@ -388,6 +388,16 @@ begin
     
 end
 //////////////////////////////////////////////////
+
+/////////////////////////////////////////////////
+initial
+begin
+    i_trigger = 0;
+    trigger_o_clk = `QPU_TIME_WIDTH'b0;
+
+end
+
+
   QPU_exu_decode test_QPU_exu_decode (
 
     .i_instr                      (i_instr        ),
@@ -728,6 +738,39 @@ end
     .clk                     (clk          ),
     .rst_n                   (rst_n        ) 
   );
+
+
+   QPU_exu_queue test_QPU_exu_queue(
+
+    .tiq_dest_wen          (tiq_wbck_ena  ),
+    .tiq_dest_i_ready      (tiq_wbck_ready),          
+    .tiq_dest_i_data       (tiq_wbck_data ),   
+
+    .i_trigger             (i_trigger),
+    .trigger_o_clk_ena     (trigger_o_clk_ena),
+    .trigger_o_clk         (trigger_o_clk),
+
+    .evq_dest_wen          (evq_wbck_ena    ),              
+    .evq_dest_i_ready      (evq_wbck_ready  ),          
+    .evq_dest_oprand       (erf_oprand      ),             
+    .evq_dest_data         (erf_data        ),           
+ 
+
+
+    .evq_dest_o_valid      (evq_dest_o_valid),    
+    .evq_dest_o_data       (evq_dest_o_data),  
+
+    .qubit_measure_zero    (qubit_measure_zero),   
+    .qubit_measure_one     (qubit_measure_one), 
+    .qubit_measure_equ     (qubit_measure_equ),
+
+    .clk                   (clk         ),
+    .rst_n                 (rst_n       )
+   );
+
+  
+
+
 
 endmodule
 
