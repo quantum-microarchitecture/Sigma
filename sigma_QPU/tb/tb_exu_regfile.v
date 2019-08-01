@@ -277,18 +277,18 @@ module tb_exu_regfile();
     #2 i_instr = `T5_ZGATE2_GATE0_S0;                      //10
 
 
-    #2 i_instr = `T1_MEASURE_S17;                          //8
-    #2 i_instr = `QWAIT_30;                               //9    
-    #2 i_instr = `ADDI_R1_R0_001100;                      //10
-    #2 i_instr = `FMR_R2_S17;                              //11
-    #2 i_instr = `BEQ_R1_R2_CASE2;                        //12  
-    #2 i_instr = `T0_X90_S2;                              //13
-    #2 i_instr = `QWAIT_1;                                //14
-    #2 i_instr = `BEQ_R0_R0_NEXT;                         //15  
-    #2 i_instr = `T0_H_S2;                                //16    
+    #2 i_instr = `T1_MEASURE_S17;                         //11
+    #2 i_instr = `QWAIT_30;                               //12    
+    #2 i_instr = `ADDI_R1_R0_001100;                      //13
+    #2 i_instr = `FMR_R2_S17;                             //14
+    #2 i_instr = `BEQ_R1_R2_CASE2;                        //15  
+    #2 i_instr = `T0_X90_S2;                              //16
     #2 i_instr = `QWAIT_1;                                //17
-    #2 i_instr = `T0_MEASURE_S2;                          //18  
-    #2 i_instr = `QWAIT_30;                               //19
+    #2 i_instr = `BEQ_R0_R0_NEXT;                         //18  
+    #2 i_instr = `T0_H_S2;                                //19    
+    #2 i_instr = `QWAIT_1;                                //20
+    #2 i_instr = `T0_MEASURE_S2;                          //21  
+    #2 i_instr = `QWAIT_30;                               //22
   end
 ////////////////////////////////////////////////////////////////////
 
