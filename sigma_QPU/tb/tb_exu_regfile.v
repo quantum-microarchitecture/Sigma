@@ -103,7 +103,7 @@ module tb_exu_regfile();
 
   // The Commit Interface
   wire alu_cmt_valid; // Handshake valid
-  reg  alu_cmt_ready; // Handshake ready
+  wire  alu_cmt_ready; // Handshake ready
 
   wire [`QPU_PC_SIZE-1:0] alu_cmt_pc;  
   wire [`QPU_XLEN-1:0]    alu_cmt_imm;// The resolved ture/false
@@ -150,7 +150,7 @@ module tb_exu_regfile();
 
   ///remove signal
   //mcu
-  reg  oitf_ret_ena;
+  wire  oitf_ret_ena;
   reg  moitf_ret_ena;
 
   //wbct info
@@ -249,7 +249,46 @@ module tb_exu_regfile();
 
 
 ////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////
+
+  //////////////////////////////////////////////////////////////
+  // The Flush interface to IFU
+  //
+  //   To save the gatecount, when we need to flush pipeline with new PC, 
+  //     we want to reuse the adder in IFU, so we will not pass flush-PC
+  //     to IFU, instead, we pass the flush-pc-adder-op1/op2 to IFU
+  //     and IFU will just use its adder to caculate the flush-pc-adder-result
+  //
+  reg   pipe_flush_ack;
+  wire  pipe_flush_req;
+  wire  [`QPU_PC_SIZE-1:0] pipe_flush_add_op1;  
+  wire  [`QPU_PC_SIZE-1:0] pipe_flush_add_op2;  
+
+  //////////////////////////////////////////////////////////////
+  //////////////////////////////////////////////////////////////
+  // The LSU Write-Back Interface
+  reg  lsu_o_valid; // Handshake valid
+  wire lsu_o_ready; // Handshake ready
+  reg  [`QPU_XLEN-1:0] lsu_o_wbck_data;
+
+  wire [`QPU_XLEN-1:0] longp_wbck_o_data;
+  wire [`QPU_RFIDX_REAL_WIDTH-1:0] longp_wbck_o_rdidx;
+  //////////////////////////////////////////////////////////////
+  //////////////////////LSU////////////////////////////////////////
+  // The AGU ICB Interface to LSU-ctrl
+  //    * Bus cmd channel
+  wire                         lsu_icb_cmd_valid; // Handshake valid
+  reg                          lsu_icb_cmd_ready; // Handshake ready
+  wire [`QPU_ADDR_SIZE-1:0]    lsu_icb_cmd_addr; // Bus transaction start addr 
+  wire                         lsu_icb_cmd_read;   // Read or write
+  wire [`QPU_XLEN-1:0]         lsu_icb_cmd_wdata; 
+  wire [`QPU_XLEN/8-1:0]       lsu_icb_cmd_wmask; 
+
+  //    * Bus RSP channel
+  reg                          lsu_icb_rsp_valid; // Response valid 
+  wire                         lsu_icb_rsp_ready; // Response ready
+  reg  [`QPU_XLEN-1:0]         lsu_icb_rsp_rdata;
+
+  //////////////////////////////////////////////////////////////////
 
 
 ////////////////////////decode//////////////////////////////////////
@@ -283,6 +322,9 @@ module tb_exu_regfile();
     #2 i_instr = `QWAIT_1;                                //20
     #2 i_instr = `T0_MEASURE_S2;                          //21  
     #2 i_instr = `QWAIT_30;                               //22
+
+    #2 i_instr = `instr_LOAD;
+    #2 i_instr = `instr_STORE;
   end
 ////////////////////////////////////////////////////////////////////
 
@@ -295,18 +337,10 @@ module tb_exu_regfile();
 ////////////////////////////////////////////////
 
 
-///////////////////////////alu/////////////////////
-initial
-begin
-    alu_cmt_ready = 1'b1;
-
-end
-///////////////////////////////////////////////////
 
 /////////////////////oitf/////////////////////////
 initial
 begin
-    oitf_ret_ena = 1'b1;
     moitf_ret_ena = 1'b0;
     clk = 1'b1;
     rst_n = 1'b0;
@@ -316,6 +350,13 @@ end
 always #(clk_period/2) clk = ~clk;
 /////////////////////////////////////////////////
 
+////////////////////FLUSH////////////////////////////
+
+//////////////////////////////////////////////////
+initial
+begin
+    pipe_flush_ack = 1'b1;
+end
 ///////////////////////wbck//////////////////////////
 initial
 begin
@@ -325,6 +366,18 @@ begin
 
 end
 ////////////////////////////////////////////////
+
+///////////////////LSU///////////////////////////
+initial
+begin
+    lsu_o_valid = 1'b0;
+    lsu_o_wbck_data = `QPU_XLEN'b0;
+    lsu_icb_cmd_ready = 1'b1;
+    lsu_icb_rsp_valid = 1'b1;
+    lsu_icb_rsp_rdata = `QPU_XLEN'b0;
+
+end
+///////////////////////////////////////////////
 
 //////////////////////////////////////////////////
 initial
@@ -487,7 +540,18 @@ end
     .ewbck_o_valid        (alu_ewbck_o_valid ), 
     .ewbck_o_ready        (alu_ewbck_o_ready ),
     .ewbck_o_data         (alu_ewbck_o_data  ),
-    .ewbck_o_oprand       (alu_ewbck_o_oprand)
+    .ewbck_o_oprand       (alu_ewbck_o_oprand),
+
+    .lsu_icb_cmd_valid   (lsu_icb_cmd_valid ),
+    .lsu_icb_cmd_ready   (lsu_icb_cmd_ready ),
+    .lsu_icb_cmd_addr    (lsu_icb_cmd_addr  ),
+    .lsu_icb_cmd_read    (lsu_icb_cmd_read  ),
+    .lsu_icb_cmd_wdata   (lsu_icb_cmd_wdata ),
+    .lsu_icb_cmd_wmask   (lsu_icb_cmd_wmask ),
+
+    .lsu_icb_rsp_valid   (lsu_icb_rsp_valid ),
+    .lsu_icb_rsp_ready   (lsu_icb_rsp_ready ),
+    .lsu_icb_rsp_rdata   (lsu_icb_rsp_rdata)
 
 
 
@@ -530,6 +594,24 @@ end
   );
 
 
+  QPU_exu_longpwbck u_QPU_exu_longpwbck(
+
+    .lsu_wbck_i_valid   (lsu_o_valid ),
+    .lsu_wbck_i_ready   (lsu_o_ready ),
+    .lsu_wbck_i_data    (lsu_o_wbck_data  ),
+
+    .longp_wbck_o_valid   (longp_wbck_o_valid ), 
+    .longp_wbck_o_ready   (longp_wbck_o_ready ),
+    .longp_wbck_o_data    (longp_wbck_o_data  ),
+    .longp_wbck_o_rdidx   (longp_wbck_o_rdidx ),
+
+    .oitf_ret_rdidx      (oitf_ret_rdidx),
+    .oitf_ret_rdwen      (oitf_ret_rdwen),
+    .oitf_ret_ena        (oitf_ret_ena  )
+    
+
+  );
+
 
   QPU_exu_wbck test_QPU_exu_wbck(
 
@@ -553,6 +635,10 @@ end
     .alu_ewbck_i_data    (alu_ewbck_o_data  ),
     .alu_ewbck_i_oprand  (alu_ewbck_o_oprand),                       
 
+    .longp_wbck_i_valid (longp_wbck_o_valid ), 
+    .longp_wbck_i_ready (longp_wbck_o_ready ),
+    .longp_wbck_i_data  (longp_wbck_o_data  ),
+    .longp_wbck_i_rdidx (longp_wbck_o_rdidx ),
 
     .crf_wbck_o_ena      (crf_wbck_ena    ),
     .crf_wbck_o_data     (crf_wbck_data   ),
@@ -619,6 +705,28 @@ end
 
     .clk                    (clk          ),
     .rst_n                  (rst_n        ) 
+  );
+
+    QPU_exu_commit u_QPU_exu_commit(
+
+
+    .alu_cmt_i_valid         (alu_cmt_valid      ),
+    .alu_cmt_i_ready         (alu_cmt_ready      ),
+    .alu_cmt_i_pc            (alu_cmt_pc         ),
+    .alu_cmt_i_imm           (alu_cmt_imm        ),
+  
+    .alu_cmt_i_bjp           (alu_cmt_bjp        ),
+    .alu_cmt_i_bjp_prdt      (alu_cmt_bjp_prdt   ),
+    .alu_cmt_i_bjp_rslv      (alu_cmt_bjp_rslv   ),
+    
+
+    .pipe_flush_ack          (pipe_flush_ack    ),
+    .pipe_flush_req          (pipe_flush_req    ),
+    .pipe_flush_add_op1      (pipe_flush_add_op1),  
+    .pipe_flush_add_op2      (pipe_flush_add_op2),  
+  
+    .clk                     (clk          ),
+    .rst_n                   (rst_n        ) 
   );
 
 endmodule

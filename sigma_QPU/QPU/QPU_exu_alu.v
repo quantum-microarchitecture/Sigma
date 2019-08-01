@@ -81,8 +81,23 @@ module QPU_exu_alu(
   input  ewbck_o_ready,
   output [(`QPU_EVENT_WIRE_WIDTH - 1) : 0]  ewbck_o_data,
 
-  output [(`QPU_EVENT_NUM - 1) : 0]        ewbck_o_oprand
+  output [(`QPU_EVENT_NUM - 1) : 0]        ewbck_o_oprand,
 
+  //////////////////////////////////////////////////////////////
+  //////////////////////////////////////////////////////////////
+  // The lsu ICB Interface to LSU-ctrl
+  //    * Bus cmd channel
+  output                         lsu_icb_cmd_valid, // Handshake valid
+  input                          lsu_icb_cmd_ready, // Handshake ready
+  output [`QPU_ADDR_SIZE-1:0]    lsu_icb_cmd_addr, // Bus transaction start addr 
+  output                         lsu_icb_cmd_read,   // Read or write
+  output [`QPU_XLEN-1:0]         lsu_icb_cmd_wdata, 
+  output [`QPU_XLEN/8-1:0]       lsu_icb_cmd_wmask, 
+  
+  //    * Bus RSP channel
+  input                          lsu_icb_rsp_valid, // Response valid 
+  output                         lsu_icb_rsp_ready, // Response ready
+  input  [`QPU_XLEN-1:0]         lsu_icb_rsp_rdata
 
   );
 
@@ -92,7 +107,7 @@ module QPU_exu_alu(
   // Dispatch to different sub-modules according to their types
 
   wire alu_op =  (i_info[`QPU_DECINFO_GRP] == `QPU_DECINFO_GRP_ALU);
-
+  wire lsu_op =  (i_info[`QPU_DECINFO_GRP] == `QPU_DECINFO_GRP_LSU); 
   wire bjp_op =  (i_info[`QPU_DECINFO_GRP] == `QPU_DECINFO_GRP_BJP); 
   wire qiu_op =  (i_info[`QPU_DECINFO_GRP] == `QPU_DECINFO_GRP_QIU); 
 
@@ -106,23 +121,24 @@ module QPU_exu_alu(
   //       is reusing the ALU adder
 
 
-
+  wire lsu_i_valid = i_valid & lsu_op;
   wire alu_i_valid = i_valid & alu_op;
   wire bjp_i_valid = i_valid & bjp_op;
   wire qiu_i_valid = i_valid & qiu_op;
 
 
-
+  wire lsu_i_ready;
   wire alu_i_ready;
   wire bjp_i_ready;
   wire qiu_i_ready;
 
-  assign i_ready =   (alu_i_ready & alu_op)
+  assign i_ready =   (lsu_i_ready & lsu_op)
+                   | (alu_i_ready & alu_op)
                    | (bjp_i_ready & bjp_op)
                    | (qiu_i_ready & qiu_op)
                      ;
 
-  assign i_longpipe =  1'b0;
+  assign i_longpipe =  lsu_op;
 
 
   
@@ -172,7 +188,51 @@ module QPU_exu_alu(
   );
 
 
+  //////////////////////////////////////////////////////////////
+  // Instantiate the LSU module
+  //
+  wire lsu_o_valid; 
+  wire lsu_o_ready; 
+  
+  
+  wire [`QPU_XLEN-1:0] lsu_req_alu_op1;
+  wire [`QPU_XLEN-1:0] lsu_req_alu_op2;
+  wire [`QPU_XLEN-1:0] lsu_req_alu_res;
+     
+  
 
+  wire  [`QPU_XLEN-1:0]           lsu_i_rs1  = {`QPU_XLEN         {lsu_op}} & i_rs1;
+  wire  [`QPU_XLEN-1:0]           lsu_i_rs2  = {`QPU_XLEN         {lsu_op}} & i_rs2;
+  wire  [`QPU_XLEN-1:0]           lsu_i_imm  = {`QPU_XLEN         {lsu_op}} & i_imm;
+  wire  [`QPU_DECINFO_WIDTH-1:0]  lsu_i_info = {`QPU_DECINFO_WIDTH{lsu_op}} & i_info;  
+ 
+  QPU_exu_alu_lsu u_QPU_exu_alu_lsu(
+
+      .lsu_i_valid         (lsu_i_valid     ),
+      .lsu_i_ready         (lsu_i_ready     ),
+      .lsu_i_rs1           (lsu_i_rs1       ),
+      .lsu_i_rs2           (lsu_i_rs2       ),
+      .lsu_i_imm           (lsu_i_imm       ),
+      .lsu_i_info          (lsu_i_info[`QPU_DECINFO_LSU_WIDTH-1:0]),
+
+      .lsu_o_valid         (lsu_o_valid         ),
+      .lsu_o_ready         (lsu_o_ready         ),      
+                                                
+      .lsu_icb_cmd_valid   (lsu_icb_cmd_valid   ),
+      .lsu_icb_cmd_ready   (lsu_icb_cmd_ready   ),
+      .lsu_icb_cmd_addr    (lsu_icb_cmd_addr    ),
+      .lsu_icb_cmd_read    (lsu_icb_cmd_read    ),
+      .lsu_icb_cmd_wdata   (lsu_icb_cmd_wdata   ),
+      .lsu_icb_cmd_wmask   (lsu_icb_cmd_wmask   ),
+      
+      .lsu_icb_rsp_valid   (lsu_icb_rsp_valid   ),
+      .lsu_icb_rsp_ready   (lsu_icb_rsp_ready   ),
+                                                     
+      .lsu_req_alu_op1     (lsu_req_alu_op1     ),
+      .lsu_req_alu_op2     (lsu_req_alu_op2     ),
+      .lsu_req_alu_res     (lsu_req_alu_res     )
+     
+  );
 
   //////////////////////////////////////////////////////////////
   // Instantiate the regular ALU module
@@ -289,7 +349,7 @@ module QPU_exu_alu(
   //
   wire alu_req_alu = alu_op;
   wire bjp_req_alu = bjp_op;
-
+  wire lsu_req_alu = lsu_op;
   wire qiu_req_alu = qiu_op;
 
   QPU_exu_alu_dpath u_QPU_exu_alu_dpath(
@@ -312,6 +372,11 @@ module QPU_exu_alu(
       .bjp_req_alu_cmp_gt  (bjp_req_alu_cmp_gt    ),
       .bjp_req_alu_cmp_res (bjp_req_alu_cmp_res   ),
              
+      .lsu_req_alu         (lsu_req_alu           ),
+      .lsu_req_alu_op1     (lsu_req_alu_op1       ),
+      .lsu_req_alu_op2     (lsu_req_alu_op2       ),
+      .lsu_req_alu_res     (lsu_req_alu_res       ),
+
       .qiu_req_alu         (qiu_req_alu           ),
       .qiu_req_alu_op1     (qiu_req_alu_op1       ),
       .qiu_req_alu_op2     (qiu_req_alu_op2       ),
@@ -329,15 +394,18 @@ module QPU_exu_alu(
 
   wire o_sel_alu = alu_op;
   wire o_sel_bjp = bjp_op;
+  wire o_sel_lsu = lsu_op;
   wire o_sel_qiu = qiu_op;
 
 
   assign o_valid =     (o_sel_alu      & alu_o_valid     )
                      | (o_sel_bjp      & bjp_o_valid     )
+                     | (o_sel_lsu      & lsu_o_valid     )
                      | (o_sel_qiu      & qiu_o_valid     )
                      ;
 
   assign alu_o_ready      = o_sel_alu & o_ready;
+  assign lsu_o_ready      = o_sel_lsu & o_ready;
   assign bjp_o_ready      = o_sel_bjp & o_ready;
   assign qiu_o_ready      = o_sel_qiu & o_ready;
 
