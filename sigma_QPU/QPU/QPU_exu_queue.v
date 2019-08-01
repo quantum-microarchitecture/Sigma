@@ -32,7 +32,7 @@ module QPU_exu_queue(
  
 
 
-  output [`QPU_EVENT_NUM - 1: 0] evq_dest_o_valid,         //输出的事件是否有效 to trigger
+  output [`QPU_EVENT_NUM - 1: 0] evq_dest_o_valid,         //输出的事件是否有�? to trigger
   output [`QPU_EVENT_WIRE_WIDTH - 1 : 0] evq_dest_o_data,  //                 to trigger ,
 
   input [`QPU_QUBIT_NUM - 1 : 0] qubit_measure_zero,   ///做快反馈控制
@@ -51,11 +51,11 @@ module QPU_exu_queue(
   wire time_queue_full;
   wire time_queue_one_left;
   
-  wire time_fifo_o_data;
-  wire time_fifo_i_data;
+  wire [`QPU_TIME_WIDTH - 1 : 0] time_fifo_o_data;
+  wire [`QPU_TIME_WIDTH - 1 : 0] time_fifo_i_data;
 
   assign time_fifo_i_data = tiq_dest_i_data;
-  assign tiq_dest_i_ready = time_queue_full;
+  assign tiq_dest_i_ready = ~time_queue_full;
 
 
   genvar i;
@@ -87,9 +87,9 @@ module QPU_exu_queue(
     //for time_wptr,default data is 000010,for rptr,default data is 000001
 
     sirv_gnrl_dfflrs #(1)    time_rptr_vec_0_dfflrs  (tiq_ren, time_rptr_vec_nxt[0]     , time_rptr_vec_r[0]     , clk, rst_n);
-    sirv_gnrl_dfflrs #(1)    time_wptr_vec_0_dfflr   (tiq_wen, time_wptr_vec_nxt[0]     , time_wptr_vec_r[0]     , clk, rst_n);
+    sirv_gnrl_dfflr  #(1)    time_wptr_vec_0_dfflr   (tiq_wen, time_wptr_vec_nxt[0]     , time_wptr_vec_r[0]     , clk, rst_n);
     
-    sirv_gnrl_dfflrs #(1)    time_rptr_vec_1_dfflr   (tiq_ren, time_rptr_vec_nxt[1]     , time_rptr_vec_r[1]     , clk, rst_n);
+    sirv_gnrl_dfflr  #(1)    time_rptr_vec_1_dfflr   (tiq_ren, time_rptr_vec_nxt[1]     , time_rptr_vec_r[1]     , clk, rst_n);
     sirv_gnrl_dfflrs #(1)    time_wptr_vec_1_dfflrs  (tiq_wen, time_wptr_vec_nxt[1]     , time_wptr_vec_r[1]     , clk, rst_n);  
     
     sirv_gnrl_dfflr  #(`QPU_TIME_QUEUE_DEPTH-2) time_rptr_vec_30_dfflr  (tiq_ren, time_rptr_vec_nxt[`QPU_TIME_QUEUE_DEPTH-1:2], time_rptr_vec_r[`QPU_TIME_QUEUE_DEPTH-1:2], clk, rst_n);
@@ -121,10 +121,10 @@ module QPU_exu_queue(
       assign time_fifo_rf_en[i] = tiq_wen & time_wptr_vec_r[i];
       
       if(i ==0) begin :fifo_0
-        sirv_gnrl_dfflrs  #(`QPU_TIME_QUEUE_DEPTH) fifo_rf_dfflrs (time_fifo_rf_en[i], time_fifo_i_data, time_fifo_rf_r[i], clk,rst_n);
+        sirv_gnrl_dfflr  #(`QPU_TIME_WIDTH) fifo_rf_dfflr (time_fifo_rf_en[i], time_fifo_i_data, time_fifo_rf_r[i], clk,rst_n);
       end
       else begin : fifo_gt0
-        sirv_gnrl_dffl  #(`QPU_TIME_QUEUE_DEPTH) fifo_rf_dffl   (time_fifo_rf_en[i], time_fifo_i_data, time_fifo_rf_r[i], clk);
+        sirv_gnrl_dffl  #(`QPU_TIME_WIDTH) fifo_rf_dffl   (time_fifo_rf_en[i], time_fifo_i_data, time_fifo_rf_r[i], clk);
       end
         
     end//}
@@ -146,7 +146,7 @@ module QPU_exu_queue(
     
     // o_vld as flop-clean
     assign time_queue_one_left = (time_o_vec[1:0] == 2'b01);
-    assign time_queue_full = time_i_vec[`QPU_TIME_QUEUE_DEPTH-1];       ///有用信号！
+    assign time_queue_full = time_i_vec[`QPU_TIME_QUEUE_DEPTH-1];       ///有用信号�?
        
   endgenerate//}
 

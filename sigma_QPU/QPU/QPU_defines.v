@@ -17,10 +17,10 @@
 `define QPU_ADDR_SIZE 32
 `define QPU_XLEN 32
 `define QPU_RFIDX_WIDTH 5
-`define QPU_RFIDX_REAL_WIDTH 6                       //加flag位后�?6
+`define QPU_RFIDX_REAL_WIDTH 6                       //加flag位后�?6
 
 `define QPU_QUBIT_NUM 12
-`define QPU_QUBIT_NUM_LENGTH 4                       //log(qubit_num+1)   �?多支�?15 qubit�?0000表示无操�?     
+`define QPU_QUBIT_NUM_LENGTH 4                       //log(qubit_num+1)   �?多支�?15 qubit�?0000表示无操�?     
 
 
 `define QPU_OITF_DEPTH  4
@@ -33,7 +33,7 @@
 
 `define QPU_EVENT_NUM (`QPU_QI_XYEVENT_NUM + `QPU_QI_ZEVENT_NUM + `QPU_MEASURE_EVENT_NUM)         //1 QI xyevent of each qubit ,1 zevent , 1 measure event for AGU and 1 measure event for MCU
 `define QPU_QI_XYEVENT_NUM (`QPU_QUBIT_NUM)
-`define QPU_MEASURE_EVENT_NUM 2
+`define QPU_MEASURE_EVENT_NUM 1
 `define QPU_QI_ZEVENT_NUM 1
 `define QPU_QI_EVENT_NUM (`QPU_QI_XYEVENT_NUM + `QPU_QI_ZEVENT_NUM)  //先xy，最后一个为z
 
@@ -47,39 +47,39 @@
 `define QPU_QI_ZEVENT_WIDTH 14
 `define QPU_MEASURE_EVENT_WIDTH `QPU_QUBIT_NUM
 `define QPU_TIME_WIDTH 16
-`define QPU_EVENT_WIRE_WIDTH (`QPU_QUBIT_NUM * `QPU_QI_XYEVENT_WIDTH + `QPU_QI_ZEVENT_WIDTH + 2 * `QPU_MEASURE_EVENT_WIDTH)         //QI_xyevent + QI_zevent + measure_event
+`define QPU_EVENT_WIRE_WIDTH (`QPU_QUBIT_NUM * `QPU_QI_XYEVENT_WIDTH + `QPU_QI_ZEVENT_WIDTH + `QPU_MEASURE_EVENT_NUM * `QPU_MEASURE_EVENT_WIDTH)         //QI_xyevent + QI_zevent + measure_event
 
 
 `define QPU_QI_EVENT_WIRE_WIDTH (`QPU_QI_EVENT_NUM * `QPU_QI_EVENT_WIDTH)
 
-`define QPU_QI_EVENT_QUEUE_WIDTH (`QPU_EVENT_PTR_WIDTH + `QPU_QI_EVENT_WIDTH)               //只有QI事件�?要qubit_num辅助定位波形，测量事件不�?要，事件队列�?要ptr
-`define QPU_MEASURE_EVENT_QUEUE_WIDTH (`QPU_EVENT_PTR_WIDTH + `QPU_MEASURE_EVENT_WIDTH)                            //事件队列�?要ptr
+`define QPU_QI_EVENT_QUEUE_WIDTH (`QPU_EVENT_PTR_WIDTH + `QPU_QI_EVENT_WIDTH)               //只有QI事件�?要qubit_num辅助定位波形，测量事件不�?要，事件队列�?要ptr
+`define QPU_MEASURE_EVENT_QUEUE_WIDTH (`QPU_EVENT_PTR_WIDTH + `QPU_MEASURE_EVENT_WIDTH)                            //事件队列�?要ptr
 
 
 
 
 
-`define QPU_EVENT_PTR_WIDTH 5                     //太小的话，有可能出现，PTR套一圈，导致事件的ptr出错！！！！！！�?
+`define QPU_EVENT_PTR_WIDTH 5                     //太小的话，有可能出现，PTR套一圈，导致事件的ptr出错！！！！！！�?
 
 `define QPU_RFREG_NUM 64 ///classical and quantum
 `define QPU_CLASSICAL_RFREG_NUM 32
 `define QPU_QUANTUM_RFREG_NUM 32
 
 
-        /*量子操作数编�? 
-        首位�?
-        0：xy方向单比特操作，包括反馈和非反馈，以�?0门和测量
+        /*量子操作数编�? 
+        首位�?
+        0：xy方向单比特操作，包括反馈和非反馈，以�?0门和测量
         1：GATE
-        首位�?0
+        首位�?0
         测量操作0 00000000 ：无操作
         0 0XXXXXXX：无反馈XY单门(127)
-        0 10XXXXXX：测量为1则执行的XY单门�?64�?
-        0 110XXXXX：测量为0则执行的XY单门�?32�?
-        0 111XXXXX：测量相同则执行的XY单门�?31�?
-        0 11111111�?
-        首位�?1
-        1 0XXXXXXX+XXXXX (XY方向GATE)�?4096�?
-        1 1XXXXXXX+XXXXX (Z方向GATE，包括组合GATE以及每个比特Z方向的单门及双门�?4096�?
+        0 10XXXXXX：测量为1则执行的XY单门�?64�?
+        0 110XXXXX：测量为0则执行的XY单门�?32�?
+        0 111XXXXX：测量相同则执行的XY单门�?31�?
+        0 11111111�?
+        首位�?1
+        1 0XXXXXXX+XXXXX (XY方向GATE)�?4096�?
+        1 1XXXXXXX+XXXXX (Z方向GATE，包括组合GATE以及每个比特Z方向的单门及双门�?4096�?
         */
 
 
