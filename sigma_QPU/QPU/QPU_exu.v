@@ -52,7 +52,7 @@ module QPU_exu(
   /////////////////////////////////////////////////////////////////
   ///data to trigger
   output trigger_o_clk_ena,
-  input  [`QPU_TIME_WIDTH - 1 : 0] trigger_o_clk,
+  input  [`QPU_TIME_WIDTH - 1 : 0] trigger_i_clk,
   output [`QPU_EVENT_WIRE_WIDTH - 1 : 0] trigger_o_data,
   output [`QPU_EVENT_NUM - 1: 0] trigger_o_valid,
 
@@ -156,7 +156,7 @@ module QPU_exu(
 
     .i_trigger                   (i_trigger         ),
     .trigger_o_clk_ena           (trigger_o_clk_ena ),
-    .trigger_i_clk               (trigger_o_clk     ),
+    .trigger_i_clk               (trigger_i_clk     ),
 
     .evq_dest_wen                (evq_wbck_ena      ),
     .evq_dest_i_ready            (evq_wbck_ready    ),
