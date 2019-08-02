@@ -55,7 +55,7 @@ module QPU_exu_queue(
   wire [`QPU_TIME_WIDTH - 1 : 0] time_fifo_i_data;
 
   assign time_fifo_i_data = tiq_dest_i_data;
-  assign tiq_dest_i_ready = ~time_queue_full;
+  assign tiq_dest_i_ready = ~(time_queue_full | event_queue_full);
 
 
   genvar i;
@@ -209,7 +209,7 @@ module QPU_exu_queue(
 
     
     assign evq_fifo_i_valid[l]   = (~event_queue_full) & (~time_queue_full) & (evq_dest_wen) & evq_dest_oprand[l] & (~event_queue_byp[l]);
-    assign evq_fifo_o_ready[l]   = (evq_dis_ptr_qi_o_r[l] == evq_ret_ptr_r) & tiq_o_valid;
+    
 
     assign event_queue_byp[l]    = tiq_o_valid & (~event_queue_empty) & evq_dest_wen & (evq_dis_ptr_r == evq_ret_ptr_r) & i_trigger;
     assign evq_dest_o_valid[l]   = evq_fifo_o_condi[l] & ((event_queue_byp[l] & evq_dest_oprand[l]) | (~event_queue_byp[l] & evq_fifo_o_ready[l] & evq_fifo_o_valid[l])); //////队列输出有效
@@ -218,6 +218,7 @@ module QPU_exu_queue(
 
     if(l<`QPU_QI_EVENT_NUM) begin
       
+      assign evq_fifo_o_ready[l]   = (evq_dis_ptr_qi_o_r[l] == evq_ret_ptr_r) & tiq_o_valid;
 
       assign evq_qi_fifo_i_data[l] = {evq_dis_ptr_r, evq_dest_data[((l+1)*`QPU_QI_EVENT_WIDTH - 1):l*`QPU_QI_EVENT_WIDTH]};
       assign {evq_dis_ptr_qi_o_r[l],evq_qi_fifo_o_data_pre[l]} = evq_qi_fifo_o_data[l];
@@ -253,6 +254,7 @@ module QPU_exu_queue(
 
     else begin
 
+      assign evq_fifo_o_ready[l]   = (evq_dis_ptr_measure_o_r[l-`QPU_QI_EVENT_NUM] == evq_ret_ptr_r) & tiq_o_valid;
       assign evq_fifo_o_condi[l] = 1'b1; 
       assign evq_measure_fifo_i_data [l - `QPU_QI_EVENT_NUM] = {evq_dis_ptr_r,evq_dest_data[(`QPU_QI_EVENT_NUM * `QPU_QI_EVENT_WIDTH + (l-`QPU_QI_EVENT_NUM + 1) * `QPU_MEASURE_EVENT_WIDTH - 1) : (`QPU_QI_EVENT_NUM * `QPU_QI_EVENT_WIDTH + (l-`QPU_QI_EVENT_NUM) * `QPU_MEASURE_EVENT_WIDTH)]};
       assign {evq_dis_ptr_measure_o_r[l - `QPU_QI_EVENT_NUM],evq_measure_fifo_o_data_pre[l - `QPU_QI_EVENT_NUM]} = evq_measure_fifo_o_data[l- `QPU_QI_EVENT_NUM];
@@ -279,7 +281,7 @@ module QPU_exu_queue(
   end
   endgenerate 
 
-  assign evq_dest_i_ready  = ~event_queue_full;
+  assign evq_dest_i_ready  = ~(event_queue_full | time_queue_full);
   assign event_queue_full  = ~(& evq_fifo_i_ready);
   assign event_queue_empty = ~(| evq_fifo_o_valid);
 

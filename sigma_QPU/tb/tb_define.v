@@ -61,7 +61,7 @@
   `define instr_WFI {27'b0,`opcode_00,`opcode_10,`flag_0}
 
 
-  `define GATE_0 9'b000000000
+/*   `define GATE_0 9'b000000000
   `define GATE_H 9'b000000001
   `define GATE_X90 9'b000000010
   `define GATE_Y90 9'b000000011
@@ -85,7 +85,7 @@
   `define T1_MEASURE_S17 {3'b001,5'b0,9'b0,5'b10001,9'b011111111,`flag_1}                                     //11
   `define QWAIT_30 {3'b0,5'b0,9'b000011110,5'b0,5'b0,`opcode_10,`opcode_01,`flag_0}                           //12
   `define ADDI_R1_R0_001100 {`func_000,5'b0,9'b000001100,5'b00000,5'b00001,`opcode_00,`opcode_01,`flag_0}     //13
-  `define FMR_R2_S17 {`func_000,5'b0,9'b0,5'b10001,5'b00010,`opcode_11,`opcode_01,`flag_0}                    //14
+  `define FMR_R2_S3 {`func_000,5'b0,9'b0,5'b00011,5'b00010,`opcode_11,`opcode_01,`flag_0}                    //14
   `define BEQ_R1_R2_CASE2 {`func_000,5'b00010,9'b000000010,5'b00001,5'b00000,`opcode_11,`opcode_00,`flag_0}   //15
   //CASE1:
   `define T0_X90_S2 {3'b000,5'b00010,`GATE_X90,5'b00000,`GATE_0,`flag_1}                                      //16
@@ -96,4 +96,27 @@
   //QWAIT 1;
   //NEXT:
   `define T0_MEASURE_S2 {3'b000,5'b0,9'b0,5'b00010,9'b111111111,`flag_1}                                      //20
-  //QWAIT 30;
+  //QWAIT 30; */
+
+  `define GATE0    9'b000000000
+  `define XYGATE_H 9'b000000001
+  `define XYGATE_X 9'b000000010
+  `define XYGATE_Y 9'b000000011
+  `define XYGATE_X90 9'b000000100
+  `define XYGATE_Y90 9'b000000101
+  `define XYGATE0    14'b00001_100000000
+
+  `define ZGATE_Z  14'b00001_110000000
+  `define ZGATE_1  14'b00010_110000000 
+  `define MEASURE  9'b011111111
+
+  `define SMIS_S13_001111 {8'b0,9'b000001111,5'b0,5'b01101,`opcode_00,`opcode_11,`flag_0}
+  `define SMIS_S14_000101 {8'b0,9'b000000101,5'b0,5'b01110,`opcode_00,`opcode_11,`flag_0}
+  `define T0_GATE0_S0_XYGATE_H_S13 {3'b000,5'b00000,`GATE0,5'b01101,`XYGATE_H,`flag_1}
+  `define T1_ZGATE_Z_XYGATE0    {3'b001,`ZGATE_Z,`XYGATE0,`flag_1}
+  `define T1_ZGATE_1_S0_GATE0      {3'b001,`ZGATE_1,5'b00000,`GATE0,`flag_1}
+  `define T4_XYGATE_Y_S2_XYGATE_X_S1  {3'b100,5'b00010,`XYGATE_Y,5'b00001,`XYGATE_X,`flag_1}
+  `define T0_XYGATE_Y90_S4_XYGATE_X90_S3  {3'b000,5'b00100,`XYGATE_Y90,5'b00011,`XYGATE_X90,`flag_1}
+  `define T1_GATE0_S0_MEASURE_S14  {3'b001,5'b00000,`GATE0,5'b01110,`MEASURE,`flag_1}
+  `define QWAIT_4 {3'b0,5'b0,9'b000000100,5'b0,5'b0,`opcode_10,`opcode_01,`flag_0} 
+  `define FMR_R2_S3 {`func_000,5'b0,9'b0,5'b00011,5'b00010,`opcode_11,`opcode_01,`flag_0} 

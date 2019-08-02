@@ -239,11 +239,11 @@ module tb_exu_regfile();
   reg [`QPU_QUBIT_NUM - 1 : 0] mcu_i_measurement;
   reg  mcu_i_wen;
 
-  reg read_mrf_ena;                                    //FMR指令�??1，其余时刻均�??0
+  reg read_mrf_ena;                                    //FMR指令�????1，其余时刻均�????0
   //input [`QPU_QUBIT_NUM - 1 : 0] read_qubit_list,          //控制读出列表,读出列表在rs1中，内部直连
-  wire mrf_data;        //返回测量结果，这里不存在正在写回的问题，因为如果正在写回，oitf中的qubitlist依旧�?1，不可以派遣fmr指令,read_qubit_ena控制输出结果，会�?直输出测量结果（加了mask）！
+  wire mrf_data;        //返回测量结果，这里不存在正在写回的问题，因为如果正在写回，oitf中的qubitlist依旧�???1，不可以派遣fmr指令,read_qubit_ena控制输出结果，会�???直输出测量结果（加了mask）！
 
-  wire [`QPU_QUBIT_NUM - 1 : 0] qubit_measure_zero;   ///发�?�给event_queue，做快反馈控�??
+  wire [`QPU_QUBIT_NUM - 1 : 0] qubit_measure_zero;   ///发�?�给event_queue，做快反馈控�????
   wire [`QPU_QUBIT_NUM - 1 : 0] qubit_measure_one ; 
   wire [`QPU_QUBIT_NUM - 1 : 0] qubit_measure_equ;
 
@@ -293,7 +293,7 @@ module tb_exu_regfile();
 /////////////////////queue/////////////////////////////////
   reg i_trigger;
   wire trigger_o_clk_ena;
-  reg [`QPU_TIME_WIDTH - 1 : 0] trigger_o_clk;
+  reg [`QPU_TIME_WIDTH - 1 : 0] trigger_i_clk;
   wire  [`QPU_EVENT_NUM - 1: 0] evq_dest_o_valid;        
   wire  [`QPU_EVENT_WIRE_WIDTH - 1 : 0] evq_dest_o_data;
 
@@ -301,11 +301,51 @@ module tb_exu_regfile();
 ////////////////////////decode//////////////////////////////////////
   initial
   begin
+
+    i_trigger = 0;
+    trigger_i_clk = `QPU_TIME_WIDTH'b0;
+
     #3 i_instr = 32'b0;
     #1 i_pc = `QPU_PC_SIZE'b0;
     #0 i_prdt_taken = 1'b0;
 
-    #0 i_instr = `SMIS_S14_010100;                         //1
+    #0 i_instr = `SMIS_S13_001111;                //1
+    #2 i_instr = `SMIS_S14_000101;                //2
+    #2 i_instr = `T0_GATE0_S0_XYGATE_H_S13;       //3
+    #2 i_instr = `T1_ZGATE_Z_XYGATE0;             //4
+    #2 i_instr = `T1_ZGATE_1_S0_GATE0;            //5
+    #2 i_instr = `T4_XYGATE_Y_S2_XYGATE_X_S1;     //6
+    #2 i_instr = `T0_XYGATE_Y90_S4_XYGATE_X90_S3; //7
+    #2 i_instr = `T1_GATE0_S0_MEASURE_S14;        //8
+    #2 i_instr = `QWAIT_4;                       //9
+    #2 i_instr = `FMR_R2_S3;                             //10
+    #2 i_instr = 32'b0;
+    #2 i_trigger = 1'b1;
+    #0 trigger_i_clk = `QPU_TIME_WIDTH'b0;
+    #2 trigger_i_clk = `QPU_TIME_WIDTH'b1;
+    #2 trigger_i_clk = `QPU_TIME_WIDTH'b10;
+    #2 trigger_i_clk = `QPU_TIME_WIDTH'b11;
+    #2 trigger_i_clk = `QPU_TIME_WIDTH'b100;
+    #2 trigger_i_clk = `QPU_TIME_WIDTH'b101;
+    #2 trigger_i_clk = `QPU_TIME_WIDTH'b110;
+    #2 trigger_i_clk = `QPU_TIME_WIDTH'b111;
+    #2 trigger_i_clk = `QPU_TIME_WIDTH'b1000;
+    #2 trigger_i_clk = `QPU_TIME_WIDTH'b1001;
+    #2 trigger_i_clk = `QPU_TIME_WIDTH'b1010;
+    #2 trigger_i_clk = `QPU_TIME_WIDTH'b1011;
+    #2 trigger_i_clk = `QPU_TIME_WIDTH'b1011;
+    #2 i_instr = `QWAIT_4;     
+    #2 i_instr = `QWAIT_4;                      //9
+    #2 trigger_i_clk = `QPU_TIME_WIDTH'b1011;
+    #0 i_instr=32'b0;
+    #2 trigger_i_clk = `QPU_TIME_WIDTH'b1100;
+    #2 trigger_i_clk = `QPU_TIME_WIDTH'b1101;
+    #2 trigger_i_clk = `QPU_TIME_WIDTH'b1110;
+    #2 trigger_i_clk = `QPU_TIME_WIDTH'b1111;
+    #2 trigger_i_clk = `QPU_TIME_WIDTH'b10000;
+    #2 trigger_i_clk = `QPU_TIME_WIDTH'b10001;
+    #2 trigger_i_clk = `QPU_TIME_WIDTH'b10010;
+/*     #0 i_instr = `SMIS_S14_010100;                         //1
     #2 i_instr = `SMIS_S15_101000;                         //2
     #2 i_instr = `SMIS_S16_100100;                         //3  
     #2 i_instr = `SMIS_S17_001100;                         //4
@@ -383,19 +423,14 @@ end
 initial
 begin
     mcu_i_measurement = `QPU_QUBIT_NUM'b0;
-    mcu_i_wen = 1'b1;
-    read_mrf_ena = 1'b1;
+    mcu_i_wen = 1'b0;
+
     
 end
 //////////////////////////////////////////////////
 
 /////////////////////////////////////////////////
-initial
-begin
-    i_trigger = 0;
-    trigger_o_clk = `QPU_TIME_WIDTH'b0;
 
-end
 
 
   QPU_exu_decode test_QPU_exu_decode (
@@ -705,7 +740,7 @@ end
     .mcu_measure_i_wen      (mcu_i_wen                ),
     .oitf_ret_i_measurelist (disp_oitf_ret_measurelist),
 
-    .read_qubit_ena         (read_mrf_ena             ),
+    .read_qubit_ena         (dec_fmr             ),
     .read_qubit_data        (mrf_data                 ),
     
     .qubit_measure_zero     (qubit_measure_zero       ),
@@ -748,7 +783,7 @@ end
 
     .i_trigger             (i_trigger),
     .trigger_o_clk_ena     (trigger_o_clk_ena),
-    .trigger_o_clk         (trigger_o_clk),
+    .trigger_i_clk         (trigger_i_clk),
 
     .evq_dest_wen          (evq_wbck_ena    ),              
     .evq_dest_i_ready      (evq_wbck_ready  ),          
