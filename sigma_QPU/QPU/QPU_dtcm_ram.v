@@ -9,7 +9,7 @@
 `include "QPU_defines.v"
 
 
-module qpu_dtcm_ram(
+module QPU_dtcm_ram(
 
   input                              sd,
   input                              ds,

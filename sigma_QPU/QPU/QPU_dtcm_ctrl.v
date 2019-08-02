@@ -10,7 +10,7 @@
 
 `include "QPU_defines.v"
 
-module qpu_dtcm_ctrl(
+module QPU_dtcm_ctrl(
   output dtcm_active,
   // The cgstop is coming from CSR (0xBFE mcgstop)'s filed 1
   // // This register is our self-defined CSR register to disable the 

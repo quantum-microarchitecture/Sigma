@@ -9,7 +9,7 @@
 
 `include "QPU_defines.v"
 
-module qpu_srams(
+module QPU_srams(
 
   input  itcm_ram_sd,
   input  itcm_ram_ds,

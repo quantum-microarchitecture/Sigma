@@ -21,7 +21,7 @@ module QPU_exu_queue(
 //trigger clk
   input i_trigger,
   output trigger_o_clk_ena,
-  input [`QPU_TIME_WIDTH - 1 : 0] trigger_o_clk,
+  input [`QPU_TIME_WIDTH - 1 : 0] trigger_i_clk,
 
 //event queue
 
@@ -67,7 +67,7 @@ module QPU_exu_queue(
 
     // read/write enable
     wire tiq_wen = tiq_dest_wen;
-    wire tiq_o_valid = (trigger_o_clk == time_fifo_o_data) & i_trigger ;          ///当触发时才可以读，否则不可读
+    wire tiq_o_valid = (trigger_i_clk == time_fifo_o_data) & i_trigger ;          ///当触发时才可以读，否则不可读
     wire tiq_o_ready = ((time_queue_one_left & tiq_dest_wen) | (~time_queue_one_left));
     wire tiq_ren =  tiq_o_valid &  tiq_o_ready;
 
