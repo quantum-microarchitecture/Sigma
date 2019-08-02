@@ -110,7 +110,7 @@
   `define ZGATE_1  14'b00010_110000000 
   `define MEASURE  9'b011111111
 
-  `define SMIS_S13_001111 {8'b0,9'b000001111,5'b0,5'b01101,`opcode_00,`opcode_11,`flag_0}
+  `define SMIS_S13_001111 {8'b0,9'b000001010,5'b0,5'b01101,`opcode_00,`opcode_11,`flag_0}
   `define SMIS_S14_000101 {8'b0,9'b000000101,5'b0,5'b01110,`opcode_00,`opcode_11,`flag_0}
   `define T0_GATE0_S0_XYGATE_H_S13 {3'b000,5'b00000,`GATE0,5'b01101,`XYGATE_H,`flag_1}
   `define T1_ZGATE_Z_XYGATE0    {3'b001,`ZGATE_Z,`XYGATE0,`flag_1}
@@ -120,3 +120,8 @@
   `define T1_GATE0_S0_MEASURE_S14  {3'b001,5'b00000,`GATE0,5'b01110,`MEASURE,`flag_1}
   `define QWAIT_4 {3'b0,5'b0,9'b000000100,5'b0,5'b0,`opcode_10,`opcode_01,`flag_0} 
   `define FMR_R2_S3 {`func_000,5'b0,9'b0,5'b00011,5'b00010,`opcode_11,`opcode_01,`flag_0} 
+  `define T1_GATE0_S0_MEASURE_S13  {3'b001,5'b00000,`GATE0,5'b01101,`MEASURE,`flag_1}
+  `define FMR_R1_S1 {`func_000,5'b0,9'b0,5'b00001,5'b00001,`opcode_11,`opcode_01,`flag_0} 
+  `define FMR_R2_S2 {`func_000,5'b0,9'b0,5'b00010,5'b00010,`opcode_11,`opcode_01,`flag_0} 
+  `define FMR_R3_S3 {`func_000,5'b0,9'b0,5'b00011,5'b00011,`opcode_11,`opcode_01,`flag_0} 
+  `define FMR_R4_S4 {`func_000,5'b0,9'b0,5'b00100,5'b00100,`opcode_11,`opcode_01,`flag_0} 

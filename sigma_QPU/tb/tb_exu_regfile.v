@@ -151,7 +151,7 @@ module tb_exu_regfile();
   ///remove signal
   //mcu
   reg  oitf_ret_ena;
-  reg  moitf_ret_ena;
+  wire  moitf_ret_ena = mcu_i_wen;
 
   //wbct info
   wire [`QPU_RFIDX_REAL_WIDTH-1:0] oitf_ret_rdidx;
@@ -239,11 +239,11 @@ module tb_exu_regfile();
   reg [`QPU_QUBIT_NUM - 1 : 0] mcu_i_measurement;
   reg  mcu_i_wen;
 
-  reg read_mrf_ena;                                    //FMR指令�????1，其余时刻均�????0
+  reg read_mrf_ena;                                    //FMR指令�?????1，其余时刻均�?????0
   //input [`QPU_QUBIT_NUM - 1 : 0] read_qubit_list,          //控制读出列表,读出列表在rs1中，内部直连
-  wire mrf_data;        //返回测量结果，这里不存在正在写回的问题，因为如果正在写回，oitf中的qubitlist依旧�???1，不可以派遣fmr指令,read_qubit_ena控制输出结果，会�???直输出测量结果（加了mask）！
+  wire mrf_data;        //返回测量结果，这里不存在正在写回的问题，因为如果正在写回，oitf中的qubitlist依旧�????1，不可以派遣fmr指令,read_qubit_ena控制输出结果，会�????直输出测量结果（加了mask）！
 
-  wire [`QPU_QUBIT_NUM - 1 : 0] qubit_measure_zero;   ///发�?�给event_queue，做快反馈控�????
+  wire [`QPU_QUBIT_NUM - 1 : 0] qubit_measure_zero;   ///发�?�给event_queue，做快反馈控�?????
   wire [`QPU_QUBIT_NUM - 1 : 0] qubit_measure_one ; 
   wire [`QPU_QUBIT_NUM - 1 : 0] qubit_measure_equ;
 
@@ -277,9 +277,45 @@ module tb_exu_regfile();
     #2 i_instr = `T4_XYGATE_Y_S2_XYGATE_X_S1;     //6
     #2 i_instr = `T0_XYGATE_Y90_S4_XYGATE_X90_S3; //7
     #2 i_instr = `T1_GATE0_S0_MEASURE_S14;        //8
+    #2 i_instr = `T1_GATE0_S0_MEASURE_S13;
+
+
+
+    #2 i_instr = `QWAIT_4; 
+    #0 mcu_i_measurement = `QPU_QUBIT_NUM'b00101;
+    #0 mcu_i_wen = 1'b1;
+    #2 i_instr = `QWAIT_4; 
+    #0 mcu_i_measurement = `QPU_QUBIT_NUM'b00000;
+    #0 mcu_i_wen = 1'b0;
+
     #2 i_instr = `QWAIT_4;                       //9
-    #2 i_instr = `FMR_R2_S3;                             //10
+    #0 mcu_i_measurement = `QPU_QUBIT_NUM'b01010;
+    #0 mcu_i_wen = 1'b1;
+
+    #2 i_instr = `FMR_R1_S1;
+    #0 mcu_i_measurement = `QPU_QUBIT_NUM'b00000;
+    #0 mcu_i_wen = 1'b0;
+    #2 i_instr = `FMR_R2_S2;
+    #2 i_instr = `FMR_R3_S3;
+    #2 i_instr = `FMR_R4_S4;
+
+
+
     #2 i_instr = 32'b0;
+
+
+
+
+
+
+
+
+    #2 i_instr = 32'b0;
+
+    #2 i_instr = `FMR_R2_S3;
+    #2 mcu_i_measurement = `QPU_QUBIT_NUM'b00000;
+    #0 mcu_i_wen = 1'b0;
+    
     #2 i_trigger = 1'b1;
     #0 trigger_i_clk = `QPU_TIME_WIDTH'b0;
     #2 trigger_i_clk = `QPU_TIME_WIDTH'b1;
@@ -353,7 +389,6 @@ end
 initial
 begin
     oitf_ret_ena = 1'b1;
-    moitf_ret_ena = 1'b0;
     clk = 1'b1;
     rst_n = 1'b0;
     #3 rst_n = 1'b1;
