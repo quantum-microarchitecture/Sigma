@@ -372,6 +372,7 @@ module tb_exu_regfile();
 
     #2 i_instr = `instr_LOAD;
     #2 i_instr = `instr_STORE;
+    */
   end
 ////////////////////////////////////////////////////////////////////
 
