@@ -7,7 +7,7 @@
 // ====================================================================
 `include "QPU_defines.v"
 
-module qpu_ifu_minidec(
+module QPU_ifu_minidec(
 
   //////////////////////////////////////////////////////////////
   // The IR stage to Decoder
@@ -18,8 +18,8 @@ module qpu_ifu_minidec(
 
   output dec_rs1en,
   output dec_rs2en,
-  output [`QPU_RFIDX_WIDTH-1:0] dec_rs1idx,
-  output [`QPU_RFIDX_WIDTH-1:0] dec_rs2idx,
+  output [`QPU_RFIDX_REAL_WIDTH-1:0] dec_rs1idx,
+  output [`QPU_RFIDX_REAL_WIDTH-1:0] dec_rs2idx,
 
 
   output dec_bxx,
@@ -27,7 +27,7 @@ module qpu_ifu_minidec(
 
   );
 
-  qpu_exu_decode u_qpu_exu_decode(
+  QPU_exu_decode u_qpu_exu_decode(
 
   .i_instr(instr),
   .i_pc(`QPU_PC_SIZE'b0),
@@ -48,7 +48,7 @@ module qpu_ifu_minidec(
   .dec_new_timepoint(),
   .dec_need_qubitflag(),
   .dec_measure(),
-
+  .dec_fmr(),
   .dec_bxx (dec_bxx ),
   .dec_bjp_imm    (dec_bjp_imm    )  
 

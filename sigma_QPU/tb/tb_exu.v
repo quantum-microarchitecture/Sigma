@@ -20,8 +20,8 @@ module tb_exu();
 
   reg  i_prdt_taken;               
                  
-  reg  [`QPU_RFIDX_REAL_WIDTH-1:0] i_rs1idx;   
-  reg  [`QPU_RFIDX_REAL_WIDTH-1:0] i_rs2idx;   
+  wire  [`QPU_RFIDX_REAL_WIDTH-1:0] i_rs1idx;   
+  wire  [`QPU_RFIDX_REAL_WIDTH-1:0] i_rs2idx;   
   //////////////////////////////////////////////////////////////
   reg   pipe_flush_ack;
   wire  pipe_flush_req;
@@ -133,34 +133,20 @@ module tb_exu();
 ////////////////////////////instr//////////////////////////////////
   initial
   begin
-    #0 i_ir = 32'b0;
+    #1 i_ir = 32'b0;
     #0 i_pc = `QPU_PC_SIZE'b0;
     #0 i_prdt_taken = 1'b0;
 
-    #2 i_ir = `SMIS_S14_010100;                         //1
-    #2 i_ir = `SMIS_S15_101000;                         //2
-    #2 i_ir = `SMIS_S16_100100;                         //3  
-    #2 i_ir = `SMIS_S17_001100;                         //4
-    #2 i_ir = `T0_H_S14_X90_S15;                        //5
-    #2 i_ir = `T1_Y90_S2_X90_S3;                        //6
-    #2 i_ir = `T2_Y90_S16_GATE0_S0;                     //7
-    #2 i_ir = `T3_ZGATE0_XYGATE1;                       //8
-    #2 i_ir = `T4_ZGATE1_X90_S3;                        //9
-    #2 i_ir = `T5_ZGATE2_GATE0_S0;                      //10
-
-
-    #2 i_ir = `T1_MEASURE_S17;                         //11
-    #2 i_ir = `QWAIT_30;                               //12    
-    #2 i_ir = `ADDI_R1_R0_001100;                      //13
-    #2 i_ir = `FMR_R2_S17;                             //14
-    #2 i_ir = `BEQ_R1_R2_CASE2;                        //15  
-    #2 i_ir = `T0_X90_S2;                              //16
-    #2 i_ir = `QWAIT_1;                                //17
-    #2 i_ir = `BEQ_R0_R0_NEXT;                         //18  
-    #2 i_ir = `T0_H_S2;                                //19    
-    #2 i_ir = `QWAIT_1;                                //20
-    #2 i_ir = `T0_MEASURE_S2;                          //21  
-    #2 i_ir = `QWAIT_30;                               //22
+    #3 i_ir = `SMIS_S13_001111;                //1
+    #2 i_ir = `SMIS_S14_000101;                //2
+    #2 i_ir = `T0_GATE0_S0_XYGATE_H_S13;       //3
+    #2 i_ir = `T1_ZGATE_Z_XYGATE0;             //4
+    #2 i_ir = `T1_ZGATE_1_S0_GATE0;            //5
+    #2 i_ir = `T4_XYGATE_Y_S2_XYGATE_X_S1;     //6
+    #2 i_ir = `T0_XYGATE_Y90_S4_XYGATE_X90_S3; //7
+    #2 i_ir = `T1_GATE0_S0_MEASURE_S14;        //8
+    #2 i_ir = `QWAIT_4;                       //9
+    #2 i_ir = `FMR_R2_S3;                             //10
 
     #2 i_ir = `instr_STORE;
     #2 i_ir = `instr_LOAD;
@@ -215,6 +201,17 @@ module tb_exu();
 
   );
 
+  QPU_ifu_minidec test_QPU_ifu_minidec(
+    .instr                  (i_ir),
+
+    .dec_rs1en              (),
+    .dec_rs2en              (),
+    .dec_rs1idx             (i_rs1idx),
+    .dec_rs2idx             (i_rs2idx),
+
+    .dec_bxx                (),
+    .dec_bjp_imm            ()
+  );
 
   QPU_lsu test_QPU_lsu(
     .lsu_active             (lsu_active),
