@@ -304,6 +304,7 @@ module QPU_exu_decode(
 
   wire [31:0]  qpu_imm = 
                      ({32{qpu_imm_sel_i}} & qpu_i_imm)
+                   | ({32{qpu_imm_sel_l}} & qpu_l_imm)
                    | ({32{qpu_imm_sel_s}} & qpu_s_imm)
                    | ({32{qpu_imm_sel_b}} & qpu_b_imm)
                    | ({32{qpu_imm_sel_m}} & qpu_m_imm)
@@ -313,6 +314,7 @@ module QPU_exu_decode(
                    
   wire  qpu_need_imm = 
                      qpu_imm_sel_i
+                   | qpu_imm_sel_l
                    | qpu_imm_sel_s
                    | qpu_imm_sel_b
                    | qpu_imm_sel_m

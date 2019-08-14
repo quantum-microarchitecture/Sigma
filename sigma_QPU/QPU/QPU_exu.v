@@ -372,7 +372,7 @@ module QPU_exu(
 
   //////////////////////////////////////////////////////////////
   // Instantiate the OITF
-  wire oitf_ret_ena = 1'b0;
+  wire oitf_ret_ena;
   wire moitf_ret_ena = mcu_i_wen;
 
   wire [`QPU_RFIDX_REAL_WIDTH - 1 : 0] oitf_ret_rdidx;

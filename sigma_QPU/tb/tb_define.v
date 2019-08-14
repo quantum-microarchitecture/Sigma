@@ -30,8 +30,8 @@
   `define NGATE4 9'b011101010  //测量相同则执行的XY单门
 
   
-  `define instr_LOAD {`func_010,`imm_13_9,`imm_8_0,`rs1,`rd,`opcode_00,`opcode_00,`flag_0}
-  `define instr_STORE {`func_010,`rd,`imm_8_0,`rs1,`imm_13_9,`opcode_01,`opcode_00,`flag_0}
+  `define instr_LOAD {`func_000,`imm_13_9,`imm_8_0,`rs1,`rd,`opcode_00,`opcode_00,`flag_0}
+  `define instr_STORE {`func_000,`rd,`imm_8_0,`rs1,`imm_13_9,`opcode_01,`opcode_00,`flag_0}
 
   `define instr_BEQ {`func_000,`rs2,`imm_8_0,`rs1,`imm_13_9,`opcode_11,`opcode_00,`flag_0}
   `define instr_BNE {`func_001,`rs2,`imm_8_0,`rs1,`imm_13_9,`opcode_11,`opcode_00,`flag_0}
@@ -60,6 +60,22 @@
 
   `define instr_WFI {27'b0,`opcode_00,`opcode_10,`flag_0}
 
+  
+  //test load/store
+  `define ADDI_R3_R0_01010 {`func_000,5'b0,9'b000001010,5'b00000,5'b00011,`opcode_00,`opcode_01,`flag_0}
+  `define ADDI_R4_R0_01100 {`func_000,5'b0,9'b000001100,5'b00000,5'b00100,`opcode_00,`opcode_01,`flag_0}
+  `define ADDI_R5_R0_10000 {`func_000,5'b0,9'b000010000,5'b00000,5'b00101,`opcode_00,`opcode_01,`flag_0}
+
+  `define STORE_R3_R0_00011 {3'b0,5'b00011,9'b000000011,5'b00000,5'b00000,`opcode_01,`opcode_00,`flag_0}
+  `define LOAD_R6_R0_00011 {3'b0,5'b00000,9'b000000011,5'b00000,5'b00110,`opcode_00,`opcode_00,`flag_0}
+  
+  `define STORE_R4_R5_00001 {3'b0,5'b00100,9'b000000001,5'b00101,5'b00000,`opcode_01,`opcode_00,`flag_0}
+  `define LOAD_R7_R5_00001 {3'b0,5'b00000,9'b000000001,5'b00101,5'b00111,`opcode_00,`opcode_00,`flag_0}
+
+  `define STORE_R5_R7_00010 {3'b0,5'b00101,9'b000000001,5'b00111,5'b00000,`opcode_01,`opcode_00,`flag_0}
+  `define LOAD_R8_R0_00011 {3'b0,5'b00000,9'b000000011,5'b00000,5'b01000,`opcode_00,`opcode_00,`flag_0}
+
+  `define ADDI_R8_R0_00001 {`func_000,5'b0,9'b000000001,5'b00000,5'b01000,`opcode_00,`opcode_01,`flag_0}
 
 /*   `define GATE_0 9'b000000000
   `define GATE_H 9'b000000001
@@ -120,3 +136,9 @@
   `define T1_GATE0_S0_MEASURE_S14  {3'b001,5'b00000,`GATE0,5'b01110,`MEASURE,`flag_1}
   `define QWAIT_4 {3'b0,5'b0,9'b000000100,5'b0,5'b0,`opcode_10,`opcode_01,`flag_0} 
   `define FMR_R2_S3 {`func_000,5'b0,9'b0,5'b00011,5'b00010,`opcode_11,`opcode_01,`flag_0} 
+
+
+
+
+
+
