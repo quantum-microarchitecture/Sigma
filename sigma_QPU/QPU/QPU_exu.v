@@ -90,9 +90,9 @@ module QPU_exu(
   wire read_mrf_ena;
   wire mrf_data;
 
-  wire qubit_measure_zero;
-  wire qubit_measure_one;
-  wire qubit_measure_equ;
+  wire [`QPU_QUBIT_NUM - 1 : 0] qubit_measure_zero;
+  wire [`QPU_QUBIT_NUM - 1 : 0] qubit_measure_one;
+  wire [`QPU_QUBIT_NUM - 1 : 0] qubit_measure_equ;
 
   QPU_exu_regfile u_QPU_exu_regfile(
     .read_src1_idx          (i_rs1idx       ),
