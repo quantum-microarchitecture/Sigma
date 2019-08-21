@@ -51,11 +51,11 @@ module QPU_exu_regfile(
 
   input [`QPU_QUBIT_NUM - 1 : 0] oitf_ret_i_measurelist,    //控制写入结果
 
-  input read_qubit_ena,                                    //FMR指令为1，其余时刻均为0
+  input read_qubit_ena,                                    //FMR指令�?1，其余时刻均�?0
   //input [`QPU_QUBIT_NUM - 1 : 0] read_qubit_list,          //控制读出列表,读出列表在rs1中，内部直连
-  output read_qubit_data,         //返回测量结果，这里不存在正在写回的问题，因为如果正在写回，oitf中的qubitlist依旧为1，不可以派遣fmr指令,read_qubit_ena控制输出结果，会一直输出测量结果（加了mask）！只取一个比特的测量结果
+  output read_qubit_data,         //返回测量结果，这里不存在正在写回的问题，因为如果正在写回，oitf中的qubitlist依旧�?1，不可以派遣fmr指令,read_qubit_ena控制输出结果，会�?直输出测量结果（加了mask）！只取�?个比特的测量结果
 
-  output [`QPU_QUBIT_NUM - 1 : 0] qubit_measure_zero,   ///发送给event_queue，做快反馈控制。只有当测量结果返回时，才可执行快反馈，因此无需要返回测量结果后立刻更改测量结果
+  output [`QPU_QUBIT_NUM - 1 : 0] qubit_measure_zero,   ///发�?�给event_queue，做快反馈控制�?�只有当测量结果返回时，才可执行快反馈，因此无需要返回测量结果后立刻更改测量结果
   output [`QPU_QUBIT_NUM - 1 : 0] qubit_measure_one , 
   output [`QPU_QUBIT_NUM - 1 : 0] qubit_measure_equ,
 
@@ -81,7 +81,7 @@ module QPU_exu_regfile(
 
   
 ////////////////////////////////////////////////////////////////////////////////////////////////
-//event reg                                                      [最高2位：测量] [剩余：QI]         
+//event reg                                                      [�?�?2位：测量] [剩余：QI]         
 
 
   wire [(`QPU_EVENT_NUM - 1) : 0] ewbck_oprand_r;
@@ -188,7 +188,7 @@ module QPU_exu_regfile(
       for (n=0; n<`QPU_QUANTUM_RFREG_NUM; n=n+1) begin:quantum_regfile//{
         if (n == 0) begin
           assign qcrf_wen[n] = 1'b0;
-          assign qcrf_r[n] = {`QPU_XLEN{0}};
+          assign qcrf_r[n] = {`QPU_XLEN{32'b0}};
 
         end 
         else if(n < `QPU_QUBIT_NUM+1) begin
@@ -210,17 +210,17 @@ module QPU_exu_regfile(
   assign read_src1_qdata = qcrf_r[read_src1_idx[`QPU_RFIDX_WIDTH-1:0]];
   assign read_src2_qdata = qcrf_r[read_src2_idx[`QPU_RFIDX_WIDTH-1:0]];
 
-/*   wire [`QPU_QUBIT_NUM - 1:0] tqg_qubitlist = read_src1_qdata[`QPU_QUBIT_NUM - 1:0];   //输入的第一个操作数
-  wire [`QPU_QUBIT_NUM - 1:0] tqg_derection = read_src2_qdata[`QPU_QUBIT_NUM - 1:0];   //输入的第二个操作数
+/*   wire [`QPU_QUBIT_NUM - 1:0] tqg_qubitlist = read_src1_qdata[`QPU_QUBIT_NUM - 1:0];   //输入的第�?个操作数
+  wire [`QPU_QUBIT_NUM - 1:0] tqg_derection = read_src2_qdata[`QPU_QUBIT_NUM - 1:0];   //输入的第二个操作�?
  
 
   
   wire [`QPU_XLEN - 1 : 0] read_tqgl1_data;                                        //第一个量子操作的掩码
   wire [`QPU_XLEN - 1 : 0] read_tqgl2_data;                                        //第二个量子操作的掩码
 
-  wire [`QPU_TWO_QUBIT_GATE_LIST_WIDTH - 1 : 0] tqg_pair_idx;                          //另一个比特对的编号
-  wire [`QPU_TWO_QUBIT_GATE_LIST_WIDTH - 1 : 0] tqg_target_idx;                        //source的target的编号
-  wire [`QPU_TWO_QUBIT_GATE_LIST_WIDTH - 1 : 0] tqg_source_idx;                        //target的source的编号 
+  wire [`QPU_TWO_QUBIT_GATE_LIST_WIDTH - 1 : 0] tqg_pair_idx;                          //另一个比特对的编�?
+  wire [`QPU_TWO_QUBIT_GATE_LIST_WIDTH - 1 : 0] tqg_target_idx;                        //source的target的编�?
+  wire [`QPU_TWO_QUBIT_GATE_LIST_WIDTH - 1 : 0] tqg_source_idx;                        //target的source的编�? 
     
   reg [`QPU_QUBIT_NUM_LENGTH - 1:0] tqg_source[`QPU_QUBIT_NUM - 1 : 0];                //target的source编号
   reg [`QPU_QUBIT_NUM_LENGTH - 1:0] tqg_target[`QPU_QUBIT_NUM - 1 : 0];                //source的target编号
@@ -248,11 +248,11 @@ module QPU_exu_regfile(
               tqg_pre_source_num[i]=0;
               for(tqg_current_source_num = `QPU_QUBIT_NUM_LENGTH'b0; tqg_current_source_num < i; tqg_current_source_num = tqg_current_source_num + 1)
               begin
-                  tqg_pre_source_num[i]=tqg_pre_source_num[i]+tqg_qubitlist[tqg_current_source_num];        //每个比特前有多少个1
+                  tqg_pre_source_num[i]=tqg_pre_source_num[i]+tqg_qubitlist[tqg_current_source_num];        //每个比特前有多少�?1
               end
             end
             
-            case(tqg_pre_source_num[i])                                                              //只针对12个比特的情况，且4*3的线路！！！
+            case(tqg_pre_source_num[i])                                                              //只针�?12个比特的情况，且4*3的线路！！！
             `QPU_TWO_QUBIT_GATE_NUM_WIDTH'b000  : tqg_target[i] = {`QPU_QUBIT_NUM_LENGTH{tqg_qubitlist[i]}} & ( (tqg_derection[1:0]==2'b00) ?  i-4+1    : (tqg_derection[1:0]==2'b01) ? i+1+1 :  (tqg_derection[1:0]==2'b10) ? i+4+1 : i-1+1);
             `QPU_TWO_QUBIT_GATE_NUM_WIDTH'b001  : tqg_target[i] = {`QPU_QUBIT_NUM_LENGTH{tqg_qubitlist[i]}} & ( (tqg_derection[3:2]==2'b00) ?  i-4+1    : (tqg_derection[3:2]==2'b01) ? i+1+1 :  (tqg_derection[3:2]==2'b10) ? i+4+1 : i-1+1);
             `QPU_TWO_QUBIT_GATE_NUM_WIDTH'b010  : tqg_target[i] = {`QPU_QUBIT_NUM_LENGTH{tqg_qubitlist[i]}} & ( (tqg_derection[5:4]==2'b00) ?  i-4+1    : (tqg_derection[5:4]==2'b01) ? i+1+1 :  (tqg_derection[5:4]==2'b10) ? i+4+1 : i-1+1);            

@@ -36,11 +36,7 @@ module QPU_exu_commit(
   input   pipe_flush_ack,
   output  pipe_flush_req,
   output  [`QPU_PC_SIZE-1:0] pipe_flush_add_op1,  
-  output  [`QPU_PC_SIZE-1:0] pipe_flush_add_op2,  
-
-
-  input  clk,
-  input  rst_n
+  output  [`QPU_PC_SIZE-1:0] pipe_flush_add_op2
   );
 
 
@@ -64,10 +60,7 @@ module QPU_exu_commit(
     .brchmis_flush_ack       (alu_brchmis_flush_ack    ),
     .brchmis_flush_req       (alu_brchmis_flush_req    ),
     .brchmis_flush_add_op1   (alu_brchmis_flush_add_op1),  
-    .brchmis_flush_add_op2   (alu_brchmis_flush_add_op2),  
-
-    .clk   (clk  ),
-    .rst_n (rst_n)
+    .brchmis_flush_add_op2   (alu_brchmis_flush_add_op2)
   );
 
 

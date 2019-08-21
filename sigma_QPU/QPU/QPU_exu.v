@@ -62,11 +62,6 @@ module QPU_exu(
   output [`QPU_XLEN-1:0]         lsu_icb_cmd_wdata, 
   output [`QPU_XLEN/8-1:0]       lsu_icb_cmd_wmask, 
 
-  //    * Bus RSP channel
-  input                          lsu_icb_rsp_valid, // Response valid 
-  output                         lsu_icb_rsp_ready, // Response ready
-  input  [`QPU_XLEN-1:0]         lsu_icb_rsp_rdata,
-
   //////////////////////////////////////////////////////////////////
   //////////////////////////////////////////////////////////////////
   ///data from MCU
@@ -511,15 +506,7 @@ module QPU_exu(
     .lsu_icb_cmd_addr    (lsu_icb_cmd_addr  ),
     .lsu_icb_cmd_read    (lsu_icb_cmd_read  ),
     .lsu_icb_cmd_wdata   (lsu_icb_cmd_wdata ),
-    .lsu_icb_cmd_wmask   (lsu_icb_cmd_wmask ),
-
-    .lsu_icb_rsp_valid   (lsu_icb_rsp_valid ),
-    .lsu_icb_rsp_ready   (lsu_icb_rsp_ready ),
-    .lsu_icb_rsp_rdata   (lsu_icb_rsp_rdata)
-
-
-
-
+    .lsu_icb_cmd_wmask   (lsu_icb_cmd_wmask )
   );
 
 
@@ -630,10 +617,7 @@ module QPU_exu(
     .pipe_flush_ack          (pipe_flush_ack    ),
     .pipe_flush_req          (pipe_flush_req    ),
     .pipe_flush_add_op1      (pipe_flush_add_op1),  
-    .pipe_flush_add_op2      (pipe_flush_add_op2),  
-  
-    .clk                     (clk          ),
-    .rst_n                   (rst_n        ) 
+    .pipe_flush_add_op2      (pipe_flush_add_op2)
   );
 
     
