@@ -317,8 +317,7 @@ module QPU_exu(
 //  wire  disp_oitf_rs1en;
 //  wire  disp_oitf_rs2en;
 //  wire  disp_oitf_rdwen;
-  
-  wire [`QPU_QUBIT_NUM - 1 : 0] disp_oitf_qubitlist;
+ 
 
   
   wire  disp_oitf_qfwen;
@@ -551,15 +550,10 @@ module QPU_exu(
     .lsu_icb_cmd_addr    (lsu_icb_cmd_addr  ),
     .lsu_icb_cmd_read    (lsu_icb_cmd_read  ),
     .lsu_icb_cmd_wdata   (lsu_icb_cmd_wdata ),
-    .lsu_icb_cmd_wmask   (lsu_icb_cmd_wmask ),
-
+    .lsu_icb_cmd_wmask   (lsu_icb_cmd_wmask )
    // .lsu_icb_rsp_valid   (lsu_icb_rsp_valid ),
    //  .lsu_icb_rsp_ready   (lsu_icb_rsp_ready ),
    // .lsu_icb_rsp_rdata   (lsu_icb_rsp_rdata)
-
-
-
-
   );
 
 
@@ -670,10 +664,7 @@ module QPU_exu(
     .pipe_flush_ack          (pipe_flush_ack    ),
     .pipe_flush_req          (pipe_flush_req    ),
     .pipe_flush_add_op1      (pipe_flush_add_op1),  
-    .pipe_flush_add_op2      (pipe_flush_add_op2),  
-  
-    .clk                     (clk          ),
-    .rst_n                   (rst_n        ) 
+    .pipe_flush_add_op2      (pipe_flush_add_op2)
   );
 
     
