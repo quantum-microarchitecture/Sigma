@@ -8,7 +8,7 @@
 // ====================================================================
 `include "QPU_defines.v"
 
-module qpu_ifu(
+module QPU_ifu(
   output[`QPU_PC_SIZE-1:0] inspect_pc,
   output ifu_active,
   input  itcm_nohold,
@@ -31,7 +31,6 @@ module qpu_ifu(
   //    * Bus RSP channel
   input  ifu_icb_rsp_valid, // Response valid 
   output ifu_icb_rsp_ready, // Response ready
-  input  ifu_icb_rsp_err,   // Response error
             // Note: the RSP rdata is inline with AXI definition
   input  [`QPU_ITCM_DATA_WIDTH-1:0] ifu_icb_rsp_rdata, 
 
@@ -77,14 +76,13 @@ module qpu_ifu(
   wire ifu_req_ready; 
   wire [`QPU_PC_SIZE-1:0]   ifu_req_pc; 
   wire ifu_req_seq;
-  wire [`QPU_PC_SIZE-1:0] ifu_req_last_pc;
   wire ifu_rsp_valid; 
   wire ifu_rsp_ready; 
 
   //wire ifu_rsp_replay;   
   wire [`QPU_INSTR_SIZE-1:0] ifu_rsp_instr; 
 
-  qpu_ifu_ifetch u_QPU_ifu_ifetch(
+  QPU_ifu_ifetch u_QPU_ifu_ifetch(
     .inspect_pc   (inspect_pc),
     .pc_rtvec      (pc_rtvec),  
 
@@ -122,7 +120,7 @@ module qpu_ifu(
 
 
 
-  qpu_ifu_ift2icb u_QPU_ifu_ift2icb (
+  QPU_ifu_ift2icb u_QPU_ifu_ift2icb (
     .ifu_req_valid (ifu_req_valid),
     .ifu_req_ready (ifu_req_ready),
     .ifu_req_pc    (ifu_req_pc   ),

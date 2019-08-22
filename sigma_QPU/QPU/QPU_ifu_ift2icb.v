@@ -10,7 +10,7 @@
 
 `include "QPU_defines.v"
 
-module qpu_ifu_ift2icb(
+module QPU_ifu_ift2icb(
 
   input  itcm_nohold,
   //////////////////////////////////////////////////////////////
@@ -29,7 +29,7 @@ module qpu_ifu_ift2icb(
   //    * IFetch RSP channel
   output ifu_rsp_valid, // Response valid 
   input  ifu_rsp_ready, // Response ready
-  output ifu_rsp_err,   // Response error
+
             // Note: the RSP channel always return a valid instruction
             //   fetched from the fetching start PC address.
             //   The targetd (ITCM, ICache or Sys-MEM) ctrl modules 
@@ -80,13 +80,13 @@ module qpu_ifu_ift2icb(
   //                    only loaded when instr is 32bits-long)
 
 
-  wire ifu_req_lane_begin = ifu_req_pc[2:1] == 2'b00;
+  wire ifu_req_lane_begin = 1'b0 | (ifu_req_pc[2:1] == 2'b00);
   wire ifu_req_lane_same = ifu_req_seq & (ifu_req_lane_begin ? 1'b0 : 1'b1 );  
-  wire ifu_req_lane_holdup = ifu_holdup & (~itcm_nohold);
+  wire ifu_req_lane_holdup = 1'b0 | ifu_holdup & (~itcm_nohold);
 
 
   wire ifu_req_hsked = ifu_req_valid & ifu_req_ready;
-  wire ifu_rsp_hsked = ifu_rsp_valid & ifu_rsp_ready;
+  wire i_ifu_rsp_hsked = ifu_rsp_valid & ifu_rsp_ready;
   wire ifu_icb_cmd_hsked = ifu_icb_cmd_valid & ifu_icb_cmd_ready;
   wire ifu_icb_rsp_hsked = ifu_icb_rsp_valid & ifu_icb_rsp_ready;
 
@@ -97,9 +97,8 @@ module qpu_ifu_ift2icb(
 
   assign ifu_icb_cmd_addr = ifu_req_pc;
   
-  wire[31:0] ifu_icb_rsp_instr = 
-                    ({32{icb_cmd_addr_2_1_r == 2'b00}} & ifu_icb_rsp_rdata[31: 0]) 
-                  | ({32{icb_cmd_addr_2_1_r == 2'b01}} & ifu_icb_rsp_rdata[47:16]) 
+  wire[31:0] ifu_rsp_instr = 
+                    ({32{icb_cmd_addr_2_1_r == 2'b00}} & ifu_icb_rsp_rdata[31:0]) 
                   | ({32{icb_cmd_addr_2_1_r == 2'b10}} & ifu_icb_rsp_rdata[63:32])
                      ;
 

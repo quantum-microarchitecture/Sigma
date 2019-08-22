@@ -7,7 +7,7 @@
 // ====================================================================
 `include "QPU_defines.v"
 
-module qpu_ifu_litebpu(
+module QPU_ifu_litebpu(
 
   // Current PC
   input  [`QPU_PC_SIZE-1:0] pc,

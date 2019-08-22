@@ -61,7 +61,7 @@ module QPU_dtcm_ctrl(
       .DW     (`QPU_DTCM_DATA_WIDTH),
       .AW     (`QPU_DTCM_ADDR_WIDTH),
       .MW     (`QPU_DTCM_WMSK_WIDTH),
-      .AW_LSB (2),// DTCM is 32bits wide, so the LSB is 2
+      .AW_LSB (0),// DTCM is 32bits wide, so the LSB is 2
       .USR_W  (1) 
   ) u_sram_icb_ctrl (
      .sram_ctrl_active (dtcm_sram_ctrl_active),

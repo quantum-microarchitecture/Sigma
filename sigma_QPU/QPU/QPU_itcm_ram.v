@@ -8,7 +8,7 @@
 
 `include "QPU_defines.v"
 
-module qpu_itcm_ram(
+module QPU_itcm_ram(
 
   input                              sd,
   input                              ds,
@@ -26,7 +26,7 @@ module qpu_itcm_ram(
 );
 
  
-  sirv_gnrl_ram #(
+  sirv_gnrl_itcm_ram #(
       `ifndef QPU_HAS_ECC//{
     .FORCE_X2ZERO(0),
       `endif//}

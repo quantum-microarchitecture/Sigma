@@ -25,7 +25,7 @@
 //
 // ====================================================================
 
-module sirv_gnrl_ram
+module sirv_gnrl_itcm_ram
 #(parameter DP = 32,
   parameter DW = 32,
   parameter FORCE_X2ZERO = 1,
@@ -50,13 +50,13 @@ module sirv_gnrl_ram
 // This is the Sim-model
 //
 `ifdef FPGA_SOURCE
-sirv_sim_ram #(
+sirv_sim_itcm_ram #(
     .FORCE_X2ZERO (1'b0),
     .DP (DP),
     .AW (AW),
     .MW (MW),
     .DW (DW) 
-)u_sirv_sim_ram (
+)u_sirv_sim_itcm_ram (
     .clk   (clk),
     .din   (din),
     .addr  (addr),
@@ -67,13 +67,77 @@ sirv_sim_ram #(
 );
 `else
 
-sirv_sim_ram #(
+sirv_sim_itcm_ram #(
     .FORCE_X2ZERO (FORCE_X2ZERO),
     .DP (DP),
     .AW (AW),
     .MW (MW),
     .DW (DW) 
-)u_sirv_sim_ram (
+)u_sirv_sim_itcm_ram (
+    .clk   (clk),
+    .din   (din),
+    .addr  (addr),
+    .cs    (cs),
+    .we    (we),
+    .wem   (wem),
+    .dout  (dout)
+);
+`endif
+
+endmodule
+
+
+
+
+module sirv_gnrl_dtcm_ram
+#(parameter DP = 32,
+  parameter DW = 32,
+  parameter FORCE_X2ZERO = 1,
+  parameter MW = 4,
+  parameter AW = 15 
+  ) (
+  input            sd,
+  input            ds,
+  input            ls,
+
+  input            rst_n,
+  input            clk,
+  input            cs,
+  input            we,
+  input [AW-1:0]   addr,
+  input [DW-1:0]   din,
+  input [MW-1:0]   wem,
+  output[DW-1:0]   dout
+);
+
+//To add the ASIC or FPGA or Sim-model control here
+// This is the Sim-model
+//
+`ifdef FPGA_SOURCE
+sirv_sim_dtcm_ram #(
+    .FORCE_X2ZERO (1'b0),
+    .DP (DP),
+    .AW (AW),
+    .MW (MW),
+    .DW (DW) 
+)u_sirv_sim_dtcm_ram (
+    .clk   (clk),
+    .din   (din),
+    .addr  (addr),
+    .cs    (cs),
+    .we    (we),
+    .wem   (wem),
+    .dout  (dout)
+);
+`else
+
+sirv_sim_dtcm_ram #(
+    .FORCE_X2ZERO (FORCE_X2ZERO),
+    .DP (DP),
+    .AW (AW),
+    .MW (MW),
+    .DW (DW) 
+)u_sirv_sim_dtcm_ram (
     .clk   (clk),
     .din   (din),
     .addr  (addr),

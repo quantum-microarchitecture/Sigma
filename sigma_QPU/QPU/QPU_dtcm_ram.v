@@ -26,7 +26,7 @@ module QPU_dtcm_ram(
 
 );
 
-  sirv_gnrl_ram #(
+  sirv_gnrl_dtcm_ram #(
     .FORCE_X2ZERO(1),//Always force X to zeros
     .DP(`QPU_DTCM_RAM_DP),
     .DW(`QPU_DTCM_RAM_DW),

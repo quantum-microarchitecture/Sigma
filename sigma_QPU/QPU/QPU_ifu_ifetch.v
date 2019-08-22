@@ -12,7 +12,7 @@
 
 `include "QPU_defines.v"
 
-module qpu_ifu_ifetch(
+module QPU_ifu_ifetch(
   output[`QPU_PC_SIZE-1:0] inspect_pc,
 
   input  [`QPU_PC_SIZE-1:0] pc_rtvec,  
@@ -269,13 +269,9 @@ module qpu_ifu_ifetch(
    sirv_gnrl_dfflr #(1) pc_newpend_dfflr (pc_newpend_ena, pc_newpend_nxt, pc_newpend_r, clk, rst_n);
 
 
-    // The PC will need to be updated when ifu req channel handshaked or a flush is incoming
-   wire pc_ena = ifu_req_hsked | pipe_flush_hsked;
-   sirv_gnrl_dfflr #(`QPU_PC_SIZE) pc_dfflr (pc_ena, pc_nxt, pc_r, clk, rst_n);
-   assign inspect_pc = pc_r;
 
 
-   assign ifu_req_pc    = pc_nxt;
+
 
    wire [2:0] pc_incr_ofst = 3'd4;
 
@@ -283,6 +279,7 @@ module qpu_ifu_ifetch(
    wire [`QPU_PC_SIZE-1:0] pc_nxt;  
 
    wire bjp_req = minidec_bxx & prdt_taken;
+
 
    wire [`QPU_PC_SIZE-1:0] pc_add_op1 = 
                             `ifndef QPU_TIMING_BOOST//}
@@ -312,6 +309,18 @@ module qpu_ifu_ifetch(
                {pc_nxt_pre[`QPU_PC_SIZE-1:1],1'b0};
    `endif//}
 
+    // The PC will need to be updated when ifu req channel handshaked or a flush is incoming
+   wire pc_ena = ifu_req_hsked | pipe_flush_hsked;
+   sirv_gnrl_dfflr #(`QPU_PC_SIZE) pc_dfflr (pc_ena, pc_nxt, pc_r, clk, rst_n);
+   assign inspect_pc = pc_r;
+
+
+   assign ifu_req_pc    = pc_nxt;
+
+
+
+
+
 
   ///////////////////////////////////////////////////////////////////
   //********************************************************************************************
@@ -326,6 +335,10 @@ module qpu_ifu_ifetch(
    sirv_gnrl_dfflr #(1) ifu_prdt_taken_dfflr (ir_valid_set, prdt_taken, ifu_prdt_taken_r, clk, rst_n);
    assign ifu_o_prdt_taken = ifu_prdt_taken_r;
 
+   wire minidec_bxx;
+   wire [`QPU_XLEN-1:0] minidec_bjp_imm;
+
+
    wire [`QPU_PC_SIZE-1:0] prdt_pc_add_op1;  
    wire [`QPU_PC_SIZE-1:0] prdt_pc_add_op2;
 
@@ -338,7 +351,7 @@ module qpu_ifu_ifetch(
 
     .prdt_taken               (prdt_taken     ),  
     .prdt_pc_add_op1          (prdt_pc_add_op1),  
-    .prdt_pc_add_op2          (prdt_pc_add_op2),
+    .prdt_pc_add_op2          (prdt_pc_add_op2)
             
    );  
 
@@ -350,8 +363,11 @@ module qpu_ifu_ifetch(
 
 
   //*****************************************minidec*********************************************
-   wire minidec_bxx;
-   wire [`QPU_XLEN-1:0] minidec_bjp_imm;
+
+   wire minidec_rs1en;
+   wire minidec_rs2en;
+   wire [`QPU_RFIDX_REAL_WIDTH-1:0] minidec_rs1idx;
+   wire [`QPU_RFIDX_REAL_WIDTH-1:0] minidec_rs2idx;
 
    QPU_ifu_minidec u_QPU_ifu_minidec (
       .instr       (ifu_ir_nxt         ),
@@ -375,7 +391,7 @@ module qpu_ifu_ifetch(
   //*****************************************ift2icb*********************************************
 
    assign ifu_req_seq = (~pipe_flush_req_real) & (~ifu_reset_req) & (~bjp_req);
-   assign ifu_req_last_pc = pc_r;
+
 
    wire ifu_new_req = (~ifu_halt_req) & (~reset_flag_r);
    // The fetch request valid is triggering when
@@ -418,7 +434,7 @@ module qpu_ifu_ifetch(
 
 
 
-
+/*
   `ifndef FPGA_SOURCE//{
   `ifndef DISABLE_SV_ASSERTION//{
  //synopsys translate_off
@@ -432,5 +448,6 @@ CHECK_IFU_REQ_VALID_NO_X:
  //synopsys translate_on
  `endif//}
  `endif//}
+ */
 
 endmodule
