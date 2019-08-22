@@ -12,9 +12,46 @@
 
 module QPU_exu(
 
-  output exu_active,
-  input  i_trigger,
+
+//  input  i_trigger,
   //////////////////////////////////////////////////////////////
+  input oitfrd_match_disprs1,
+  input oitfrd_match_disprs2,
+  input oitfrd_match_disprd,
+  input oitfqf_match_dispql,
+//  output oitfrd_match_disprs1,
+//  output oitfrd_match_disprs2,
+//  output oitfrd_match_disprd,
+//  output oitfqf_match_dispql,
+  output disp_oitf_qfren,
+  output [`QPU_QUBIT_NUM - 1 : 0] disp_oitf_qubitlist,
+  
+  output  [`QPU_RFIDX_REAL_WIDTH-1:0] disp_oitf_rs1idx,
+  output  [`QPU_RFIDX_REAL_WIDTH-1:0] disp_oitf_rs2idx,
+  output  [`QPU_RFIDX_REAL_WIDTH-1:0] disp_oitf_rdidx,
+  output  disp_oitf_rs1en,
+  output  disp_oitf_rs2en,
+  output  disp_oitf_rdwen,
+  input [`QPU_QUBIT_NUM - 1 : 0] disp_oitf_ret_measurelist,
+  output tiq_wbck_ena,
+  input tiq_wbck_ready,
+  output [`QPU_TIME_WIDTH - 1 : 0] tiq_wbck_data,
+  
+  output evq_wbck_ena,
+  input evq_wbck_ready,
+  
+  output [`QPU_QUBIT_NUM - 1 : 0] qubit_measure_zero,
+  output [`QPU_QUBIT_NUM - 1 : 0] qubit_measure_one,
+  output [`QPU_QUBIT_NUM - 1 : 0] qubit_measure_equ,
+  
+  output [`QPU_EVENT_NUM - 1 : 0] erf_oprand,
+  output [`QPU_EVENT_WIRE_WIDTH - 1 : 0] erf_data,
+  input [`QPU_RFIDX_REAL_WIDTH - 1 : 0] oitf_ret_rdidx,
+  input oitf_ret_rdwen,
+  input disp_oitf_ready,
+  input disp_moitf_ready,
+  output disp_oitf_ena,
+  output disp_moitf_ena,
   //////////////////////////////////////////////////////////////
   // The IFU IR stage to EXU interface
   input  i_valid, // Handshake signals with EXU stage
@@ -43,9 +80,8 @@ module QPU_exu(
   output  [`QPU_PC_SIZE-1:0] pipe_flush_add_op2,  
 
 
-  //////////////////////////////////////////////////////////////
-  //////////////////////////////////////////////////////////////
-  // The LSU Write-Back Interface
+  //////////////////////////////////////////////////////////////////
+    // The LSU Write-Back Interface
   input  lsu_o_valid, // Handshake valid
   output lsu_o_ready, // Handshake ready
   input  [`QPU_XLEN-1:0] lsu_o_wbck_data,
@@ -62,7 +98,10 @@ module QPU_exu(
   output [`QPU_XLEN-1:0]         lsu_icb_cmd_wdata, 
   output [`QPU_XLEN/8-1:0]       lsu_icb_cmd_wmask, 
 
-  //////////////////////////////////////////////////////////////////
+  //    * Bus RSP channel
+  // input                          lsu_icb_rsp_valid, // Response valid 
+  // output                         lsu_icb_rsp_ready, // Response ready
+  //input  [`QPU_XLEN-1:0]         lsu_icb_rsp_rdata,
   //////////////////////////////////////////////////////////////////
   ///data from MCU
   input [`QPU_QUBIT_NUM - 1 : 0] mcu_i_measurement,
@@ -70,10 +109,10 @@ module QPU_exu(
   ///////////////////////////////////////////////////////////////
   /////////////////////////////////////////////////////////////////
   ///data to trigger
-  output trigger_o_clk_ena,
-  input  [`QPU_TIME_WIDTH - 1 : 0] trigger_i_clk,
-  output [`QPU_EVENT_WIRE_WIDTH - 1 : 0] trigger_o_data,
-  output [`QPU_EVENT_NUM - 1: 0] trigger_o_valid,
+//  output trigger_o_clk_ena,
+//  input  [`QPU_TIME_WIDTH - 1 : 0] trigger_i_clk,
+//  output [`QPU_EVENT_WIRE_WIDTH - 1 : 0] trigger_o_data,
+//  output [`QPU_EVENT_NUM - 1: 0] trigger_o_valid,
 
   input  clk,
   input  rst_n
@@ -102,16 +141,16 @@ module QPU_exu(
   wire [(`QPU_EVENT_NUM - 1) : 0] erf_wbck_oprand;
 
   wire [`QPU_TIME_WIDTH - 1 : 0] trf_data;
-  wire [`QPU_EVENT_NUM - 1 : 0] erf_oprand;
-  wire [`QPU_EVENT_WIRE_WIDTH - 1 : 0] erf_data;
+//  wire [`QPU_EVENT_NUM - 1 : 0] erf_oprand;
+//  wire [`QPU_EVENT_WIRE_WIDTH - 1 : 0] erf_data;
 
-  wire [`QPU_QUBIT_NUM - 1 : 0] disp_oitf_ret_measurelist;
+//  wire [`QPU_QUBIT_NUM - 1 : 0] disp_oitf_ret_measurelist;
   wire read_mrf_ena;
   wire mrf_data;
 
-  wire [`QPU_QUBIT_NUM - 1 : 0] qubit_measure_zero;
-  wire [`QPU_QUBIT_NUM - 1 : 0] qubit_measure_one;
-  wire [`QPU_QUBIT_NUM - 1 : 0] qubit_measure_equ;
+//  wire qubit_measure_zero;
+//  wire qubit_measure_one;
+//  wire qubit_measure_equ;
 
   QPU_exu_regfile u_QPU_exu_regfile(
     .read_src1_idx          (i_rs1idx       ),
@@ -160,38 +199,38 @@ module QPU_exu(
 ///////////////////////////////////////////////////////////////////////////
 //Instantiate the queue
 
-  wire tiq_wbck_ena;
-  wire tiq_wbck_ready;
-  wire [`QPU_TIME_WIDTH - 1 : 0] tiq_wbck_data;
-  
-  wire evq_wbck_ena;
-  wire evq_wbck_ready;
-
-  QPU_exu_queue u_QPU_exu_queue(
-
-    .tiq_dest_wen                (tiq_wbck_ena      ),        
-    .tiq_dest_i_ready            (tiq_wbck_ready    ),
-    .tiq_dest_i_data             (tiq_wbck_data     ),
-
-    .i_trigger                   (i_trigger         ),
-    .trigger_o_clk_ena           (trigger_o_clk_ena ),
-    .trigger_i_clk               (trigger_i_clk     ),
-
-    .evq_dest_wen                (evq_wbck_ena      ),
-    .evq_dest_i_ready            (evq_wbck_ready    ),
-    .evq_dest_oprand             (erf_oprand        ),      
-    .evq_dest_data               (erf_data          ),
-
-    .evq_dest_o_valid            (trigger_o_valid   ),
-    .evq_dest_o_data             (trigger_o_data    ),
-
-    .qubit_measure_zero          (qubit_measure_zero),
-    .qubit_measure_one           (qubit_measure_one ),
-    .qubit_measure_equ           (qubit_measure_equ ),
-
-    .clk                         (clk               ),
-    .rst_n                       (rst_n             )
-    );
+//  wire tiq_wbck_ena;
+//  wire tiq_wbck_ready;
+//  wire [`QPU_TIME_WIDTH - 1 : 0] tiq_wbck_data;
+//  
+//  wire evq_wbck_ena;
+//  wire evq_wbck_ready;
+//
+//  QPU_exu_queue u_QPU_exu_queue(
+//
+//    .tiq_dest_wen                (tiq_wbck_ena      ),        
+//    .tiq_dest_i_ready            (tiq_wbck_ready    ),
+//    .tiq_dest_i_data             (tiq_wbck_data     ),
+//
+//    .i_trigger                   (i_trigger         ),
+//    .trigger_o_clk_ena           (trigger_o_clk_ena ),
+//    .trigger_i_clk               (trigger_i_clk     ),
+//
+//    .evq_dest_wen                (evq_wbck_ena      ),
+//    .evq_dest_i_ready            (evq_wbck_ready    ),
+//    .evq_dest_oprand             (erf_oprand        ),      
+//    .evq_dest_data               (erf_data          ),
+//
+//    .evq_dest_o_valid            (trigger_o_valid   ),
+//    .evq_dest_o_data             (trigger_o_data    ),
+//
+//    .qubit_measure_zero          (qubit_measure_zero),
+//    .qubit_measure_one           (qubit_measure_one ),
+//    .qubit_measure_equ           (qubit_measure_equ ),
+//
+//    .clk                         (clk               ),
+//    .rst_n                       (rst_n             )
+//    );
 
 
 
@@ -267,26 +306,29 @@ module QPU_exu(
 
 
 
-  wire disp_oitf_ready;
-  wire disp_moitf_ready;
+//  wire disp_oitf_ready;
+//  wire disp_moitf_ready;
+//  wire disp_oitf_ena;
+//  wire disp_moitf_ena;
 
-  wire  [`QPU_RFIDX_REAL_WIDTH-1:0] disp_oitf_rs1idx;
-  wire  [`QPU_RFIDX_REAL_WIDTH-1:0] disp_oitf_rs2idx;
-  wire  [`QPU_RFIDX_REAL_WIDTH-1:0] disp_oitf_rdidx;
+//  wire  [`QPU_RFIDX_REAL_WIDTH-1:0] disp_oitf_rs1idx;
+//  wire  [`QPU_RFIDX_REAL_WIDTH-1:0] disp_oitf_rs2idx;
+//  wire  [`QPU_RFIDX_REAL_WIDTH-1:0] disp_oitf_rdidx;
+//  wire  disp_oitf_rs1en;
+//  wire  disp_oitf_rs2en;
+//  wire  disp_oitf_rdwen;
+  
   wire [`QPU_QUBIT_NUM - 1 : 0] disp_oitf_qubitlist;
 
-  wire  disp_oitf_rs1en;
-  wire  disp_oitf_rs2en;
-  wire  disp_oitf_rdwen;
+  
   wire  disp_oitf_qfwen;
 
-  wire oitfrd_match_disprs1;
-  wire oitfrd_match_disprs2;
-  wire oitfrd_match_disprd;
-  wire oitfqf_match_dispql;
+//  wire oitfrd_match_disprs1;
+//  wire oitfrd_match_disprs2;
+//  wire oitfrd_match_disprd;
+//  wire oitfqf_match_dispql;
 
-  wire disp_oitf_ena;
-  wire disp_moitf_ena;
+
 
 
 
@@ -345,6 +387,9 @@ module QPU_exu(
     .oitfrd_match_disprs2(oitfrd_match_disprs2),
     .oitfrd_match_disprd (oitfrd_match_disprd ),
     .oitfqf_match_dispql (oitfqf_match_dispql ),
+    .disp_oitf_qfren     (disp_oitf_qfren ),
+    .disp_oitf_qubitlist (disp_oitf_qubitlist),
+
 
 
     .disp_oitf_ena       (disp_oitf_ena    ),
@@ -355,63 +400,63 @@ module QPU_exu(
     .disp_oitf_rs1en     (disp_oitf_rs1en),
     .disp_oitf_rs2en     (disp_oitf_rs2en),
     .disp_oitf_rdwen     (disp_oitf_rdwen ),
-    .disp_oitf_qfren     (disp_oitf_qfren ),
+
 
     .disp_oitf_rs1idx    (disp_oitf_rs1idx),
     .disp_oitf_rs2idx    (disp_oitf_rs2idx),
-    .disp_oitf_rdidx     (disp_oitf_rdidx ),
-    .disp_oitf_qubitlist (disp_oitf_qubitlist)
+    .disp_oitf_rdidx     (disp_oitf_rdidx )
+
    
 
   );
 
   //////////////////////////////////////////////////////////////
   // Instantiate the OITF
-  wire oitf_ret_ena;
-  wire moitf_ret_ena = mcu_i_wen;
+//  wire oitf_ret_ena = 1'b0;
+//  wire moitf_ret_ena = mcu_i_wen;
 
-  wire [`QPU_RFIDX_REAL_WIDTH - 1 : 0] oitf_ret_rdidx;
-  wire oitf_ret_rdwen;
-  wire oitf_empty;
-  wire moitf_empty;
+//  wire [`QPU_RFIDX_REAL_WIDTH - 1 : 0] oitf_ret_rdidx;
+//  wire oitf_ret_rdwen;
+//  wire oitf_empty;
+//  wire moitf_empty;
   
 
 
-  QPU_exu_oitf u_QPU_exu_oitf(
-    .dis_cf_ready            (disp_oitf_ready),
-    .dis_mf_ready            (disp_moitf_ready),
-    .dis_cl_ena              (disp_oitf_ena  ),
-    .dis_qf_ena              (disp_moitf_ena),
-    .ret_cl_ena              (oitf_ret_ena  ),
-    .ret_qf_ena              (moitf_ret_ena ),
+//  QPU_exu_oitf u_QPU_exu_oitf(
+//    .dis_cf_ready            (input disp_oitf_ready),
+//    .dis_mf_ready            (input disp_moitf_ready),
+//    .dis_cl_ena              (output disp_oitf_ena  ),
+//    .dis_qf_ena              (output disp_moitf_ena),
+//    .ret_cl_ena              (oitf_ret_ena  ),
+//    .ret_qf_ena              (moitf_ret_ena ),
    
 
-    .ret_rdidx            (oitf_ret_rdidx),
-    .ret_rdwen            (oitf_ret_rdwen),
+//    .ret_rdidx            (oitf_ret_rdidx),
+//    .ret_rdwen            (oitf_ret_rdwen),
 
-    .ret_mf               (disp_oitf_ret_measurelist),
+//    .ret_mf               (disp_oitf_ret_measurelist),
 
-    .disp_i_rs1en         (disp_oitf_rs1en),
-    .disp_i_rs2en         (disp_oitf_rs2en),
-    .disp_i_rdwen         (disp_oitf_rdwen ),
-    .disp_i_rs1idx        (disp_oitf_rs1idx),
-    .disp_i_rs2idx        (disp_oitf_rs2idx),
-    .disp_i_rdidx         (disp_oitf_rdidx ),
+//    .disp_i_rs1en         (disp_oitf_rs1en),
+//    .disp_i_rs2en         (disp_oitf_rs2en),
+//    .disp_i_rdwen         (disp_oitf_rdwen ),
+//    .disp_i_rs1idx        (disp_oitf_rs1idx),
+//    .disp_i_rs2idx        (disp_oitf_rs2idx),
+//    .disp_i_rdidx         (disp_oitf_rdidx ),
 
-    .disp_i_qfren         (disp_oitf_qfren ),
-    .disp_i_ql            (disp_oitf_qubitlist),
+//    .disp_i_qfren         (disp_oitf_qfren ),
+ //   .disp_i_ql            (disp_oitf_qubitlist),
 
-    .oitfrd_match_disprs1 (oitfrd_match_disprs1),
-    .oitfrd_match_disprs2 (oitfrd_match_disprs2),
-    .oitfrd_match_disprd  (oitfrd_match_disprd ),
-    .oitfqf_match_dispql  (oitfqf_match_dispql),
+//    .oitfrd_match_disprs1 (oitfrd_match_disprs1),
+//    .oitfrd_match_disprs2 (oitfrd_match_disprs2),
+//    .oitfrd_match_disprd  (oitfrd_match_disprd ),
+//    .oitfqf_match_dispql  (oitfqf_match_dispql),
 
-    .oitf_empty           (oitf_empty ),
-    .moitf_empty          (moitf_empty),
+//    .oitf_empty           (oitf_empty ),
+//    .moitf_empty          (moitf_empty),
 
-    .clk                  (clk           ),
-    .rst_n                (rst_n         ) 
-  );
+//    .clk                  (clk           ),
+//    .rst_n                (rst_n         ) 
+//  );
 
   //////////////////////////////////////////////////////////////
   // Instantiate the ALU
@@ -506,7 +551,15 @@ module QPU_exu(
     .lsu_icb_cmd_addr    (lsu_icb_cmd_addr  ),
     .lsu_icb_cmd_read    (lsu_icb_cmd_read  ),
     .lsu_icb_cmd_wdata   (lsu_icb_cmd_wdata ),
-    .lsu_icb_cmd_wmask   (lsu_icb_cmd_wmask )
+    .lsu_icb_cmd_wmask   (lsu_icb_cmd_wmask ),
+
+   // .lsu_icb_rsp_valid   (lsu_icb_rsp_valid ),
+   //  .lsu_icb_rsp_ready   (lsu_icb_rsp_ready ),
+   // .lsu_icb_rsp_rdata   (lsu_icb_rsp_rdata)
+
+
+
+
   );
 
 
@@ -531,7 +584,7 @@ module QPU_exu(
 
     .oitf_ret_rdidx      (oitf_ret_rdidx),
     .oitf_ret_rdwen      (oitf_ret_rdwen),
-    .oitf_ret_ena        (oitf_ret_ena  )
+    .oitf_ret_ena        ()
     
 
   );
@@ -617,11 +670,14 @@ module QPU_exu(
     .pipe_flush_ack          (pipe_flush_ack    ),
     .pipe_flush_req          (pipe_flush_req    ),
     .pipe_flush_add_op1      (pipe_flush_add_op1),  
-    .pipe_flush_add_op2      (pipe_flush_add_op2)
+    .pipe_flush_add_op2      (pipe_flush_add_op2),  
+  
+    .clk                     (clk          ),
+    .rst_n                   (rst_n        ) 
   );
 
     
-  assign exu_active = (~oitf_empty) | (~moitf_empty) | i_valid;
+
 
 
 endmodule                                      
