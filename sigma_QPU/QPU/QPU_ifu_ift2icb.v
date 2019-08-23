@@ -68,6 +68,32 @@ module QPU_ifu_ift2icb(
   input  rst_n
   );
 
+  wire i_ifu_rsp_valid;
+  wire i_ifu_rsp_ready;
+
+  wire [`QPU_INSTR_SIZE-1:0] ifu_rsp_bypbuf_i_data;
+  wire [`QPU_INSTR_SIZE-1:0] ifu_rsp_bypbuf_o_data;
+
+  assign ifu_rsp_bypbuf_i_data = i_ifu_rsp_instr;
+
+  assign ifu_rsp_instr = ifu_rsp_bypbuf_o_data;
+
+  sirv_gnrl_bypbuf # (
+    .DP(1),
+    .DW(`QPU_INSTR_SIZE) 
+  ) u_QPU_ifetch_rsp_bypbuf(
+      .i_vld   (i_ifu_rsp_valid),
+      .i_rdy   (i_ifu_rsp_ready),
+
+      .o_vld   (ifu_rsp_valid),
+      .o_rdy   (ifu_rsp_ready),
+
+      .i_dat   (ifu_rsp_bypbuf_i_data),
+      .o_dat   (ifu_rsp_bypbuf_o_data),
+  
+      .clk     (clk  ),
+      .rst_n   (rst_n)
+  );
  
  //***************************************ifetch************************************
 
@@ -80,13 +106,15 @@ module QPU_ifu_ift2icb(
   //                    only loaded when instr is 32bits-long)
 
 
+
+
   wire ifu_req_lane_begin = 1'b0 | (ifu_req_pc[2:1] == 2'b00);
   wire ifu_req_lane_same = ifu_req_seq & (ifu_req_lane_begin ? 1'b0 : 1'b1 );  
   wire ifu_req_lane_holdup = 1'b0 | ifu_holdup & (~itcm_nohold);
 
 
   wire ifu_req_hsked = ifu_req_valid & ifu_req_ready;
-  wire i_ifu_rsp_hsked = ifu_rsp_valid & ifu_rsp_ready;
+  wire i_ifu_rsp_hsked = i_ifu_rsp_valid & i_ifu_rsp_ready;
   wire ifu_icb_cmd_hsked = ifu_icb_cmd_valid & ifu_icb_cmd_ready;
   wire ifu_icb_rsp_hsked = ifu_icb_rsp_valid & ifu_icb_rsp_ready;
 
@@ -97,7 +125,7 @@ module QPU_ifu_ift2icb(
 
   assign ifu_icb_cmd_addr = ifu_req_pc;
   
-  wire[31:0] ifu_rsp_instr = 
+  wire[31:0] i_ifu_rsp_instr = 
                     ({32{icb_cmd_addr_2_1_r == 2'b00}} & ifu_icb_rsp_rdata[31:0]) 
                   | ({32{icb_cmd_addr_2_1_r == 2'b10}} & ifu_icb_rsp_rdata[63:32])
                      ;
@@ -120,9 +148,9 @@ module QPU_ifu_ift2icb(
   //               we generate a fake response valid
   wire holdup_gen_fake_rsp_valid = icb_sta_is_1st & req_need_0uop_r;  
 
-  assign ifu_rsp_valid = holdup_gen_fake_rsp_valid | ifu_icb_rsp_valid;
+  assign i_ifu_rsp_valid = holdup_gen_fake_rsp_valid | ifu_icb_rsp_valid;
 
-  assign ifu_icb_rsp_ready = ifu_rsp_ready ;
+  assign ifu_icb_rsp_ready = i_ifu_rsp_ready ;
 
   
 
