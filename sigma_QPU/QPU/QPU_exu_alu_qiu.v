@@ -15,7 +15,7 @@
 module QPU_exu_alu_qiu(
 
   //////////////////////////////////////////////////////////////
-  //////////////////////////////////////////////////////////////
+  //////////////////////////////////////////////////////////////test
   // The Handshake Interface 
   //
   input  qiu_i_valid, // Handshake valid
@@ -95,15 +95,16 @@ module QPU_exu_alu_qiu(
 
       ///对于测量指令，event oprand 的对应位，表示该该操作为测量操作，opcode为执行测量操作的比特掩码
       else if (i == `QPU_QI_XYEVENT_NUM) begin
-        assign qiu_o_wbck_oprand[i] = qop2_is_gate;
+        assign qiu_o_wbck_oprand[i] = qop2_is_gate | (~qiu_i_ntp    & qiu_i_oprand[i]) ;
         
         assign qiu_o_wbck_edata[((i+1)*`QPU_QI_ZEVENT_WIDTH) - 1 : i*`QPU_QI_ZEVENT_WIDTH] = 
                                  ({`QPU_QI_ZEVENT_WIDTH{qop2_is_gate}} & opcode2)
                               |  (qiu_i_edata[((i+1)*`QPU_QI_ZEVENT_WIDTH) - 1 : i*`QPU_QI_ZEVENT_WIDTH] & {`QPU_QI_ZEVENT_WIDTH{~qiu_i_ntp}});  
       end else begin
 
-        assign qiu_o_wbck_oprand[i] = qiu_i_measure;
-        assign qiu_o_wbck_edata[(`QPU_QI_XYEVENT_NUM * `QPU_QI_XYEVENT_WIDTH + `QPU_QI_ZEVENT_NUM * `QPU_QI_ZEVENT_WIDTH + ( i- `QPU_QI_XYEVENT_NUM - `QPU_QI_ZEVENT_NUM + 1) * `QPU_MEASURE_EVENT_WIDTH - 1) : (`QPU_QI_XYEVENT_NUM * `QPU_QI_XYEVENT_WIDTH + `QPU_QI_ZEVENT_NUM * `QPU_QI_ZEVENT_WIDTH + (i- `QPU_QI_XYEVENT_NUM - `QPU_QI_ZEVENT_NUM) * `QPU_MEASURE_EVENT_WIDTH)] = ({`QPU_MEASURE_EVENT_WIDTH{qiu_i_measure}}) & qiu_i_rs1;
+        assign qiu_o_wbck_oprand[i] = qiu_i_measure |   (~qiu_i_ntp    & qiu_i_oprand[i]) ;
+        assign qiu_o_wbck_edata[(`QPU_QI_XYEVENT_NUM * `QPU_QI_XYEVENT_WIDTH + `QPU_QI_ZEVENT_NUM * `QPU_QI_ZEVENT_WIDTH + ( i- `QPU_QI_XYEVENT_NUM - `QPU_QI_ZEVENT_NUM + 1) * `QPU_MEASURE_EVENT_WIDTH - 1) : (`QPU_QI_XYEVENT_NUM * `QPU_QI_XYEVENT_WIDTH + `QPU_QI_ZEVENT_NUM * `QPU_QI_ZEVENT_WIDTH + (i- `QPU_QI_XYEVENT_NUM - `QPU_QI_ZEVENT_NUM) * `QPU_MEASURE_EVENT_WIDTH)] = 
+                              (({`QPU_MEASURE_EVENT_WIDTH{qiu_i_measure}}) & qiu_i_rs1) | (qiu_i_edata[(`QPU_QI_XYEVENT_NUM * `QPU_QI_XYEVENT_WIDTH + `QPU_QI_ZEVENT_NUM * `QPU_QI_ZEVENT_WIDTH + ( i- `QPU_QI_XYEVENT_NUM - `QPU_QI_ZEVENT_NUM + 1) * `QPU_MEASURE_EVENT_WIDTH - 1) : (`QPU_QI_XYEVENT_NUM * `QPU_QI_XYEVENT_WIDTH + `QPU_QI_ZEVENT_NUM * `QPU_QI_ZEVENT_WIDTH + (i- `QPU_QI_XYEVENT_NUM - `QPU_QI_ZEVENT_NUM) * `QPU_MEASURE_EVENT_WIDTH)] & {`QPU_MEASURE_EVENT_WIDTH{~qiu_i_ntp}})  ;
 
       end
 

@@ -428,26 +428,4 @@ module QPU_ifu_ifetch(
    assign ifu_rsp_ready = ifu_rsp2ir_ready;
 
 
-
-  //*********************************************************************************************
-
-
-
-
-/*
-  `ifndef FPGA_SOURCE//{
-  `ifndef DISABLE_SV_ASSERTION//{
- //synopsys translate_off
-
-CHECK_IFU_REQ_VALID_NO_X:
-  assert property (@(posedge clk) disable iff (~rst_n)
-                     (ifu_req_valid !== 1'bx)
-                  )
-  else $fatal ("\n Error: Oops, detected X value for ifu_req_valid !!! This should never happen. \n");
-
- //synopsys translate_on
- `endif//}
- `endif//}
- */
-
 endmodule

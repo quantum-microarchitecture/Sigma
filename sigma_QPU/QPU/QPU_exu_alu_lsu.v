@@ -45,11 +45,6 @@ module QPU_exu_alu_lsu(
   output [`QPU_XLEN-1:0]       lsu_icb_cmd_wdata, 
   output [`QPU_XLEN/8-1:0]     lsu_icb_cmd_wmask, 
   
-  //    * Bus RSP channel
-  input                        lsu_icb_rsp_valid, // Response valid 
-  output                       lsu_icb_rsp_ready, // Response ready
-
-
   //////////////////////////////////////////////////////////////
   //////////////////////////////////////////////////////////////
   // To share the ALU datapath, generate interface to ALU

@@ -25,11 +25,7 @@ module QPU_exu_branchslv(
   output brchmis_flush_req,
 
   output [`QPU_PC_SIZE-1:0] brchmis_flush_add_op1,  
-  output [`QPU_PC_SIZE-1:0] brchmis_flush_add_op2,  
-
-
-  input  clk,
-  input  rst_n
+  output [`QPU_PC_SIZE-1:0] brchmis_flush_add_op2
   );
 
   

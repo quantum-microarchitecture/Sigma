@@ -36,8 +36,8 @@ module QPU_test_top(
   input  rst_n
   );
   
-  wire  [`QPU_INSTR_SIZE-1:0] i_ir,
-  sirv_gnrl_dffrs #(`QPU_INSTR_SIZE-1:0) ir_dffrs (i_irin,i_ir,clk,rst_n); 
+  wire  [`QPU_INSTR_SIZE-1:0] i_ir;
+  sirv_gnrl_dffrs #(`QPU_INSTR_SIZE) ir_dffrs (i_irin,i_ir,clk,rst_n); 
 
   
   wire [`QPU_XLEN-1:0] dec_imm;

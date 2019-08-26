@@ -92,17 +92,8 @@ module QPU_exu_alu(
   output [`QPU_ADDR_SIZE-1:0]    lsu_icb_cmd_addr, // Bus transaction start addr 
   output                         lsu_icb_cmd_read,   // Read or write
   output [`QPU_XLEN-1:0]         lsu_icb_cmd_wdata, 
-  output [`QPU_XLEN/8-1:0]       lsu_icb_cmd_wmask, 
-  
-  //    * Bus RSP channel
-  input                          lsu_icb_rsp_valid, // Response valid 
-  output                         lsu_icb_rsp_ready, // Response ready
-  input  [`QPU_XLEN-1:0]         lsu_icb_rsp_rdata
-
+  output [`QPU_XLEN/8-1:0]       lsu_icb_cmd_wmask
   );
-
-
-
   //////////////////////////////////////////////////////////////
   // Dispatch to different sub-modules according to their types
 
@@ -224,10 +215,7 @@ module QPU_exu_alu(
       .lsu_icb_cmd_read    (lsu_icb_cmd_read    ),
       .lsu_icb_cmd_wdata   (lsu_icb_cmd_wdata   ),
       .lsu_icb_cmd_wmask   (lsu_icb_cmd_wmask   ),
-      
-      .lsu_icb_rsp_valid   (lsu_icb_rsp_valid   ),
-      .lsu_icb_rsp_ready   (lsu_icb_rsp_ready   ),
-                                                     
+                                                      
       .lsu_req_alu_op1     (lsu_req_alu_op1     ),
       .lsu_req_alu_op2     (lsu_req_alu_op2     ),
       .lsu_req_alu_res     (lsu_req_alu_res     )
@@ -409,7 +397,7 @@ module QPU_exu_alu(
   assign bjp_o_ready      = o_sel_bjp & o_ready;
   assign qiu_o_ready      = o_sel_qiu & o_ready;
 
-/////////////////////在这里，将alu_o_wbck_wdat根据ntp的值，分配给classical reg or time reg
+/////////////////////在这里，将alu_o_wbck_wdat根据ntp的�?�，分配给classical reg or time reg
   assign cwbck_o_data = ({`QPU_XLEN{(o_sel_alu & (~i_ntp) & (~i_rdidx[`QPU_RFIDX_REAL_WIDTH - 1]))}} & alu_o_wbck_cdata);
   assign twbck_o_data = ({`QPU_TIME_WIDTH{(o_sel_alu & i_ntp)}} & alu_o_wbck_cdata [`QPU_TIME_WIDTH - 1 : 0]) 
                       | ({`QPU_TIME_WIDTH{(o_sel_qiu & i_ntp)}} & qiu_o_wbck_tdata[`QPU_TIME_WIDTH - 1 : 0]);
@@ -430,7 +418,7 @@ module QPU_exu_alu(
   //     the result (need to write RD), and it is not a long-pipe uop
   //     (need to be write back by its long-pipe write-back, not here)
   //   * Each instruction need to be commited 
-  wire o_need_cwbck  = wbck_o_rdwen & (~i_longpipe) & (~i_rdidx[`QPU_RFIDX_REAL_WIDTH - 1]);      //QWAIT 指令不需要写回wbck_o_rdwen=0;但是需要通过alu_o_wbck_cdata传输写回数据！
+  wire o_need_cwbck  = wbck_o_rdwen & (~i_longpipe) & (~i_rdidx[`QPU_RFIDX_REAL_WIDTH - 1]);      //QWAIT 指令不需要写回wbck_o_rdwen=0;但是�?要�?�过alu_o_wbck_cdata传输写回数据�?
   wire o_need_qcwbck = wbck_o_rdwen & (i_rdidx[`QPU_RFIDX_REAL_WIDTH - 1]);
   wire o_need_twbck = i_ntp;
   wire o_need_ewbck = o_sel_qiu | i_ntp;                                    //QI or QWAIT
