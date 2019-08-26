@@ -142,3 +142,21 @@
 
 
 
+
+  `define instr_1 `ADDI_R3_R0_01010
+  `define instr_2 `ADDI_R4_R0_01100
+  `define instr_3 `ADDI_R5_R0_10000
+  `define instr_4 `STORE_R3_R0_00011
+  `define instr_5 `LOAD_R6_R0_00011
+  `define instr_6 `STORE_R4_R5_00001
+  `define instr_7 `LOAD_R7_R5_00001
+  `define instr_8 `STORE_R5_R7_00010
+  `define instr_9 `LOAD_R8_R0_00011
+  `define instr_10 `ADDI_R8_R0_00001
+  `define instr_11 32'b0
+  `define instr_12 32'b0
+  `define instr_13 32'b0
+  `define instr_14 32'b0
+  `define instr_15 32'b0
+  `define instr_16 32'b0
+

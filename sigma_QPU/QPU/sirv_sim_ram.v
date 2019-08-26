@@ -54,18 +54,15 @@ module sirv_sim_itcm_ram
 
     initial
     begin
-      mem_r[0][DW-1:0] = 64'b0;
-      mem_r[1][DW-1:0]  = {`SMIS_S14_000101,`SMIS_S13_001111};
-      mem_r[2][DW-1:0]  = {`T1_ZGATE_Z_XYGATE0,`T0_GATE0_S0_XYGATE_H_S13};
-      mem_r[3][DW-1:0]  = {`T4_XYGATE_Y_S2_XYGATE_X_S1,`T1_ZGATE_1_S0_GATE0};
-      mem_r[4][DW-1:0]  = {`T1_GATE0_S0_MEASURE_S14,`T0_XYGATE_Y90_S4_XYGATE_X90_S3};
-      mem_r[5][DW-1:0]  = {`FMR_R2_S3,`QWAIT_4};
-      mem_r[6][DW-1:0] = {`ADDI_R4_R0_01100,`ADDI_R3_R0_01010};
-      mem_r[7][DW-1:0] = {`STORE_R3_R0_00011,`ADDI_R5_R0_10000};
-      mem_r[8][DW-1:0] = {`STORE_R4_R5_00001,`LOAD_R6_R0_00011};
-      mem_r[9][DW-1:0] = {`STORE_R5_R7_00010,`LOAD_R7_R5_00001};
-      mem_r[10][DW-1:0] = {`ADDI_R8_R0_00001,`LOAD_R8_R0_00011};
-      mem_r[11][DW-1:0] = 64'b0;
+      mem_r[0][DW-1:0]  = {`instr_2,`instr_1};
+      mem_r[1][DW-1:0]  = {`instr_4,`instr_3};
+      mem_r[2][DW-1:0]  = {`instr_6,`instr_5};
+      mem_r[3][DW-1:0]  = {`instr_8,`instr_7};
+      mem_r[4][DW-1:0]  = {`instr_10,`instr_9};
+      mem_r[5][DW-1:0] = {`instr_12,`instr_11};
+      mem_r[6][DW-1:0] = {`instr_14,`instr_13};
+      mem_r[7][DW-1:0] = {`instr_16,`instr_15};
+      mem_r[8][DW-1:0] = 64'b0;
     end
 
 
