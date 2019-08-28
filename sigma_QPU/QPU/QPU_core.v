@@ -136,10 +136,6 @@ module QPU_core(
     .lsu_icb_cmd_wdata      (lsu_icb_cmd_wdata),
     .lsu_icb_cmd_wmask      (lsu_icb_cmd_wmask),
 
-    .lsu_icb_rsp_valid      (),
-    .lsu_icb_rsp_ready      (),
-    .lsu_icb_rsp_rdata      (),
-
     .mcu_i_measurement      (mcu_i_measurement),
     .mcu_i_wen              (mcu_i_wen),
 

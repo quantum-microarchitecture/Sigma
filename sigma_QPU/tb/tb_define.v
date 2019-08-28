@@ -77,6 +77,16 @@
 
   `define ADDI_R8_R0_00001 {`func_000,5'b0,9'b000000001,5'b00000,5'b01000,`opcode_00,`opcode_01,`flag_0}
 
+  
+
+  `define ADDI_R6_R0_00001 {`func_000,5'b0,9'b000000001,5'b00000,5'b00110,`opcode_00,`opcode_01,`flag_0}
+  `define ADD_R6_R3_R4 {`func_000,5'b00011,9'b0,5'b00100,5'b00110,`opcode_01,`opcode_01,`flag_0}
+  `define ADDI_R5_R5_1_00001 {`func_000,5'b11111,9'b111111111,5'b00101,5'b00101,`opcode_00,`opcode_01,`flag_0}
+  `define ADDI_R3_R3_00001 {`func_000,5'b0,9'b000000001,5'b00011,5'b00011,`opcode_00,`opcode_01,`flag_0}
+  `define BNQ_R4_R3_instr_6 {`func_001,5'b00100,9'b000001000,5'b00011,5'b00000,`opcode_11,`opcode_00,`flag_0}
+  `define BLT_R4_R5_instr_7 {`func_010,5'b00101,9'b111111100,5'b00100,5'b11111,`opcode_11,`opcode_00,`flag_0}
+
+
 /*   `define GATE_0 9'b000000000
   `define GATE_H 9'b000000001
   `define GATE_X90 9'b000000010
@@ -141,7 +151,7 @@
 
 
 
-
+/*
 
   `define instr_1 `ADDI_R3_R0_01010
   `define instr_2 `ADDI_R4_R0_01100
@@ -153,6 +163,30 @@
   `define instr_8 `STORE_R5_R7_00010
   `define instr_9 `LOAD_R8_R0_00011
   `define instr_10 `ADDI_R8_R0_00001
+  `define instr_11 32'b0
+  `define instr_12 32'b0
+  `define instr_13 32'b0
+  `define instr_14 32'b0
+  `define instr_15 32'b0
+  `define instr_16 32'b0
+
+*/
+
+
+
+
+
+
+  `define instr_1 `ADDI_R3_R0_01010
+  `define instr_2 `ADDI_R4_R0_01100
+  `define instr_3 `ADDI_R5_R0_10000
+  `define instr_4 `BNQ_R4_R3_instr_6
+  `define instr_5 `ADDI_R6_R0_00001
+  `define instr_6 `ADD_R6_R3_R4
+  `define instr_7 `ADDI_R5_R5_1_00001 
+  `define instr_8 `BLT_R4_R5_instr_7 
+  `define instr_9 `ADDI_R3_R3_00001
+  `define instr_10 32'b0
   `define instr_11 32'b0
   `define instr_12 32'b0
   `define instr_13 32'b0

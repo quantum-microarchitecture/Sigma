@@ -62,7 +62,6 @@ module sirv_sim_itcm_ram
       mem_r[5][DW-1:0] = {`instr_12,`instr_11};
       mem_r[6][DW-1:0] = {`instr_14,`instr_13};
       mem_r[7][DW-1:0] = {`instr_16,`instr_15};
-      mem_r[8][DW-1:0] = 64'b0;
     end
 
 

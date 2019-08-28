@@ -21,8 +21,8 @@ module tb_ifu();
   wire [`QPU_INSTR_SIZE-1:0] ifu_o_ir;// The instruction register
   wire [`QPU_PC_SIZE-1:0] ifu_o_pc;   // The PC register along with
   wire ifu_o_pc_vld;
-  wire [`QPU_RFIDX_WIDTH-1:0] ifu_o_rs1idx;
-  wire [`QPU_RFIDX_WIDTH-1:0] ifu_o_rs2idx;
+  wire [`QPU_RFIDX_REAL_WIDTH-1:0] ifu_o_rs1idx;
+  wire [`QPU_RFIDX_REAL_WIDTH-1:0] ifu_o_rs2idx;
   wire ifu_o_prdt_taken;               // The Bxx is predicted as taken
 
   wire ifu_o_valid; // Handshake signals with EXU stage

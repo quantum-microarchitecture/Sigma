@@ -51,8 +51,8 @@ module QPU_ifu_ifetch(
   output [`QPU_INSTR_SIZE-1:0] ifu_o_ir,// The instruction register
   output [`QPU_PC_SIZE-1:0] ifu_o_pc,   // The PC register along with
   output ifu_o_pc_vld,
-  output [`QPU_RFIDX_WIDTH-1:0] ifu_o_rs1idx,
-  output [`QPU_RFIDX_WIDTH-1:0] ifu_o_rs2idx,
+  output [`QPU_RFIDX_REAL_WIDTH-1:0] ifu_o_rs1idx,
+  output [`QPU_RFIDX_REAL_WIDTH-1:0] ifu_o_rs2idx,
   output ifu_o_prdt_taken,               // The Bxx is predicted as taken 
   output ifu_o_valid, // Handshake signals with EXU stage
   input  ifu_o_ready,
@@ -215,17 +215,17 @@ module QPU_ifu_ifetch(
    assign ifu_o_ir  = ifu_ir_r;
 
 
-   wire [`QPU_RFIDX_WIDTH-1:0] ir_rs1idx_r;
-   wire [`QPU_RFIDX_WIDTH-1:0] ir_rs2idx_r;
+   wire [`QPU_RFIDX_REAL_WIDTH-1:0] ir_rs1idx_r;
+   wire [`QPU_RFIDX_REAL_WIDTH-1:0] ir_rs2idx_r;
 
    wire ir_rs1idx_ena = ir_valid_set & minidec_rs1en;
    wire ir_rs2idx_ena = ir_valid_set & minidec_rs2en;
 
-   wire [`QPU_RFIDX_WIDTH-1:0] ir_rs1idx_nxt = minidec_rs1idx;
-   wire [`QPU_RFIDX_WIDTH-1:0] ir_rs2idx_nxt = minidec_rs2idx;  
+   wire [`QPU_RFIDX_REAL_WIDTH-1:0] ir_rs1idx_nxt = minidec_rs1idx;
+   wire [`QPU_RFIDX_REAL_WIDTH-1:0] ir_rs2idx_nxt = minidec_rs2idx;  
 
-   sirv_gnrl_dfflr #(`QPU_RFIDX_WIDTH) ir_rs1idx_dfflr (ir_rs1idx_ena, ir_rs1idx_nxt, ir_rs1idx_r, clk, rst_n);
-   sirv_gnrl_dfflr #(`QPU_RFIDX_WIDTH) ir_rs2idx_dfflr (ir_rs2idx_ena, ir_rs2idx_nxt, ir_rs2idx_r, clk, rst_n);
+   sirv_gnrl_dfflr #(`QPU_RFIDX_REAL_WIDTH) ir_rs1idx_dfflr (ir_rs1idx_ena, ir_rs1idx_nxt, ir_rs1idx_r, clk, rst_n);
+   sirv_gnrl_dfflr #(`QPU_RFIDX_REAL_WIDTH) ir_rs2idx_dfflr (ir_rs2idx_ena, ir_rs2idx_nxt, ir_rs2idx_r, clk, rst_n);
    assign ifu_o_rs1idx = ir_rs1idx_r;
    assign ifu_o_rs2idx = ir_rs2idx_r;
 

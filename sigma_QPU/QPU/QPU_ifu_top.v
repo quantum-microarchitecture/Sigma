@@ -15,8 +15,8 @@ module QPU_ifu_top(
   output [`QPU_INSTR_SIZE-1:0] ifu_o_ir,// The instruction register
   output [`QPU_PC_SIZE-1:0] ifu_o_pc,   // The PC register along with
   output ifu_o_pc_vld,
-  output [`QPU_RFIDX_WIDTH-1:0] ifu_o_rs1idx,
-  output [`QPU_RFIDX_WIDTH-1:0] ifu_o_rs2idx,
+  output [`QPU_RFIDX_REAL_WIDTH-1:0] ifu_o_rs1idx,
+  output [`QPU_RFIDX_REAL_WIDTH-1:0] ifu_o_rs2idx,
   output ifu_o_prdt_taken,               // The Bxx is predicted as taken
 
   output ifu_o_valid, // Handshake signals with EXU stage
