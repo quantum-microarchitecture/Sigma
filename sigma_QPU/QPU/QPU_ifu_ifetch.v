@@ -278,7 +278,7 @@ module QPU_ifu_ifetch(
    wire [`QPU_PC_SIZE-1:0] pc_nxt_pre;
    wire [`QPU_PC_SIZE-1:0] pc_nxt;  
 
-   wire bjp_req = minidec_bxx & prdt_taken;
+   wire bjp_req =  (~reset_req_r) & minidec_bxx & prdt_taken ;            //自己添加的
 
 
    wire [`QPU_PC_SIZE-1:0] pc_add_op1 = 

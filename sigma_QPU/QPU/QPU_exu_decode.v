@@ -242,7 +242,7 @@ module QPU_exu_decode(
 
 //the last two bits of address is is always 00，so the last two bits of the imm of branch instruction is end up with the second bit  
   wire [31:0]  qpu_b_imm = {
-                               {17{qpu_instr[9]}} 
+                               {18{qpu_instr[9]}} 
                               , qpu_instr[9:5] 
                               , qpu_instr[23:15]
                               };
