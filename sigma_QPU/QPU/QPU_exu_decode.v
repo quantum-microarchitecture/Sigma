@@ -30,7 +30,9 @@ module QPU_exu_decode(
   output [`QPU_RFIDX_REAL_WIDTH-1:0] dec_rdidx,
   output [`QPU_DECINFO_WIDTH-1:0] dec_info,  
   output [`QPU_XLEN-1:0] dec_imm,
-  output [`QPU_PC_SIZE-1:0] dec_pc,  
+  output [`QPU_PC_SIZE-1:0] dec_pc,
+
+  output dec_halt,
   
   //Quantum instruction decode
   output dec_new_timepoint,
@@ -83,7 +85,7 @@ module QPU_exu_decode(
   wire classical_rs2_x0 = (classical_rs2 == 5'b00000);
   wire classical_rd_x0  = (classical_rd  == 5'b00000);
 
-  wire classical_load   = opcode_4_3_00 & opcode_2_0_000; 
+  wire classical_load   = opcode_4_3_10 & opcode_2_0_000; 
   wire classical_store  = opcode_4_3_01 & opcode_2_0_000; 
   wire classical_branch = opcode_4_3_11 & opcode_2_0_000; 
 
@@ -352,6 +354,8 @@ assign dec_rdidx = {{classical_smis}, classical_rd [`QPU_RFIDX_WIDTH-1:0]};
   //only assert when it is classical instruction
   assign dec_rs1x0 = classical_rs1_x0 & classical_instr;             
   assign dec_rs2x0 = classical_rs2_x0 & classical_instr;
+
+  assign dec_halt = opcode_4_3_11 & opcode_2_0_110;
                      
   assign dec_bxx = bjp_op;
   assign dec_bjp_imm = qpu_b_imm;

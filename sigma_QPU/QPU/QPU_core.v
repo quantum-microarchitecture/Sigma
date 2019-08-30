@@ -44,6 +44,8 @@ module QPU_core(
   wire  [`QPU_RFIDX_REAL_WIDTH-1:0] i_rs1idx;   
   wire  [`QPU_RFIDX_REAL_WIDTH-1:0] i_rs2idx;
 
+  wire  dec_halt;
+
   wire   pipe_flush_ack;
   wire  pipe_flush_req;
   wire  [`QPU_PC_SIZE-1:0] pipe_flush_add_op1;  
@@ -94,7 +96,7 @@ module QPU_core(
     .pipe_flush_add_op1     (pipe_flush_add_op1),
     .pipe_flush_add_op2     (pipe_flush_add_op2),
 
-    .ifu_halt_req           (1'b0),
+    .ifu_halt_req           (dec_halt),
     .ifu_halt_ack           (),
 
     .test_mode              (test_mode),
@@ -119,6 +121,8 @@ module QPU_core(
 
     .i_rs1idx               (i_rs1idx),
     .i_rs2idx               (i_rs2idx),
+
+    .dec_halt               (dec_halt),
 
     .pipe_flush_ack         (pipe_flush_ack),
     .pipe_flush_req         (pipe_flush_req),

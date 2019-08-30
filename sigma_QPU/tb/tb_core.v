@@ -40,7 +40,9 @@ module tb_all();
   begin
     clk = 1'b1;
     rst_n = 1'b0;
-    #1 rst_n = 1'b1;
+    #3 rst_n = 1'b1;
+    #43 rst_n = 1'b0;
+    #3 rst_n = 1'b1;
   end
 
   always #(clk_period/2) clk = ~clk;

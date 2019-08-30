@@ -27,7 +27,7 @@ module QPU_exu(
   input  [`QPU_RFIDX_REAL_WIDTH-1:0] i_rs1idx,   // The RS1 index
   input  [`QPU_RFIDX_REAL_WIDTH-1:0] i_rs2idx,   // The RS2 index
 
-  
+  output dec_halt,
 
   //////////////////////////////////////////////////////////////
   // The Flush interface to IFU
@@ -233,6 +233,8 @@ module QPU_exu(
     .dec_info                     (dec_info   ),
     .dec_imm                      (dec_imm    ),
     .dec_pc                       (dec_pc     ),
+
+    .dec_halt                     (dec_halt   ),
 
     .dec_new_timepoint            (dec_ntp    ),
     .dec_need_qubitflag           (dec_nqf    ),

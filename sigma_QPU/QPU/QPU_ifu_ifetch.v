@@ -118,7 +118,6 @@ module QPU_ifu_ifetch(
    //////////////////////////////////////////////////////////////
    // The halt ack generation
    wire halt_ack_set;
-   wire halt_ack_clr;
    wire halt_ack_ena;
    wire halt_ack_r;
    wire halt_ack_nxt;
@@ -133,10 +132,9 @@ module QPU_ifu_ifetch(
      // The halt_ack_r valid is cleared when 
      //    * Currently halt_ack is asserting
      //    * Currently halt_req is de-asserting
-   assign halt_ack_clr = halt_ack_r & (~ifu_halt_req);
 
-   assign halt_ack_ena = halt_ack_set | halt_ack_clr;
-   assign halt_ack_nxt = halt_ack_set | (~halt_ack_clr);
+   assign halt_ack_ena = halt_ack_set ;
+   assign halt_ack_nxt = halt_ack_set ;
 
    sirv_gnrl_dfflr #(1) halt_ack_dfflr (halt_ack_ena, halt_ack_nxt, halt_ack_r, clk, rst_n);
 
@@ -200,7 +198,7 @@ module QPU_ifu_ifetch(
    assign ir_valid_ena  = ir_valid_set  | ir_valid_clr;
    assign ir_valid_nxt  = ir_valid_set  | (~ir_valid_clr);
    sirv_gnrl_dfflr #(1) ir_valid_dfflr (ir_valid_ena, ir_valid_nxt, ir_valid_r, clk, rst_n);
-   assign ifu_o_valid  = ir_valid_r;
+   assign ifu_o_valid  = (~halt_ack_r) & ir_valid_r;
 
    // The IFU-IR stage will be ready when it is empty or under-clearing
    assign ifu_ir_i_ready   = (~ir_valid_r) | ir_valid_clr;
@@ -393,7 +391,7 @@ module QPU_ifu_ifetch(
    assign ifu_req_seq = (~pipe_flush_req_real) & (~ifu_reset_req) & (~bjp_req);
 
 
-   wire ifu_new_req = (~ifu_halt_req) & (~reset_flag_r);
+   wire ifu_new_req = (~halt_ack_r) & (~reset_flag_r);           //改了
    // The fetch request valid is triggering when
    //      * New ifetch request
    //      * or The flush-request is pending

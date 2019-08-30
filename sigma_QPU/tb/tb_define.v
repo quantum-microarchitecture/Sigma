@@ -30,7 +30,7 @@
   `define NGATE4 9'b011101010  //测量相同则执行的XY单门
 
   
-  `define instr_LOAD {`func_000,`imm_13_9,`imm_8_0,`rs1,`rd,`opcode_00,`opcode_00,`flag_0}
+  `define instr_LOAD {`func_000,`imm_13_9,`imm_8_0,`rs1,`rd,`opcode_10,`opcode_00,`flag_0}
   `define instr_STORE {`func_000,`rd,`imm_8_0,`rs1,`imm_13_9,`opcode_01,`opcode_00,`flag_0}
 
   `define instr_BEQ {`func_000,`rs2,`imm_8_0,`rs1,`imm_13_9,`opcode_11,`opcode_00,`flag_0}
@@ -58,7 +58,7 @@
   `define instr_QI_2 {3'b011,`rs2,`NGATE3,`rs1,`NGATE4,`flag_1}
   `define instr_QI_3 {3'b011,`rs2,`GATEZ,`rs1,`GATEXY,`flag_1}
 
-  `define instr_WFI {27'b0,`opcode_00,`opcode_10,`flag_0}
+  `define instr_WFI {27'b0,`opcode_11,`opcode_11,`flag_0}
 
   
   //test load/store
@@ -67,13 +67,13 @@
   `define ADDI_R5_R0_10000 {`func_000,5'b0,9'b000010000,5'b00000,5'b00101,`opcode_00,`opcode_01,`flag_0}
 
   `define STORE_R3_R0_00011 {3'b0,5'b00011,9'b000000011,5'b00000,5'b00000,`opcode_01,`opcode_00,`flag_0}
-  `define LOAD_R6_R0_00011 {3'b0,5'b00000,9'b000000011,5'b00000,5'b00110,`opcode_00,`opcode_00,`flag_0}
+  `define LOAD_R6_R0_00011 {3'b0,5'b00000,9'b000000011,5'b00000,5'b00110,`opcode_10,`opcode_00,`flag_0}
   
   `define STORE_R4_R5_00001 {3'b0,5'b00100,9'b000000001,5'b00101,5'b00000,`opcode_01,`opcode_00,`flag_0}
-  `define LOAD_R7_R5_00001 {3'b0,5'b00000,9'b000000001,5'b00101,5'b00111,`opcode_00,`opcode_00,`flag_0}
+  `define LOAD_R7_R5_00001 {3'b0,5'b00000,9'b000000001,5'b00101,5'b00111,`opcode_10,`opcode_00,`flag_0}
 
   `define STORE_R5_R7_00010 {3'b0,5'b00101,9'b000000001,5'b00111,5'b00000,`opcode_01,`opcode_00,`flag_0}
-  `define LOAD_R8_R0_00011 {3'b0,5'b00000,9'b000000011,5'b00000,5'b01000,`opcode_00,`opcode_00,`flag_0}
+  `define LOAD_R8_R0_00011 {3'b0,5'b00000,9'b000000011,5'b00000,5'b01000,`opcode_10,`opcode_00,`flag_0}
 
   `define ADDI_R8_R0_00001 {`func_000,5'b0,9'b000000001,5'b00000,5'b01000,`opcode_00,`opcode_01,`flag_0}
 
@@ -151,7 +151,7 @@
 
 
 
-/*
+
 
   `define instr_1 `ADDI_R3_R0_01010
   `define instr_2 `ADDI_R4_R0_01100
@@ -163,18 +163,18 @@
   `define instr_8 `STORE_R5_R7_00010
   `define instr_9 `LOAD_R8_R0_00011
   `define instr_10 `ADDI_R8_R0_00001
-  `define instr_11 32'b0
+  `define instr_11 `instr_WFI
   `define instr_12 32'b0
   `define instr_13 32'b0
   `define instr_14 32'b0
   `define instr_15 32'b0
   `define instr_16 32'b0
 
-*/
 
 
 
 
+/*
 
 
   `define instr_1 `ADDI_R3_R0_01010
@@ -186,7 +186,7 @@
   `define instr_7 `ADDI_R5_R5_1_00001 
   `define instr_8 `BLT_R4_R5_instr_7 
   `define instr_9 `ADDI_R3_R3_00001
-  `define instr_10 32'b0
+  `define instr_10 `instr_WFI
   `define instr_11 32'b0
   `define instr_12 32'b0
   `define instr_13 32'b0
@@ -194,3 +194,4 @@
   `define instr_15 32'b0
   `define instr_16 32'b0
 
+*/
