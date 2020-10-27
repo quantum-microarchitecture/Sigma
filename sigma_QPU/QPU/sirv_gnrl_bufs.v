@@ -57,7 +57,7 @@ module sirv_gnrl_pipe_stage # (
 
       assign o_vld = vld_r;
 
-      sirv_gnrl_dffl #(DW) dat_dfflr (vld_set, i_dat, o_dat, clk);
+      sirv_gnrl_dffl #(DW) dat_dffl (vld_set, i_dat, o_dat, clk);
 
       if(CUT_READY == 1) begin:cut_ready//{
           // If cut ready, then only accept when stage is not full
@@ -160,7 +160,7 @@ endmodule
 module sirv_gnrl_fifo # (
   // When the depth is 1, the ready signal may relevant to next stage's ready, hence become logic
   // chains. Use CUT_READY to control it
-  // When fifo depth is 1, the fifo is a signle stage
+  // When fifo depth is 1, the fifo is a single stage
        // if CUT_READY is set, then the back-pressure ready signal will be cut
        //      off, and it can only pass 1 data every 2 cycles
   // When fifo depth is > 1, then it is actually a really fifo
@@ -185,7 +185,7 @@ module sirv_gnrl_fifo # (
 genvar i;
 generate //{
 
-  if(DP == 0) begin: dp_eq1//{ pass through when it is 0 entries
+  if(DP == 0) begin: dp_eq0//{ pass through when it is 0 entries
 
      assign o_vld = i_vld;
      assign i_rdy = o_rdy;
