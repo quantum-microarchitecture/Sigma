@@ -223,31 +223,31 @@ module tb_exu_wbck();
 ///////////////////////////////////////////////////////
 
 ////////////////////////decode//////////////////////////////////////
-  initial
-  begin
-    #0 i_pc = `QPU_PC_SIZE'b0;
-    #0 i_prdt_taken = 1'b0;
+//  initial
+//  begin
+//    #0 i_pc = `QPU_PC_SIZE'b0;
+//    #0 i_prdt_taken = 1'b0;
 
-    #0 i_instr = `SMIS_S6_010100;                         //1
-    #2 i_instr = `SMIS_S7_101000;                         //2
-    #2 i_instr = `SMIS_S8_100100;                         //3  
-    #2 i_instr = `SMIS_S9_001100;                         //4
-    #2 i_instr = `T0_H_S6_X90_S7;                         //5    
-    #2 i_instr = `T1_CNOTS_S2_CNOTT_S3;                   //6
-    #2 i_instr = `T2_Y90_S8;                              //7  
-    #2 i_instr = `T1_MEASURE_S9;                          //8
-    #2 i_instr = `QWAIT_30;                               //9    
-    #2 i_instr = `ADDI_R1_R0_001100;                      //10
-    #2 i_instr = `FMR_R2_S9;                              //11
-    #2 i_instr = `BEQ_R1_R2_CASE2;                        //12  
-    #2 i_instr = `T0_X90_S2;                              //13
-    #2 i_instr = `QWAIT_1;                                //14
-    #2 i_instr = `BEQ_R0_R0_NEXT;                         //15  
-    #2 i_instr = `T0_H_S2;                                //16    
-    #2 i_instr = `QWAIT_1;                                //17
-    #2 i_instr = `T0_MEASURE_S2;                          //18  
-    #2 i_instr = `QWAIT_30;                               //19
-  end
+//    #0 i_instr = `SMIS_S6_010100;                         //1
+//    #2 i_instr = `SMIS_S7_101000;                         //2
+//    #2 i_instr = `SMIS_S8_100100;                         //3
+//    #2 i_instr = `SMIS_S9_001100;                         //4
+//    #2 i_instr = `T0_H_S6_X90_S7;                         //5
+//    #2 i_instr = `T1_CNOTS_S2_CNOTT_S3;                   //6
+//    #2 i_instr = `T2_Y90_S8;                              //7
+//    #2 i_instr = `T1_MEASURE_S9;                          //8
+//    #2 i_instr = `QWAIT_30;                               //9
+//    #2 i_instr = `ADDI_R1_R0_001100;                      //10
+//    #2 i_instr = `FMR_R2_S9;                              //11
+//    #2 i_instr = `BEQ_R1_R2_CASE2;                        //12
+//    #2 i_instr = `T0_X90_S2;                              //13
+//    #2 i_instr = `QWAIT_1;                                //14
+//    #2 i_instr = `BEQ_R0_R0_NEXT;                         //15
+//    #2 i_instr = `T0_H_S2;                                //16
+//    #2 i_instr = `QWAIT_1;                                //17
+//    #2 i_instr = `T0_MEASURE_S2;                          //18
+//    #2 i_instr = `QWAIT_30;                               //19
+//  end
 ////////////////////////////////////////////////////////////////////
 
 

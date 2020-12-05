@@ -1,5 +1,3 @@
-                                  
-                                                                         
 //=====================================================================
 // Designer   : QI ZHOU
 //
@@ -18,11 +16,11 @@ module QPU_test_top(
   input  [`QPU_RFIDX_REAL_WIDTH-1:0] i_rs1idx,   // The RS1 index
   input  [`QPU_RFIDX_REAL_WIDTH-1:0] i_rs2idx,   // The RS2 index
 
-  output reg dec_ntp,      
-  output reg dec_nqf,      
-  output reg dec_measure,
-  output reg dec_fmr,
-  output reg [`QPU_DECINFO_WIDTH-1:0]  dec_info,
+  output dec_ntp,
+  output dec_nqf,
+  output dec_measure,
+  output dec_fmr,
+  output [`QPU_DECINFO_WIDTH-1:0]  dec_info,
 /*    input   pipe_flush_ack,
   output  pipe_flush_req,
   output  [`QPU_PC_SIZE-1:0] pipe_flush_add_op1,  
@@ -81,7 +79,7 @@ module QPU_test_top(
   );
 
 
-/*   //////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
   // Instantiate the Regfile
   wire [`QPU_XLEN-1:0] crf_rs1;
   wire [`QPU_XLEN-1:0] crf_rs2;
@@ -115,6 +113,7 @@ module QPU_test_top(
   wire qubit_measure_equ;
 
   QPU_exu_regfile u_QPU_exu_regfile(
+  
     .read_src1_idx          (i_rs1idx       ),
     .read_src2_idx          (i_rs2idx       ),
     .read_src1_data         (crf_rs1        ),
@@ -140,8 +139,6 @@ module QPU_test_top(
     .read_event_oprand      (erf_oprand     ),
     .read_event_data        (erf_data       ),
 
-
-
     .mcu_measure_i_data     (mcu_i_measurement        ),
     .mcu_measure_i_wen      (mcu_i_wen                ),
     .oitf_ret_i_measurelist (disp_oitf_ret_measurelist),
@@ -153,18 +150,15 @@ module QPU_test_top(
     .qubit_measure_one      (qubit_measure_one        ),
     .qubit_measure_equ      (qubit_measure_equ        ),
 
-
     .clk                    (clk          ),
     .rst_n                  (rst_n        ) 
   );
-
- */
 
   //////////////////////////////////////////////////////////////
   // Instantiate the Decode
 
 
-  /* //////////////////////////////////////////////////////////////
+  //////////////////////////////////////////////////////////////
   // Instantiate the Dispatch
   wire disp_alu_valid; 
   wire disp_alu_ready; 
@@ -186,15 +180,13 @@ module QPU_test_top(
   wire disp_alu_fmr;
   wire disp_alu_measure;
 
-
-
   wire disp_oitf_ready;
   wire disp_moitf_ready;
 
   wire  [`QPU_RFIDX_REAL_WIDTH-1:0] disp_oitf_rs1idx;
   wire  [`QPU_RFIDX_REAL_WIDTH-1:0] disp_oitf_rs2idx;
   wire  [`QPU_RFIDX_REAL_WIDTH-1:0] disp_oitf_rdidx;
-  wire [`QPU_QUBIT_NUM - 1 : 0] disp_oitf_qubitlist
+  wire [`QPU_QUBIT_NUM - 1 : 0] disp_oitf_qubitlist;
 
   wire  disp_oitf_rs1en;
   wire  disp_oitf_rs2en;
@@ -208,9 +200,6 @@ module QPU_test_top(
 
   wire disp_oitf_ena;
   wire disp_moitf_ena;
-
-
-
 
   QPU_exu_disp u_QPU_exu_disp(
 
@@ -267,7 +256,6 @@ module QPU_test_top(
     .oitfrd_match_disprd (oitfrd_match_disprd ),
     .oitfqf_match_dispql (oitfqf_match_dispql ),
 
-
     .disp_oitf_ena       (disp_oitf_ena    ),
     .disp_moitf_ena      (disp_moitf_ena   ),
     .disp_oitf_ready     (disp_oitf_ready  ),
@@ -282,8 +270,6 @@ module QPU_test_top(
     .disp_oitf_rs2idx    (disp_oitf_rs2idx),
     .disp_oitf_rdidx     (disp_oitf_rdidx ),
     .disp_oitf_qubitlist (disp_oitf_qubitlist)
-   
-
   );
 
   //////////////////////////////////////////////////////////////
@@ -296,9 +282,8 @@ module QPU_test_top(
   wire oitf_empty;
   wire moitf_empty;
   
-
-
   QPU_exu_oitf u_QPU_exu_oitf(
+  
     .dis_cf_ready            (disp_oitf_ready),
     .dis_mf_ready            (disp_moitf_ready),
     .dis_cl_ena              (disp_oitf_ena  ),
@@ -364,15 +349,9 @@ module QPU_test_top(
   wire alu_cmt_bjp;
   wire alu_cmt_bjp_prdt;
   wire alu_cmt_bjp_rslv;
- 
-
-
-
-
-
+  
   QPU_exu_alu u_QPU_exu_alu(
-
-
+  
     .i_valid             (disp_alu_valid   ),
     .i_ready             (disp_alu_ready   ),
     .i_longpipe          (disp_alu_longpipe),
@@ -420,21 +399,11 @@ module QPU_test_top(
     .ewbck_o_valid        (alu_ewbck_o_valid ), 
     .ewbck_o_ready        (alu_ewbck_o_ready ),
     .ewbck_o_data         (alu_ewbck_o_data  ),
-    .ewbck_o_oprand       (alu_ewbck_o_oprand),
-
-
-
-
+    .ewbck_o_oprand       (alu_ewbck_o_oprand)
   );
-
-
 
   //////////////////////////////////////////////////////////////
   // Instantiate the Final Write-Back
-
-  
-
-
 
   QPU_exu_wbck u_QPU_exu_wbck(
 
@@ -447,7 +416,6 @@ module QPU_test_top(
     .alu_qcwbck_i_ready  (alu_qcwbck_o_ready ),
     .alu_qcwbck_i_data   (alu_qcwbck_o_data  ),
     .alu_qcwbck_i_rdidx  (alu_qcwbck_o_rdidx ),
-
 
     .alu_twbck_i_valid   (alu_twbck_o_valid ), 
     .alu_twbck_i_ready   (alu_twbck_o_ready ),
@@ -475,7 +443,6 @@ module QPU_test_top(
     .trf_wbck_o_ena      (trf_wbck_ena    ),
     .trf_wbck_o_data     (trf_wbck_data   ),
     
-
     .erf_wbck_o_ena      (erf_wbck_ena    ),
     .erf_wbck_o_data     (erf_wbck_data   ),
     .erf_wbck_o_oprand   (erf_wbck_oprand ),
@@ -486,7 +453,6 @@ module QPU_test_top(
 
     .evq_wbck_o_ena      (evq_wbck_ena    ),
     .evq_wbck_o_ready    (evq_wbck_ready  )
-
   );
 
   //////////////////////////////////////////////////////////////
@@ -494,7 +460,6 @@ module QPU_test_top(
 
 
   QPU_exu_commit u_QPU_exu_commit(
-
 
     .alu_cmt_i_valid         (alu_cmt_valid      ),
     .alu_cmt_i_ready         (alu_cmt_ready      ),
@@ -509,16 +474,7 @@ module QPU_test_top(
     .pipe_flush_ack          (pipe_flush_ack    ),
     .pipe_flush_req          (pipe_flush_req    ),
     .pipe_flush_add_op1      (pipe_flush_add_op1),  
-    .pipe_flush_add_op2      (pipe_flush_add_op2),  
-  
-    .clk                     (clk          ),
-    .rst_n                   (rst_n        ) 
+    .pipe_flush_add_op2      (pipe_flush_add_op2)
   );
- */
-    
-
 
 endmodule                                      
-                                               
-                                               
-                                               
