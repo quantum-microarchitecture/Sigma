@@ -3,7 +3,7 @@ regfile模块测试文档
 
 模块功能
 存储计算过程中的数据
-```
+```verilog
 `include "QPU_defines.v"
 
 module QPU_exu_regfile(

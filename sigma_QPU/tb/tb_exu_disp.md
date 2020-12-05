@@ -6,7 +6,7 @@ disp模块测试文档
 作为一个连接部件，连接decode、oitf、alu、regfile，由oitf开关控制发送到alu的数据是否有效
 这个模块的代码量很少，就几十行，几乎都是直接的连线，这个模块重点进行代码逻辑分析
 
-```
+```verilog
 module QPU_exu_disp(
   
 

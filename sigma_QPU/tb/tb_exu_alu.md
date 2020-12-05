@@ -5,7 +5,8 @@ alu模块测试文档
 ---
 处理器的执行模块，将各指令发送到相应的具体执行模块bjp、qiu、rglr执行，再获取执行结果，统一交付写回。
 ALU模块
-```
+
+```verilog
 module QPU_exu_alu(
 
   //////////////////////////////////i_longpipe////////////////////////////
@@ -80,7 +81,7 @@ module QPU_exu_alu(
 ```
 
 bjp模块，分析跳转信息和需求，发送回alu模块
-```
+```verilog
   QPU_exu_alu_bjp u_QPU_exu_alu_bjp(
       .bjp_i_valid         (bjp_i_valid         ),          //alu-bjp
       .bjp_i_ready         (bjp_i_ready         ),
@@ -108,7 +109,7 @@ bjp模块，分析跳转信息和需求，发送回alu模块
 
 rglr模块
 解析经典计算总线，得出要进行的计算操作，发送到dpath计算
-```
+```verilog
   QPU_exu_alu_rglr u_QPU_exu_alu_rglr(
 
       .alu_i_valid         (alu_i_valid     ),
@@ -142,7 +143,7 @@ rglr模块
 
 qiu模块
 
-```
+```verilog
   QPU_exu_alu_qiu u_QPU_exu_alu_qiu(
 
       .qiu_i_valid         (qiu_i_valid         ),
@@ -176,7 +177,7 @@ qiu模块
 ```
 
 dpath模块，负责执行各种计算，输入要执行的计算和两个操作数，返回计算结果
-```
+```verilog
   QPU_exu_alu_dpath u_QPU_exu_alu_dpath(
       .alu_req_alu         (alu_req_alu           ),    //alu发起的请求
       .alu_req_alu_add     (alu_req_alu_add       ),    //计算模式选择

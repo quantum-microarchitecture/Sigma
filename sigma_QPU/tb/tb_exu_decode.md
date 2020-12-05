@@ -4,7 +4,7 @@ decode模块测试文档
 模块功能
 ---
 将IR寄存器中的指令译码，进行分类和标记，为后续的派遣执行进行准备
-```
+```verilog
   QPU_exu_decode test_exu_decode(
       .i_instr (i_instr),              //输入指令
       .i_pc (i_pc),                    //输入pc
@@ -40,7 +40,8 @@ decode模块测试文档
 7/22
 依次执行各条指令，检验其输出结果是否符合预期
 输入：
-```
+
+```verilog
   initial
   begin
     #0 i_instr = `instr_LOAD;
@@ -79,7 +80,7 @@ decode模块测试文档
 ----------------
 7/24
 添加输入测试：
-```
+```verilog
     #5 i_instr = `instr_QI_1;
     #2 i_instr = `instr_QI_2;
     #2 i_instr = `instr_QI_3;
